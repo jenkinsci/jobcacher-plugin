@@ -28,24 +28,31 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import jenkins.plugins.itemstorage.GlobalItemStorage;
+import jenkins.plugins.itemstorage.ObjectPath;
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.*;
 
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
-import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
- * Created by hayep on 11/28/2016.
+ * This class implements a Cache where the user can configure a path on the executor that will be cached.  Users can
+ * reference environment variables on the executor in the path and supply an includes and excludes pattern to limit the
+ * files that are cached.
+ *
+ * @author Peter Hayes
  */
 public class ArbitraryFileCache extends Cache {
+    private static Logger LOGGER = Logger.getLogger(ArbitraryFileCache.class.getName());
+
+    private static final long serialVersionUID = 1L;
+
     private String path;
     private String includes = "**/*";
     private String excludes;
@@ -87,45 +94,54 @@ public class ArbitraryFileCache extends Cache {
     }
 
     @Override
-    public long calculateSize(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        // Locate the cache on the master node
-        FilePath targetDirectory = workspace.child(path);
-
-        return targetDirectory.act(new DirectorySize(includes, excludes));
-    }
-
-    @Override
-    public void cache(File cacheDir, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+    public Saver cache(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         // Get a source dir for cached files for this path
-        FilePath sourceDir = deriveCachePath(cacheDir, path);
+        ObjectPath source = cache.child(deriveCachePath(path));
 
         // Resolve path variables if any
         String expandedPath = initialEnvironment.expand(path);
 
-        cachePath(sourceDir, workspace, listener, expandedPath, includes, excludes);
+        cachePath(source, workspace, listener, expandedPath, includes, excludes);
+
+        return new SaverImpl(expandedPath);
     }
 
-    @Override
-    public void save(File cacheDir, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        // Get a target dir for cached files for this path
-        FilePath targetDir = deriveCachePath(cacheDir, path);
+    private class SaverImpl extends Saver {
 
-        // Resolve path variables if any
-        String expandedPath = build.getEnvironment(listener).expand(path);
+        private static final long serialVersionUID = 1L;
 
-        savePath(targetDir, workspace, listener, expandedPath, includes, excludes);
+        private String expandedPath;
+
+        public SaverImpl(String expandedPath) {
+            this.expandedPath = expandedPath;
+        }
+
+        @Override
+        public long calculateSize(ObjectPath objectPath, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+            // Locate the cache on the master node
+            FilePath targetDirectory = workspace.child(path);
+
+            return targetDirectory.act(new DirectorySize(includes, excludes));
+        }
+
+        @Override
+        public void save(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+            // Get a target dir for cached files for this path
+            ObjectPath target = cache.child(deriveCachePath(path));
+
+            savePath(target, workspace, listener, expandedPath, includes, excludes);
+        }
     }
 
-    public DirectoryBrowserSupport doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+    public HttpResponse doDynamic(StaplerRequest req, StaplerResponse rsp, @AncestorInPath Job job) throws IOException, ServletException, InterruptedException {
 
-        Job job = req.findAncestorObject(Job.class);
+        ObjectPath cache = CacheManager.getCachePath(GlobalItemStorage.get().getStorage(), job).child(deriveCachePath(path));
 
-        FilePath cachePath = deriveCachePath(CacheWrapper.findCacheDir(job), path);
-        if (!cachePath.exists()) {
+        if (!cache.exists()) {
             req.getView(this,"noCache.jelly").forward(req,rsp);
             return null;
         } else {
-            return new DirectoryBrowserSupport(job, cachePath, "Cache of " + path, "folder.png", true);
+            return cache.browse(req, rsp, job, path);
         }
     }
 

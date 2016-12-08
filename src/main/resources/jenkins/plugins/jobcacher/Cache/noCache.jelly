@@ -25,11 +25,11 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:statusCode value="404"/>
   <l:layout>
-    <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly" it="${it.job}"/>
     <l:main-panel>
       <h1><l:icon class="icon-error icon-xlg"/>${%Error: no cache}</h1>
       <j:choose>
-        <j:when test="${it.lastBuild==null}">
+        <j:when test="${it.job.lastBuild==null}">
           <p>
             ${%A project won't have any cache until at least one build is performed.}
           </p>
@@ -48,11 +48,6 @@
           </ol>
         </j:otherwise>
       </j:choose>
-      <p>
-      <j:if test="${!it.isDisabled()}">
-        ${%text}
-      </j:if>
-      </p>
     </l:main-panel>
   </l:layout>
 </j:jelly>

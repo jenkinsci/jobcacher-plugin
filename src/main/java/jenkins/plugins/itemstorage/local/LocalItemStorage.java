@@ -22,44 +22,44 @@
  * THE SOFTWARE.
  */
 
-package jenkins.plugins.jobcacher;
+package jenkins.plugins.itemstorage.local;
 
-import hudson.model.Action;
-import hudson.model.Job;
-import org.kohsuke.stapler.Stapler;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.model.Item;
+import jenkins.plugins.itemstorage.ItemStorage;
+import jenkins.plugins.itemstorage.ItemStorageDescriptor;
+import jenkins.plugins.itemstorage.Messages;
+import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.util.List;
+import javax.annotation.Nonnull;
 
 /**
+ * Implementation of Item Storage that stores data on the Jenkins master within the existing job folder.
+ *
  * @author Peter Hayes
  */
-public class CacheProjectAction implements Action {
-    private List<Cache> caches;
+public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
 
-    public CacheProjectAction(List<Cache> caches) {
-        this.caches = caches;
-    }
+    @DataBoundConstructor
+    public LocalItemStorage() {}
 
     @Override
-    public String getIconFileName() {
-        return "folder.png";
+    public LocalObjectPath getObjectPath(Item item, String path) {
+        return new LocalObjectPath(new FilePath(item.getRootDir()).child(path));
     }
 
-    @Override
-    public String getDisplayName() {
-        return Messages.CacheProjectAction_DisplayName();
-    }
+    @Extension
+    public static final class DescriptorImpl extends ItemStorageDescriptor {
+        @Nonnull
+        @Override
+        public String getDisplayName() {
+            return Messages.LocalItemStorage_DisplayName();
+        }
 
-    @Override
-    public String getUrlName() {
-        return "cache";
-    }
-
-    public Job getJob() {
-        return Stapler.getCurrentRequest().findAncestorObject(Job.class);
-    }
-
-    public List<Cache> getCaches() {
-        return caches;
+        @Override
+        public String getHelpFile() {
+            return super.getHelpFile();
+        }
     }
 }

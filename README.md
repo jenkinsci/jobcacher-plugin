@@ -5,8 +5,9 @@ image each time such as docker based executors.  This plugin was inspired by the
 
 ## Features
 
-- [x] Creates a caching capability for executors that start fresh each build
+- [x] Item storage extension point supporting on master storage and AWS S3
+- [x] Cache Wrapper for free style jobs that manages the cache
 - [x] Implements Arbitrary File Cache where user specifies paths to be cached
 - [x] UI on Job page to review the job's caches
-- [x] Supports Pipeline jobs
+- [x] Supports Pipeline jobs with a cache block
 - [x] Cache Extension Point for other plugins to provide opinionated caching capability such as Gradle caches

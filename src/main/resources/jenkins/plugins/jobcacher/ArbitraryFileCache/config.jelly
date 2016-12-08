@@ -26,17 +26,17 @@
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project">
 
-    <f:entry title="${%Path}" help="/plugin/cache/help-arbitraryFileCachePath.html">
-        <f:textbox field="path" />
+    <f:entry title="${%Path}" field="path">
+        <f:textbox />
     </f:entry>
 
     <f:advanced>
-        <f:entry title="${%Includes}" help="/plugin/cache/help-arbitraryFileCacheIncludes.html">
-            <f:textbox field="includes" />
+        <f:entry title="${%Includes}" field="includes">
+            <f:textbox />
         </f:entry>
 
-        <f:entry title="${%Excludes}" help="/plugin/cache/help-arbitraryFileCacheExcludes.html">
-            <f:textbox field="excludes" />
+        <f:entry title="${%Excludes}" field="excludes">
+            <f:textbox />
         </f:entry>
     </f:advanced>
 </j:jelly>

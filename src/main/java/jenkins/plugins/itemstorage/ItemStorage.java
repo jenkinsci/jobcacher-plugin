@@ -22,44 +22,29 @@
  * THE SOFTWARE.
  */
 
-package jenkins.plugins.jobcacher;
+package jenkins.plugins.itemstorage;
 
-import hudson.model.Action;
-import hudson.model.Job;
-import org.kohsuke.stapler.Stapler;
+import hudson.ExtensionPoint;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.Item;
 
-import java.util.List;
+import java.io.Serializable;
 
 /**
+ * Extension point for providing a new implementation of item storage that plugins can use to store data associated
+ * with an item in whatever storage mechanism the storage implementation provides.
+ *
  * @author Peter Hayes
  */
-public class CacheProjectAction implements Action {
-    private List<Cache> caches;
+public abstract class ItemStorage<T extends ObjectPath> extends AbstractDescribableImpl<ItemStorage<T>> implements ExtensionPoint, Serializable {
+    private static final long serialVersionUID = 1L;
 
-    public CacheProjectAction(List<Cache> caches) {
-        this.caches = caches;
-    }
-
-    @Override
-    public String getIconFileName() {
-        return "folder.png";
-    }
-
-    @Override
-    public String getDisplayName() {
-        return Messages.CacheProjectAction_DisplayName();
-    }
-
-    @Override
-    public String getUrlName() {
-        return "cache";
-    }
-
-    public Job getJob() {
-        return Stapler.getCurrentRequest().findAncestorObject(Job.class);
-    }
-
-    public List<Cache> getCaches() {
-        return caches;
-    }
+    /**
+     * Given an item and path, return an ObjectPath implementation for it
+     *
+     * @param item The item to associate the path with
+     * @param path The path scoped by the item.
+     * @return The ObjectPath to act upon that path
+     */
+    public abstract T getObjectPath(Item item, String path);
 }

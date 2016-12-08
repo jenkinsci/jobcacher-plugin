@@ -28,26 +28,28 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapperDescriptor;
 import jenkins.model.Jenkins;
+import jenkins.plugins.itemstorage.GlobalItemStorage;
+import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.tasks.SimpleBuildWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
- * Created by hayep on 11/26/2016.
+ * This is the entry point for the caching capability when used as a build wrapper.
+ *
+ * @author Peter Hayes
  */
 public class CacheWrapper extends SimpleBuildWrapper {
-    private final static Logger LOG = Logger.getLogger(CacheWrapper.class.getName());
-
     private long maxCacheSize = 0L;
     private List<Cache> caches = new ArrayList<>();
 
@@ -59,10 +61,17 @@ public class CacheWrapper extends SimpleBuildWrapper {
         this.caches = caches == null ? Collections.EMPTY_LIST : new ArrayList<>(caches);
     }
 
+    @SuppressWarnings("unused")
+    public ItemStorage getStorage() {
+        return GlobalItemStorage.get().getStorage();
+    }
+
+    @SuppressWarnings("unused")
     public long getMaxCacheSize() {
         return maxCacheSize;
     }
 
+    @SuppressWarnings("unused")
     public void setMaxCacheSize(long maxCacheSize) {
         this.maxCacheSize = maxCacheSize;
     }
@@ -77,25 +86,13 @@ public class CacheWrapper extends SimpleBuildWrapper {
 
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
-        LOG.fine("Preparing cache for build " + build);
+        List<Cache.Saver> cacheSavers = CacheManager.cache(getStorage(), build, workspace, launcher, listener, initialEnvironment, caches);
 
-        File cacheDir = findCacheDir(build.getParent());
-
-        // Lock the cache for reading - would be nice to make it more fine grain for multiple readers of cache
-        synchronized (build.getParent()) {
-            for (Cache cache : caches) {
-                cache.cache(cacheDir, build, workspace, launcher, listener, initialEnvironment);
-            }
-        }
-
-        context.setDisposer(new CacheDisposer(cacheDir, maxCacheSize, caches));
-    }
-
-    public static File findCacheDir(Job job) {
-        return new File(job.getRootDir(), "cache");
+        context.setDisposer(new CacheDisposer(getStorage(), maxCacheSize, caches, cacheSavers));
     }
 
     @Extension
+    @SuppressWarnings("unused")
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
@@ -111,62 +108,34 @@ public class CacheWrapper extends SimpleBuildWrapper {
             return true;
         }
 
+        @SuppressWarnings("unused")
         public List<CacheDescriptor> getCacheDescriptors() {
-            return Jenkins.getInstance().getDescriptorList(Cache.class);
+            Jenkins jenkins = Jenkins.getInstance();
+            if (jenkins != null) {
+                return jenkins.getDescriptorList(Cache.class);
+            } else {
+                return Collections.emptyList();
+            }
         }
     }
 
     private static class CacheDisposer extends Disposer {
-        private File cacheDir;
+        private ItemStorage storage;
         private long maxCacheSize;
         private List<Cache> caches;
+        private List<Cache.Saver> cacheSavers;
 
         @DataBoundConstructor
-        public CacheDisposer(File cacheDir, long maxCacheSize, List<Cache> caches) {
-            this.cacheDir = cacheDir;
+        public CacheDisposer(ItemStorage storage, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
+            this.storage = storage;
             this.maxCacheSize = maxCacheSize;
             this.caches = caches;
-        }
-
-        private long getMaxCacheSizeInBytes() {
-            return maxCacheSize * 1024 * 1024;
+            this.cacheSavers = cacheSavers;
         }
 
         @Override
         public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-
-            // First calculate size of cache to check if it should just be deleted
-            long totalSize = 0L;
-            for (Cache cache : caches) {
-                totalSize += cache.calculateSize(build, workspace, launcher, listener);
-            }
-
-            // synchronize on the build's parent object as we are going to write to the shared cache
-            synchronized (build.getParent()) {
-
-                // If total size is greater than configured maximum, delete all caches to start fresh next build
-                if (totalSize > getMaxCacheSizeInBytes()) {
-                    listener.getLogger().println("Removing job cache as it has grown beyond configured maximum size of " +
-                            maxCacheSize + "M. Next build will start with no cache.");
-
-                    FilePath cachePath = new FilePath(cacheDir);
-                    if (cachePath.exists()) {
-                        cachePath.deleteRecursive();
-                    } else {
-                        listener.getLogger().println("Cache does not exist even though max cache was reached." +
-                                "  You may want to consider increasing maximum cache size.");
-                    }
-                } else {
-                    // Otherwise, request each cache to save itself for the next build
-                    LOG.fine("Saving cache for build " + build);
-                    for (Cache cache : caches) {
-                        cache.save(cacheDir, build, workspace, launcher, listener);
-                    }
-                }
-            }
-
-            // Add a build action so that users can navigate the cache stored on master through UI
-            build.addAction(new CacheBuildLastAction(caches));
+            CacheManager.save(storage, build, workspace, launcher, listener, maxCacheSize, caches, cacheSavers);
         }
     }
 }

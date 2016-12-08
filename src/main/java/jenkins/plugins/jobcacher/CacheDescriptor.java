@@ -27,7 +27,7 @@ package jenkins.plugins.jobcacher;
 import hudson.model.Descriptor;
 
 /**
- * Created by hayep on 11/28/2016.
+ * @author Peter Hayes
  */
 public abstract class CacheDescriptor extends Descriptor<Cache> {
 

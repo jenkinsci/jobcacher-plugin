@@ -26,44 +26,37 @@ package jenkins.plugins.jobcacher;
 
 import hudson.*;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import jenkins.MasterToSlaveFileCallable;
+import jenkins.plugins.itemstorage.ObjectPath;
+import org.kohsuke.stapler.Stapler;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class provides the Cache extension point that when implemented provides the caching logic for saving files
  * from the executor to the master and sending them back to the executor.
  *
+ * Note, that Cache is Serializable and all subclasses must conform as well to work with Pipeline plugin
+ *
  * @author Peter Hayes
  */
-public abstract class Cache extends AbstractDescribableImpl<Cache> implements ExtensionPoint {
+public abstract class Cache extends AbstractDescribableImpl<Cache> implements ExtensionPoint, Serializable {
 
-    /**
-     * Calculate the size of the cache on the executor which will be used to determine if the total size of the cache
-     * if returned to the master would be greater than the configured maxiumum cache size.
-     *
-     * @param build The build in progress
-     * @param workspace The executor workspace
-     * @param launcher The launcher
-     * @param listener The task listener
-     * @return The size in bytes of the remote cache
-     * @throws IOException If an error occurs connecting to the potentially remote executor
-     * @throws InterruptedException If interrupted
-     */
-    public abstract long calculateSize(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+    private static final long serialVersionUID = 1L;
 
     /**
      * To be implemented method that will be called to seed the cache on the executor from the master
      *
-     * @param cacheDir The root cache directory on the master where the cached files are stored.  Cache implementations must
-     *                 define a subdirectory within the root cache directory. @see deriveCachePath method
+     * @param cache The root of the object cache
      * @param build The build in progress
      * @param workspace The executor workspace
      * @param launcher The launcher
@@ -72,12 +65,12 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
      * @throws IOException If an error occurs connecting to the potentially remote executor
      * @throws InterruptedException If interrupted
      */
-    public abstract void cache(File cacheDir, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException;
+    public abstract Saver cache(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException;
 
     /**
      * This method recursively copies files from the sourceDir to the path on the executor
      *
-     * @param sourceDir The source directory of the cache
+     * @param source The source directory of the cache
      * @param workspace The executor workspace that the destination path will be referenced
      * @param listener The task listener
      * @param path The path on the executor to store the source cache on
@@ -86,9 +79,9 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
      * @throws IOException If an error occurs connecting to the potentially remote executor
      * @throws InterruptedException If interrupted
      */
-    protected void cachePath(FilePath sourceDir, FilePath workspace, TaskListener listener, String path, String includes, String excludes) throws IOException, InterruptedException {
+    protected void cachePath(ObjectPath source, FilePath workspace, TaskListener listener, String path, String includes, String excludes) throws IOException, InterruptedException {
 
-        if (sourceDir.exists()) {
+        if (source.exists()) {
             FilePath targetDirectory = workspace.child(path);
 
             if (!targetDirectory.exists()) {
@@ -97,51 +90,71 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
 
             listener.getLogger().println("Caching " + path + " to executor");
 
-            sourceDir.copyRecursiveTo(includes, excludes, targetDirectory);
+            source.copyRecursiveTo(includes, excludes, targetDirectory);
         } else {
             listener.getLogger().println("Skip caching as no cache exists for " + path);
         }
     }
 
     /**
-     * To be implemented method that will be called to save the files from the executor to the master
-     *
-     * @param cacheDir The root cache directory on the master where the cached files are stored.  Cache implementations must
-     *                 define a subdirectory within the root cache directory. @see deriveCachePath method
-     * @param build The build in progress
-     * @param workspace The executor workspace
-     * @param launcher The launcher
-     * @param listener The task listener
-     * @throws IOException If an error occurs connecting to the potentially remote executor
-     * @throws InterruptedException If interrupted
+     * Class that is used to save the cache on the remote system back to the master.  This class must be able to be
+     * Serialized
      */
-    public abstract void save(File cacheDir, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+    public static abstract class Saver implements Serializable {
 
-    /**
-     * This method recursively copies files from the path on the executor to the master target directory
-     *
-     * @param targetDir The target directory of the cache
-     * @param workspace The executor workspace that the destination path will be referenced
-     * @param listener The task listener
-     * @param path The path on the executor to store the source cache on
-     * @param includes The glob expression that will filter the contents of the path
-     * @param excludes The excludes expression that will filter contents of the path
-     * @throws IOException If an error occurs connecting to the potentially remote executor
-     * @throws InterruptedException If interrupted
-     */
-    protected void savePath(FilePath targetDir, FilePath workspace, TaskListener listener, String path, String includes, String excludes) throws IOException, InterruptedException {
+        private static final long serialVersionUID = 1L;
 
-        if (!targetDir.exists()) {
-            targetDir.mkdirs();
+        /**
+         * Calculate the size of the cache on the executor which will be used to determine if the total size of the cache
+         * if returned to the master would be greater than the configured maxiumum cache size.
+         *
+         *
+         * @param cache The root of the cache
+         * @param build The build in progress
+         * @param workspace The executor workspace
+         * @param launcher The launcher
+         * @param listener The task listener
+         * @return The size in bytes of the remote cache
+         * @throws IOException If an error occurs connecting to the potentially remote executor
+         * @throws InterruptedException If interrupted
+         */
+        public abstract long calculateSize(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+
+        /**
+         * To be implemented method that will be called to save the files from the executor to the master
+         *
+         * @param cache The root of the cache where savers should store their cache within
+         * @param build The build in progress
+         * @param workspace The executor workspace
+         * @param launcher The launcher
+         * @param listener The task listener
+         * @throws IOException If an error occurs connecting to the potentially remote executor
+         * @throws InterruptedException If interrupted
+         */
+        public abstract void save(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+
+        /**
+         * This method recursively copies files from the path on the executor to the master target directory
+         *
+         * @param target The target directory of the cache
+         * @param workspace The executor workspace that the destination path will be referenced
+         * @param listener The task listener
+         * @param path The path on the executor to store the source cache on
+         * @param includes The glob expression that will filter the contents of the path
+         * @param excludes The excludes expression that will filter contents of the path
+         * @throws IOException If an error occurs connecting to the potentially remote executor
+         * @throws InterruptedException If interrupted
+         */
+        protected void savePath(ObjectPath target, FilePath workspace, TaskListener listener, String path, String includes, String excludes) throws IOException, InterruptedException {
+
+            FilePath source = workspace.child(path);
+
+            listener.getLogger().println("Storing " + path + " in cache");
+
+            target.copyRecursiveFrom(includes, excludes, source);
         }
-
-        FilePath sourceDirectory = workspace.child(path);
-
-        listener.getLogger().println("Storing " + path + " in cache");
-
-        // TODO remove files that are no longer in cache
-        sourceDirectory.copyRecursiveTo(includes, excludes, targetDir);
     }
+
 
     /**
      * Get the human readable title for this cache to be shown on the user interface
@@ -151,14 +164,21 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
     public abstract String getTitle();
 
     /**
+     * Get ancestor job when invoked via the stapler context
+     * @return the job
+     */
+    public Job getJob() {
+        return Stapler.getCurrentRequest().findAncestorObject(Job.class);
+    }
+
+    /**
      * Generate a path within the cache dir given a relative or absolute path that is being cached
      *
-     * @param cacheDir The job's cache directory
      * @param path The relative or absolute path that is being cached
      * @return A filepath where to save and read from the cache
      */
-    protected FilePath deriveCachePath(File cacheDir, String path) {
-        return new FilePath(new File(cacheDir, Util.getDigestOf(path)));
+    public static String deriveCachePath(String path) {
+        return Util.getDigestOf(path);
     }
 
     /**

@@ -1,4 +1,4 @@
-/*
+<!--
  * The MIT License
  *
  * Copyright 2016 Peter Hayes.
@@ -20,46 +20,13 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+         xmlns:p="/lib/hudson/project">
 
-package jenkins.plugins.jobcacher;
-
-import hudson.model.Action;
-import hudson.model.Job;
-import org.kohsuke.stapler.Stapler;
-
-import java.util.List;
-
-/**
- * @author Peter Hayes
- */
-public class CacheProjectAction implements Action {
-    private List<Cache> caches;
-
-    public CacheProjectAction(List<Cache> caches) {
-        this.caches = caches;
-    }
-
-    @Override
-    public String getIconFileName() {
-        return "folder.png";
-    }
-
-    @Override
-    public String getDisplayName() {
-        return Messages.CacheProjectAction_DisplayName();
-    }
-
-    @Override
-    public String getUrlName() {
-        return "cache";
-    }
-
-    public Job getJob() {
-        return Stapler.getCurrentRequest().findAncestorObject(Job.class);
-    }
-
-    public List<Cache> getCaches() {
-        return caches;
-    }
-}
+    <f:section title="${%Item Storage}">
+        <f:dropdownDescriptorSelector field="storage" title="${%Storage Implementation}" descriptors="${storageDescriptors}"/>
+    </f:section>
+</j:jelly>

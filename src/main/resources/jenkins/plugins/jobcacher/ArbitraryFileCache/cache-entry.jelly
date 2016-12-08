@@ -29,11 +29,10 @@ THE SOFTWARE.
     <tr>
         <td>
             <a href="caches/${cacheIndex}">
-                <l:icon title="${it.path}" class="${icons.toNormalizedIconNameClass('folder.png')} icon-xlg" tooltip="${it.path}"/>
+                <l:icon title="${it.path}" class="${icons.toNormalizedIconNameClass('folder.png')} icon-xlg"/>
+                ${it.path}
             </a>
         </td>
-        <td>10,434 files</td>
-        <td>115mb</td>
     </tr>
 
 </j:jelly>

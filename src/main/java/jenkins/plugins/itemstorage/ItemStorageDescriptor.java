@@ -22,44 +22,15 @@
  * THE SOFTWARE.
  */
 
-package jenkins.plugins.jobcacher;
+package jenkins.plugins.itemstorage;
 
-import hudson.model.Action;
-import hudson.model.Job;
-import org.kohsuke.stapler.Stapler;
-
-import java.util.List;
+import hudson.model.Descriptor;
 
 /**
+ * Descriptor for the Item Storage
+ *
  * @author Peter Hayes
  */
-public class CacheProjectAction implements Action {
-    private List<Cache> caches;
+public abstract class ItemStorageDescriptor<T extends ObjectPath> extends Descriptor<ItemStorage<T>> {
 
-    public CacheProjectAction(List<Cache> caches) {
-        this.caches = caches;
-    }
-
-    @Override
-    public String getIconFileName() {
-        return "folder.png";
-    }
-
-    @Override
-    public String getDisplayName() {
-        return Messages.CacheProjectAction_DisplayName();
-    }
-
-    @Override
-    public String getUrlName() {
-        return "cache";
-    }
-
-    public Job getJob() {
-        return Stapler.getCurrentRequest().findAncestorObject(Job.class);
-    }
-
-    public List<Cache> getCaches() {
-        return caches;
-    }
 }
