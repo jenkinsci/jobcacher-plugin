@@ -11,7 +11,9 @@ import jenkins.plugins.itemstorage.ObjectPath;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -20,6 +22,9 @@ import java.util.logging.Logger;
 public class CacheManager {
     private static final Logger LOG = Logger.getLogger(CacheManager.class.getName());
 
+    // Could potential grow indefinitely as jobs are created and destroyed
+    private static Map<String, Object> locks = new HashMap<>();
+
     public static ObjectPath getCachePath(ItemStorage storage, Job<?, ?> job) {
         return storage.getObjectPath(job, "cache");
     }
@@ -27,6 +32,17 @@ public class CacheManager {
     public static ObjectPath getCachePath(ItemStorage storage, Run<?, ?> run) {
         return getCachePath(storage, run.getParent());
     }
+
+    private static Object getLock(Job j) {
+        String jobFullName = j.getFullName();
+        Object lock = locks.get(jobFullName);
+        if (lock == null) {
+            lock = new Object();
+            locks.put(jobFullName, lock);
+        }
+        return lock;
+    }
+
     /**
      * Internal method only
      */
@@ -37,7 +53,7 @@ public class CacheManager {
 
         // Lock the cache for reading - would be nice to make it more fine grain for multiple readers of cache
         List<Cache.Saver> cacheSavers = new ArrayList<>();
-        synchronized (run.getParent()) {
+        synchronized (getLock(run.getParent())) {
             for (Cache cache : caches) {
                 cacheSavers.add(cache.cache(cachePath, run, workspace, launcher, listener, initialEnvironment));
             }
@@ -58,7 +74,7 @@ public class CacheManager {
         }
 
         // synchronize on the build's parent object as we are going to write to the shared cache
-        synchronized (run.getParent()) {
+        synchronized (getLock(run.getParent())) {
 
             // If total size is greater than configured maximum, delete all caches to start fresh next build
             if (totalSize > maxCacheSize * 1024 * 1024) {
