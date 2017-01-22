@@ -8,7 +8,7 @@
 
     <artifactId>jobcacher</artifactId>
     <packaging>hpi</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <name>Jenkins Job Cacher plugin</name>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Job+Cacher+Plugin</url>
     <description>Caches files on executors per job and reseeds executors on subsequent builds</description>
@@ -45,7 +45,7 @@
         <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-        <tag>HEAD</tag>
+        <tag>jobcacher-1.0</tag>
     </scm>
 
     <dependencies>
