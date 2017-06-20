@@ -2,12 +2,14 @@ package jenkins.plugins.itemstorage.s3;
 
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import hudson.ProxyConfiguration;
 
 import java.io.Serializable;
@@ -51,13 +53,16 @@ public class ClientHelper implements Serializable {
         if (client == null) {
 
             if (getCredentials() == null) {
-                client = new AmazonS3Client(getClientConfiguration(proxy));
+                client = AmazonS3ClientBuilder.standard()
+                            .withRegion(region)
+                            .withClientConfiguration(getClientConfiguration(proxy))
+                            .build();
             } else {
-                client = new AmazonS3Client(getCredentials(), getClientConfiguration(proxy));
-            }
-
-            if (region != null) {
-                client.setRegion(getRegionFromString(region));
+                client = AmazonS3ClientBuilder.standard()
+                            .withRegion(region)
+                            .withCredentials(new AWSStaticCredentialsProvider(getCredentials()))
+                            .withClientConfiguration(getClientConfiguration(proxy))
+                            .build();
             }
         }
 
