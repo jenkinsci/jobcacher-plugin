@@ -97,6 +97,8 @@ public class CacheManager {
         }
 
         // Add a build action so that users can navigate the cache stored on master through UI
-        run.addAction(new CacheBuildLastAction(caches));
+        if(run.getAction ( CacheBuildLastAction.class ) == null) {
+            run.addAction ( new CacheBuildLastAction ( caches ) );
+        }
     }
 }
