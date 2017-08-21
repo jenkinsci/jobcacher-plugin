@@ -25,6 +25,7 @@
 package jenkins.plugins.itemstorage.s3;
 
 import com.amazonaws.regions.Regions;
+import com.amazonaws.auth.SignerFactory;
 import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
@@ -52,21 +53,32 @@ import java.util.List;
  *
  * @author Peter Hayes
  */
-public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
+public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
     private String credentialsId;
     private String bucketName;
+    private String endpoint;
     private String region;
+    private String signerVersion;
+    private boolean pathStyleAccess;
 
     @DataBoundConstructor
-    public S3ItemStorage(String credentialsId, String bucketName, String region) {
+    public NonAWSS3ItemStorage(String credentialsId, String bucketName, String endpoint, String region, String signerVersion, Boolean pathStyleAccess) {
         this.credentialsId = credentialsId;
         this.bucketName = bucketName;
+        this.endpoint = endpoint;
         this.region = region;
+        this.signerVersion = signerVersion;
+        this.pathStyleAccess = pathStyleAccess;
     }
 
     @SuppressWarnings("unused")
     public String getBucketName() {
         return bucketName;
+    }
+
+    @SuppressWarnings("unused")
+    public String getEndpoint() {
+        return endpoint;
     }
 
     @SuppressWarnings("unused")
@@ -79,9 +91,19 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         return credentialsId;
     }
 
+    @SuppressWarnings("unused")
+    public String getSignerVersion() {
+        return signerVersion;
+    }
+
+    @SuppressWarnings("unused")
+    public Boolean getPathStyleAccess() {
+        return pathStyleAccess;
+    }
+
     @Override
     public S3ObjectPath getObjectPath(Item item, String path) {
-        S3Profile profile = new S3Profile(lookupCredentials(), null, null, false, 5, 5L);
+        S3Profile profile = new S3Profile(lookupCredentials(), endpoint, signerVersion, pathStyleAccess, 5, 5L);
 
         return new S3ObjectPath(profile, bucketName, region, item.getFullName(), path);
     }
@@ -103,7 +125,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         @Nonnull
         @Override
         public String getDisplayName() {
-            return Messages.S3ItemStorage_DisplayName();
+            return Messages.NonAWSS3ItemStorage_DisplayName();
         }
 
         @SuppressWarnings("unused")
@@ -112,16 +134,16 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
                 return new ListBoxModel();
             }
             return new StandardListBoxModel()
-                    .withEmptySelection()
-                    .withAll(possibleCredentials());
+                .withAll(possibleCredentials());
         }
 
         @SuppressWarnings("unused")
-        public ListBoxModel doFillRegionItems() {
+        public ListBoxModel doFillSignerVersionItems() {
             final ListBoxModel model = new ListBoxModel();
-            for (Regions r : Regions.values()) {
-                model.add(r.getName(), r.getName());
-            }
+            model.add("Version 4", SignerFactory.VERSION_FOUR_SIGNER);
+            model.add("Version 3", SignerFactory.VERSION_THREE_SIGNER);
+            model.add("Version 2", "S3SignerType");
+
             return model;
         }
     }
@@ -130,29 +152,29 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
     public static final class S3ItemListener extends ItemListener {
         @Override
         public void onDeleted(Item item) {
-            S3ItemStorage s3Storage = lookupS3Storage();
+            NonAWSS3ItemStorage s3Storage = lookupS3Storage();
 
             if (s3Storage == null) return;
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, 5, 5L);
+            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), 5, 5L);
             profile.delete(s3Storage.bucketName, item.getFullName());
         }
 
         @Override
         public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-            S3ItemStorage s3Storage = lookupS3Storage();
+            NonAWSS3ItemStorage s3Storage = lookupS3Storage();
 
             if (s3Storage == null) return;
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, 5, 5L);
+            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), 5, 5L);
             profile.rename(s3Storage.bucketName, oldFullName, newFullName);
         }
 
-        private S3ItemStorage lookupS3Storage() {
+        private NonAWSS3ItemStorage lookupS3Storage() {
             ItemStorage storage = GlobalItemStorage.get().getStorage();
 
-            if (storage instanceof S3ItemStorage) {
-                return (S3ItemStorage) storage;
+            if (storage instanceof NonAWSS3ItemStorage) {
+                return (NonAWSS3ItemStorage) storage;
             } else {
                 return null;
             }
