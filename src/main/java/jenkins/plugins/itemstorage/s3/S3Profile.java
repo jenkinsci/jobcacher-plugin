@@ -52,8 +52,8 @@ public class S3Profile {
     private final long retryTime;
 
     @DataBoundConstructor
-    public S3Profile(AmazonWebServicesCredentials credentials, Integer maxRetries, Long retryTime) {
-        this.helper = new ClientHelper(credentials != null ? credentials.getCredentials() : null, getProxy());
+    public S3Profile(AmazonWebServicesCredentials credentials, String endpoint, String signerVersion, Boolean pathStyleAccess, Integer maxRetries, Long retryTime) {
+        this.helper = new ClientHelper(credentials != null ? credentials.getCredentials() : null, endpoint, null, getProxy(), signerVersion, pathStyleAccess);
         this.maxRetries = maxRetries != null ? maxRetries : 5;
         this.retryTime = retryTime != null ? retryTime : 5L;
     }
