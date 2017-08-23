@@ -45,6 +45,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -113,6 +114,15 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
         S3Profile profile = new S3Profile(lookupCredentials(), endpoint, signerVersion, pathStyleAccess, parallelDownloads, 5, 5L);
 
         return new S3ObjectPath(profile, bucketName, region, item.getFullName(), path);
+    }
+
+    @Override
+    public S3ObjectPath getObjectPathForBranch(Item item, String path, String branch) {
+        S3Profile profile = new S3Profile(lookupCredentials(), endpoint, signerVersion, pathStyleAccess, parallelDownloads, 5, 5L);
+
+        String branchPath = new File(item.getFullName()).getParent() + "/" + branch;
+
+        return new S3ObjectPath(profile, bucketName, region, branchPath, path);
     }
 
     private AmazonWebServicesCredentials lookupCredentials() {
