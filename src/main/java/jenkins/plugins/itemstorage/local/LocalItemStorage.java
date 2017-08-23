@@ -49,6 +49,12 @@ public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
         return new LocalObjectPath(new FilePath(item.getRootDir()).child(path));
     }
 
+    @Override
+    public LocalObjectPath getObjectPathForBranch(Item item, String path, String branch) {
+        FilePath branchPath = new FilePath(item.getRootDir()).getParent().child(branch);
+        return new LocalObjectPath(branchPath.child(path));
+    }
+
     @Extension
     public static final class DescriptorImpl extends ItemStorageDescriptor {
         @Nonnull
