@@ -3,11 +3,14 @@ package jenkins.plugins.itemstorage.s3;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import hudson.ProxyConfiguration;
 
 import java.io.Serializable;
@@ -25,6 +28,10 @@ public class ClientHelper implements Serializable {
     private final String secretKey;
     private final String region;
     private final ProxyConfiguration proxy;
+    private final String endpoint;
+    private final String signerVersion;
+    private final boolean pathStyleAccess;
+    private final boolean parallelDownloads;
 
     private transient AWSCredentials credentials;
     private transient AmazonS3 client;
@@ -34,8 +41,16 @@ public class ClientHelper implements Serializable {
     }
 
     public ClientHelper(AWSCredentials credentials, String region, ProxyConfiguration proxy) {
+        this(credentials, null, region, proxy, null, false, true);
+    }
+
+    public ClientHelper(AWSCredentials credentials, String endpoint, String region, ProxyConfiguration proxy, String signerVersion, boolean pathStyleAccess, boolean parallelDownloads) {
         this.region = region;
         this.proxy = proxy;
+        this.endpoint = endpoint;
+        this.signerVersion = signerVersion;
+        this.pathStyleAccess = pathStyleAccess;
+        this.parallelDownloads = parallelDownloads;
 
         if (credentials != null) {
             this.accessKey = credentials.getAWSAccessKeyId();
@@ -46,19 +61,32 @@ public class ClientHelper implements Serializable {
         }
     }
 
-    public synchronized AmazonS3 client()
-    {
-        if (client == null) {
 
-            if (getCredentials() == null) {
-                client = new AmazonS3Client(getClientConfiguration(proxy));
-            } else {
-                client = new AmazonS3Client(getCredentials(), getClientConfiguration(proxy));
+    public boolean supportsParallelDownloads() {
+        return parallelDownloads;
+    }
+
+    public synchronized AmazonS3 client() {
+        if (client == null) {
+            AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
+            ClientConfiguration config = getClientConfiguration(proxy);
+
+            if (getCredentials() != null) {
+                builder.setCredentials(new AWSStaticCredentialsProvider(getCredentials()));
+            }
+
+            if (endpoint != null) {
+                builder.setEndpointConfiguration(new EndpointConfiguration(endpoint, region));
+                builder.setPathStyleAccessEnabled(pathStyleAccess);
+                config.setSignerOverride(signerVersion);
             }
 
             if (region != null) {
-                client.setRegion(getRegionFromString(region));
+                builder.setRegion(region);
             }
+
+            builder.setClientConfiguration(config);
+            client = builder.build();
         }
 
         return client;
