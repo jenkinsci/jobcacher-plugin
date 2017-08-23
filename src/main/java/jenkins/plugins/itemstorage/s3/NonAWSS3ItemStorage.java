@@ -60,15 +60,17 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
     private String region;
     private String signerVersion;
     private boolean pathStyleAccess;
+    private boolean parallelDownloads;
 
     @DataBoundConstructor
-    public NonAWSS3ItemStorage(String credentialsId, String bucketName, String endpoint, String region, String signerVersion, Boolean pathStyleAccess) {
+    public NonAWSS3ItemStorage(String credentialsId, String bucketName, String endpoint, String region, String signerVersion, boolean pathStyleAccess, boolean parallelDownloads) {
         this.credentialsId = credentialsId;
         this.bucketName = bucketName;
         this.endpoint = endpoint;
         this.region = region;
         this.signerVersion = signerVersion;
         this.pathStyleAccess = pathStyleAccess;
+        this.parallelDownloads = parallelDownloads;
     }
 
     @SuppressWarnings("unused")
@@ -97,13 +99,18 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
     }
 
     @SuppressWarnings("unused")
-    public Boolean getPathStyleAccess() {
+    public boolean getPathStyleAccess() {
         return pathStyleAccess;
+    }
+
+    @SuppressWarnings("unused")
+    public boolean getParallelDownloads() {
+        return parallelDownloads;
     }
 
     @Override
     public S3ObjectPath getObjectPath(Item item, String path) {
-        S3Profile profile = new S3Profile(lookupCredentials(), endpoint, signerVersion, pathStyleAccess, 5, 5L);
+        S3Profile profile = new S3Profile(lookupCredentials(), endpoint, signerVersion, pathStyleAccess, parallelDownloads, 5, 5L);
 
         return new S3ObjectPath(profile, bucketName, region, item.getFullName(), path);
     }
@@ -156,7 +163,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
 
             if (s3Storage == null) return;
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), 5, 5L);
+            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), s3Storage.getParallelDownloads(), 5, 5L);
             profile.delete(s3Storage.bucketName, item.getFullName());
         }
 
@@ -166,7 +173,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
 
             if (s3Storage == null) return;
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), 5, 5L);
+            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), s3Storage.getParallelDownloads(), 5, 5L);
             profile.rename(s3Storage.bucketName, oldFullName, newFullName);
         }
 

@@ -30,7 +30,8 @@ public class ClientHelper implements Serializable {
     private final ProxyConfiguration proxy;
     private final String endpoint;
     private final String signerVersion;
-    private final Boolean pathStyleAccess;
+    private final boolean pathStyleAccess;
+    private final boolean parallelDownloads;
 
     private transient AWSCredentials credentials;
     private transient AmazonS3 client;
@@ -40,15 +41,16 @@ public class ClientHelper implements Serializable {
     }
 
     public ClientHelper(AWSCredentials credentials, String region, ProxyConfiguration proxy) {
-        this(credentials, null, region, proxy, null, false);
+        this(credentials, null, region, proxy, null, false, true);
     }
 
-    public ClientHelper(AWSCredentials credentials, String endpoint, String region, ProxyConfiguration proxy, String signerVersion, Boolean pathStyleAccess) {
+    public ClientHelper(AWSCredentials credentials, String endpoint, String region, ProxyConfiguration proxy, String signerVersion, boolean pathStyleAccess, boolean parallelDownloads) {
         this.region = region;
         this.proxy = proxy;
         this.endpoint = endpoint;
         this.signerVersion = signerVersion;
         this.pathStyleAccess = pathStyleAccess;
+        this.parallelDownloads = parallelDownloads;
 
         if (credentials != null) {
             this.accessKey = credentials.getAWSAccessKeyId();
@@ -57,6 +59,11 @@ public class ClientHelper implements Serializable {
             this.accessKey = null;
             this.secretKey = null;
         }
+    }
+
+
+    public boolean supportsParallelDownloads() {
+        return parallelDownloads;
     }
 
     public synchronized AmazonS3 client() {

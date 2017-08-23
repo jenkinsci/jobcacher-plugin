@@ -49,4 +49,8 @@
     <f:entry title="${%Path Style Access}" field="pathStyleAccess">
         <f:checkbox />
     </f:entry>
+
+    <f:entry title="${%Supports parallel downloads}" field="parallelDownloads">
+        <f:checkbox />
+    </f:entry>
 </j:jelly>

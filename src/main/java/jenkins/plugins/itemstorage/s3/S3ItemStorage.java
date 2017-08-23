@@ -81,7 +81,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
     @Override
     public S3ObjectPath getObjectPath(Item item, String path) {
-        S3Profile profile = new S3Profile(lookupCredentials(), null, null, false, 5, 5L);
+        S3Profile profile = new S3Profile(lookupCredentials(), null, null, false, true, 5, 5L);
 
         return new S3ObjectPath(profile, bucketName, region, item.getFullName(), path);
     }
@@ -134,7 +134,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
             if (s3Storage == null) return;
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, 5, 5L);
+            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, true, 5, 5L);
             profile.delete(s3Storage.bucketName, item.getFullName());
         }
 
@@ -144,7 +144,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
             if (s3Storage == null) return;
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, 5, 5L);
+            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, true, 5, 5L);
             profile.rename(s3Storage.bucketName, oldFullName, newFullName);
         }
 
