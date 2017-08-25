@@ -47,4 +47,14 @@ public abstract class ItemStorage<T extends ObjectPath> extends AbstractDescriba
      * @return The ObjectPath to act upon that path
      */
     public abstract T getObjectPath(Item item, String path);
+
+    /**
+     * Given an item, a path and a branch, return an ObjectPath implementation for it
+     *
+     * @param item The item to associate the path with
+     * @param path The path scoped by the item.
+     * @param branch The branch for which to get the object path for.
+     * @return The ObjectPath to act upon that path
+     */
+    public abstract T getObjectPathForBranch(Item item, String path, String branch);
 }

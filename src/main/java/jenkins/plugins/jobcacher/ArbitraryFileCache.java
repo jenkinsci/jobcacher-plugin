@@ -94,14 +94,19 @@ public class ArbitraryFileCache extends Cache {
     }
 
     @Override
-    public Saver cache(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+    public Saver cache(ObjectPath cache, ObjectPath defaultCache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         // Get a source dir for cached files for this path
         ObjectPath source = cache.child(deriveCachePath(path));
+        ObjectPath defaultSource = null;
+
+        if (defaultCache != null) {
+            defaultSource = defaultCache.child(deriveCachePath(path));
+        }
 
         // Resolve path variables if any
         String expandedPath = initialEnvironment.expand(path);
 
-        cachePath(source, workspace, listener, expandedPath, includes, excludes);
+        cachePath(source, defaultSource, workspace, listener, expandedPath, includes, excludes);
 
         return new SaverImpl(expandedPath);
     }

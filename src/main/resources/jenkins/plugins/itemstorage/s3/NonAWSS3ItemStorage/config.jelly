@@ -26,17 +26,31 @@
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
          xmlns:p="/lib/hudson/project">
 
-    <f:entry title="${%Maximum Cache Size}" field="maxCacheSize" help="/plugin/jobcacher/help-maximumCacheSize.html">
+    <f:entry title="${%Credentials}" field="credentialsId">
+        <f:select />
+    </f:entry>
+
+    <f:entry title="${%S3 Bucket Name}" field="bucketName">
         <f:textbox />
     </f:entry>
 
-    <f:entry title="Caches">
-        <f:hetero-list name="caches" descriptors="${descriptor.cacheDescriptors}" items="${instance.caches}"
-                       addCaption="${%Add Cache}" hasHeader="true"
-                       targetType="jenkins.plugins.jobcacher.Cache.class" />
+    <f:entry title="${%S3 Endpoint}" field="endpoint">
+        <f:textbox />
     </f:entry>
 
-    <f:entry title="${%Branch to use for default cache}" field="defaultBranch" help="/plugin/jobcacher/help-defaultBranch.html">
+    <f:entry title="${%Region}" field="region">
         <f:textbox />
+    </f:entry>
+
+    <f:entry title="${%Signer Version}" field="signerVersion">
+        <f:select />
+    </f:entry>
+
+    <f:entry title="${%Path Style Access}" field="pathStyleAccess">
+        <f:checkbox />
+    </f:entry>
+
+    <f:entry title="${%Supports parallel downloads}" field="parallelDownloads">
+        <f:checkbox />
     </f:entry>
 </j:jelly>

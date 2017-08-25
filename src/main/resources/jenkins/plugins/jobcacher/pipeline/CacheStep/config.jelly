@@ -36,4 +36,7 @@
                        targetType="jenkins.plugins.jobcacher.Cache.class" />
     </f:entry>
 
+    <f:entry title="${%Branch to use for default cache}" field="defaultBranch" help="/plugin/jobcacher/help-defaultBranch.html">
+        <f:textbox />
+    </f:entry>
 </j:jelly>
