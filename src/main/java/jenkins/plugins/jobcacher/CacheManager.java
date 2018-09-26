@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Peter Hayes
@@ -56,7 +57,7 @@ public class CacheManager {
 
         ObjectPath defaultCachePath = null;
 
-        if (defaultBranch != null && defaultBranch != "") {
+        if (!StringUtils.isBlank(defaultBranch)) {
             defaultCachePath = getCachePathForBranch(storage, run, defaultBranch);
         }
 
