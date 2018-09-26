@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Peter Hayes
@@ -33,6 +34,10 @@ public class CacheManager {
         return getCachePath(storage, run.getParent());
     }
 
+    public static ObjectPath getCachePathForBranch(ItemStorage storage, Run<?, ?> run, String branch) {
+        return storage.getObjectPathForBranch(run.getParent(), "cache", branch);
+    }
+
     private static Object getLock(Job j) {
         String jobFullName = j.getFullName();
         Object lock = locks.get(jobFullName);
@@ -46,8 +51,15 @@ public class CacheManager {
     /**
      * Internal method only
      */
-    public static List<Cache.Saver> cache(ItemStorage storage, Run run, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, List<Cache> caches) throws IOException, InterruptedException {
+    public static List<Cache.Saver> cache(ItemStorage storage, Run run, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, List<Cache> caches, String defaultBranch) throws IOException, InterruptedException {
         ObjectPath cachePath = getCachePath(storage, run);
+
+
+        ObjectPath defaultCachePath = null;
+
+        if (!StringUtils.isBlank(defaultBranch)) {
+            defaultCachePath = getCachePathForBranch(storage, run, defaultBranch);
+        }
 
         LOG.fine("Preparing cache for build " + run);
 
@@ -55,7 +67,7 @@ public class CacheManager {
         List<Cache.Saver> cacheSavers = new ArrayList<>();
         synchronized (getLock(run.getParent())) {
             for (Cache cache : caches) {
-                cacheSavers.add(cache.cache(cachePath, run, workspace, launcher, listener, initialEnvironment));
+                cacheSavers.add(cache.cache(cachePath, defaultCachePath, run, workspace, launcher, listener, initialEnvironment));
             }
         }
         return cacheSavers;
