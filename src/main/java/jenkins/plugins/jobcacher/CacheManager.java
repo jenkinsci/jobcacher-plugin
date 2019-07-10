@@ -56,7 +56,7 @@ public class CacheManager {
 
         ObjectPath defaultCachePath = null;
 
-        if (defaultBranch != null && defaultBranch != "") {
+        if (defaultBranch != null && !defaultBranch.isEmpty()) {
             defaultCachePath = getCachePathForBranch(storage, run, defaultBranch);
         }
 
