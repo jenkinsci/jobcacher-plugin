@@ -1,7 +1,9 @@
+version: 1.1-{branch}-{build}
+
 pull_requests:
   do_not_increment_build_number: true
 
-skip_tags: false
+skip_tags: true
 skip_branch_with_pr: true
 skip_commits:
   files:
@@ -21,19 +23,23 @@ environment:
   JAVA_HOME: C:\Program Files\Java\jdk1.8.0
 
 install:
-- cinst maven --version=%MAVEN_VERSION%
-- refreshenv
-- cmd: SET PATH=%JAVA_HOME%\bin;
+- cmd: SET PATH=%JAVA_HOME%\bin;%PATH%
+- cmd: cinst maven --version=%MAVEN_VERSION%
+- cmd: refreshenv
+- cmd: SET MAVEN_OPTS=-XX:MaxPermSize=1g -Xmx2g
+- cmd: SET JAVA_OPTS=-XX:MaxPermSize=1g -Xmx2g
+- cmd: mvn --version
+- cmd: java -version
 
 init:
   - git config --global core.autocrlf input
 
 build_script:
-- maven clean verify
+- mvn -B -V clean verify
 
 artifacts:
 - path: target/jobcacher.hpi
   
 cache:
-- C:\maven\ -> .appveyor.yml
+#- C:\maven\ -> .appveyor.yml
 - C:\Users\appveyor\.m2\ -> pom.xml
