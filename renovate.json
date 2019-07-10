@@ -1,3 +1,4 @@
 {
-    "includeForks": true
+  "extends": ["config:base", ":rebaseStalePrs", ":masterIssue"],
+  "includeForks": true
 }
