@@ -32,8 +32,8 @@ install:
     }
 - cmd: SET M2_HOME=C:\maven\apache-maven-%MAVEN_VERSION%
 - cmd: PATH=%M2_HOME%\bin;%JAVA_HOME%\bin;%PATH:C:\Ruby193\bin;=%;
-- cmd: SET MAVEN_OPTS=-XX:MaxPermSize=1g -Xmx2g -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
-- cmd: SET JAVA_OPTS=-XX:MaxPermSize=1g -Xmx2g
+- cmd: SET MAVEN_OPTS=-Xmx2g -Dorg.slf4j.simpleLogger.defaultLogLevel=warn
+- cmd: SET JAVA_OPTS=-Xmx2g
 - cmd: mvn --version
 - cmd: java -version
 
