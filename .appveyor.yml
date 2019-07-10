@@ -41,7 +41,10 @@ init:
   - git config --global core.autocrlf input
 
 build_script:
-- mvn -B -V -Dchangelist=-%APPVEYOR_BUILD_NUMBER% clean verify
+-mvn -V -B clean package -DskipTests
+
+test_script:
+- mvn -B -V -Dchangelist=-%APPVEYOR_BUILD_NUMBER% -Djna.nosys=true test
 
 artifacts:
 - path: target/jobcacher.hpi
