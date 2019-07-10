@@ -1,4 +1,4 @@
-version: 1.1-{branch}-{build}
+version: 1.1.{build}
 
 pull_requests:
   do_not_increment_build_number: true
@@ -35,7 +35,7 @@ init:
   - git config --global core.autocrlf input
 
 build_script:
-- mvn -B -V clean verify
+- mvn -B -V -Dchangelist=-%APPVEYOR_BUILD_NUMBER% clean verify
 
 artifacts:
 - path: target/jobcacher.hpi
