@@ -38,10 +38,10 @@ install:
 - cmd: java -version
 
 init:
-  - git config --global core.autocrlf input
+- git config --global core.autocrlf input
 
 build_script:
--mvn -V -B clean package -DskipTests
+- mvn -V -B clean package -DskipTests
 
 test_script:
 - mvn -B -V -Dchangelist=-%APPVEYOR_BUILD_NUMBER% -Djna.nosys=true test
