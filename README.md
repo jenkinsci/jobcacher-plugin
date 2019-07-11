@@ -1,6 +1,7 @@
-# Job Cacher Plugin
+[![Build status](https://ci.appveyor.com/api/projects/status/p51hwostrappndrm/branch/master?svg=true)](https://ci.appveyor.com/project/ViceIce/jobcacher-plugin/branch/master)
 
-[![Build Status](https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/jobcacher-plugin)](https://jenkins.ci.cloudbees.com/job/plugins/jobcacher-plugin)
+Job Cacher Plugin
+=================
 
 This plugin was created to improve build performance for builds that utilize executors that start from a clean
 image each time such as docker based executors.  This plugin was inspired by the caching capability of TravisCI.
