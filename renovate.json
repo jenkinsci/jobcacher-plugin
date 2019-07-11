@@ -1,4 +1,4 @@
 {
-  "extends": ["config:base", ":rebaseStalePrs", ":masterIssue", ":assign(viceice)"],
+  "extends": ["config:base", ":rebaseStalePrs", ":masterIssue", ":assignee(viceice)", ":semanticCommits"],
   "includeForks": true
 }
