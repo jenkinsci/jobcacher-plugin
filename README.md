@@ -1,4 +1,4 @@
-[![Build status](https://github.com/ViceIce/jobcacher-plugin/workflows/Java%20CI/badge.svg)](https://github.com/ViceIce/jobcacher-plugin/actions?query=workflow%3A"Java+CI")
+[![Build status](https://github.com/ViceIce/jobcacher-plugin/workflows/Build/badge.svg)](https://github.com/ViceIce/jobcacher-plugin/actions?query=workflow%3A"Build")
 
 Job Cacher Plugin
 =================
