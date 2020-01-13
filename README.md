@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/p51hwostrappndrm/branch/master?svg=true)](https://ci.appveyor.com/project/ViceIce/jobcacher-plugin/branch/master)
+[![Build status](https://github.com/ViceIce>/jobcacher-plugin/workflows/Java%20CI/badge.svg)](https://github.com/ViceIce/jobcacher-plugin/actions?query=workflow%3A"Java+CI")
 
 Job Cacher Plugin
 =================
