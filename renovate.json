@@ -9,7 +9,9 @@
     },
     {
       "updateTypes": ["minor"],
-      "dependencyDashboardApproval": false
+      "dependencyDashboardApproval": false,
+      "automerge": true,
+      "automergeType": "pr"
     },
     {
       "updateTypes": ["major"],
