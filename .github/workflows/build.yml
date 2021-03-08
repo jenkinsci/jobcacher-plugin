@@ -33,9 +33,9 @@ jobs:
       - name: Upload plugin
         uses: actions/upload-artifact@v2.2.2
         with:
-          name: gitea
+          name: jobcacher
           path: |
-            target/gitea.hpi
+            target/jobcacher.hpi
             target/version.txt
 
   release:
@@ -56,7 +56,7 @@ jobs:
       - name: Download plugin
         uses: actions/download-artifact@v2.0.8
         with:
-          name: gitea
+          name: jobcacher
           path: .
 
       - name: Create git tag
@@ -69,7 +69,7 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
-          files: gitea.hpi
+          files: jobcacher.hpi
           name: ${{ env.VERSION }}
           tag_name: v${{ env.VERSION }}
           body: Relase v${{ env.VERSION }}
