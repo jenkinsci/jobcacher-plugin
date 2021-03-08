@@ -27,7 +27,7 @@ jobs:
       run: mvn -B package
     
     - name: Upload plugin
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v2.0.1
       with:
         name: jobcacher
         path: target/jobcacher.hpi
