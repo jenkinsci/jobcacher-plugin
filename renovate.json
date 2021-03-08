@@ -1,4 +1,19 @@
 {
-  "extends": ["config:base", ":masterIssue", ":assignee(viceice)", ":semanticCommits"],
-  "includeForks": true
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["local>visualon/renovate-config"],
+  "includeForks": true,
+  "packageRules": [
+    {
+      "updateTypes": ["patch", "digest"],
+      "automerge": true
+    },
+    {
+      "updateTypes": ["minor"],
+      "dependencyDashboardApproval": false
+    },
+    {
+      "updateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ]
 }
