@@ -27,7 +27,7 @@ jobs:
 
       - name: Extract version
         run: |
-          VERSION=$(cat pom.xml | grep '<revision' | grep -o -E '[0-9]+\.[0-9]+\.[0-9]+')
+          VERSION=$(cat pom.xml | grep '<revision' | grep -o -E '[0-9]+\.[0-9]+(\.[0-9]+)?')
           echo "${VERSION}-${{github.run_number}}" > target/version.txt
 
       - name: Upload plugin
