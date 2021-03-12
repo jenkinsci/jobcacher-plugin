@@ -147,5 +147,5 @@ public abstract class ObjectPath {
      * @param job
      * @return
      */
-    public abstract HttpResponse browse(StaplerRequest request, StaplerResponse response, Job job, String name) throws IOException;
+    public abstract HttpResponse browse(StaplerRequest request, StaplerResponse response, Job<?,?> job, String name) throws IOException;
 }

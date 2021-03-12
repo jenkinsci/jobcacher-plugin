@@ -24,24 +24,21 @@
 
 package jenkins.plugins.itemstorage.local;
 
-import hudson.FilePath;
-import hudson.model.DirectoryBrowserSupport;
-import hudson.model.Job;
-import hudson.remoting.VirtualChannel;
-import hudson.util.DirScanner;
-import hudson.util.FileVisitor;
-import jenkins.SlaveToMasterFileCallable;
-import jenkins.plugins.itemstorage.ObjectPath;
-import jenkins.security.SlaveToMasterCallable;
-import org.jenkinsci.remoting.RoleChecker;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.logging.Logger;
+
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
+import hudson.FilePath;
+import hudson.model.DirectoryBrowserSupport;
+import hudson.model.Job;
+import hudson.util.DirScanner;
+import hudson.util.FileVisitor;
+import jenkins.plugins.itemstorage.ObjectPath;
 
 /**
  * This implements the on master storage for object paths
@@ -85,7 +82,7 @@ public class LocalObjectPath extends ObjectPath {
     }
 
     @Override
-    public HttpResponse browse(StaplerRequest request, StaplerResponse response, Job job, String name) {
+    public HttpResponse browse(StaplerRequest request, StaplerResponse response, Job<?,?> job, String name) {
         return new DirectoryBrowserSupport(job, file, "Cache of " + name, "folder.png", true);
     }
 
@@ -93,6 +90,12 @@ public class LocalObjectPath extends ObjectPath {
      * Scanner that filters out files that are up to date
      */
     private static class IsModifiedGlob extends DirScanner.Glob {
+
+        /**
+         *
+         */
+        private static final long serialVersionUID = 1L;
+
         private final FilePath toCompare;
 
         public IsModifiedGlob(String includes, String excludes, FilePath toCompare) {
@@ -111,6 +114,12 @@ public class LocalObjectPath extends ObjectPath {
      * target file modification time to be same as source.
      */
     public static class IsNotThereOrOlderVisitor extends FileVisitor implements Serializable {
+        
+        /**
+         *
+         */
+        private static final long serialVersionUID = 1L;
+        
         private FilePath toCompare;
         private FileVisitor delegate;
 

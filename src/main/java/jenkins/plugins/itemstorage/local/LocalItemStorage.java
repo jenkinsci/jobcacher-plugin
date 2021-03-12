@@ -41,6 +41,7 @@ import javax.annotation.Nonnull;
  * @author Peter Hayes
  */
 public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
+    private static final long serialVersionUID = 1L;
 
     @DataBoundConstructor
     public LocalItemStorage() {
@@ -61,7 +62,7 @@ public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
     }
 
     @Extension
-    public static final class DescriptorImpl extends ItemStorageDescriptor {
+    public static final class DescriptorImpl extends ItemStorageDescriptor<LocalObjectPath> {
         @Nonnull
         @Override
         public String getDisplayName() {

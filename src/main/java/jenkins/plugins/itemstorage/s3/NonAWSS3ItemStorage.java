@@ -24,7 +24,6 @@
 
 package jenkins.plugins.itemstorage.s3;
 
-import com.amazonaws.regions.Regions;
 import com.amazonaws.auth.SignerFactory;
 import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
@@ -55,6 +54,8 @@ import java.util.List;
  * @author Peter Hayes
  */
 public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
+    private static final long serialVersionUID = 1L;
+
     private String credentialsId;
     private String bucketName;
     private String endpoint;
@@ -132,12 +133,12 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
     }
 
     private static List<AmazonWebServicesCredentials> possibleCredentials() {
-        return CredentialsProvider.lookupCredentials(AmazonWebServicesCredentials.class, Jenkins.getInstance(),
+        return CredentialsProvider.lookupCredentials(AmazonWebServicesCredentials.class, Jenkins.get(),
                 ACL.SYSTEM, Collections.<DomainRequirement>emptyList());
     }
 
     @Extension(optional = true)
-    public static final class DescriptorImpl extends ItemStorageDescriptor {
+    public static final class DescriptorImpl extends ItemStorageDescriptor<S3ObjectPath> {
 
         @Nonnull
         @Override
@@ -147,7 +148,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
 
         @SuppressWarnings("unused")
         public ListBoxModel doFillCredentialsIdItems(@QueryParameter String value) {
-            if (!Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
                 return new ListBoxModel();
             }
             return new StandardListBoxModel()
@@ -188,7 +189,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
         }
 
         private NonAWSS3ItemStorage lookupS3Storage() {
-            ItemStorage storage = GlobalItemStorage.get().getStorage();
+            ItemStorage<?> storage = GlobalItemStorage.get().getStorage();
 
             if (storage instanceof NonAWSS3ItemStorage) {
                 return (NonAWSS3ItemStorage) storage;

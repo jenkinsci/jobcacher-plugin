@@ -62,11 +62,11 @@ public class CacheWrapper extends SimpleBuildWrapper {
     @DataBoundConstructor
     public CacheWrapper(long maxCacheSize, List<Cache> caches) {
         this.maxCacheSize = maxCacheSize;
-        this.caches = caches == null ? Collections.EMPTY_LIST : new ArrayList<>(caches);
+        this.caches = caches == null ? Collections.emptyList() : new ArrayList<>(caches);
     }
 
     @SuppressWarnings("unused")
-    public ItemStorage getStorage() {
+    public ItemStorage<?> getStorage() {
         return GlobalItemStorage.get().getStorage();
     }
 
@@ -87,7 +87,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
 
 
     public List<Cache> getCaches() {
-        return caches == null ? Collections.EMPTY_LIST : Collections.unmodifiableList(caches);
+        return caches == null ? Collections.emptyList() : Collections.unmodifiableList(caches);
     }
 
     public void setCaches(List<Cache> caches) {
@@ -120,7 +120,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
 
         @SuppressWarnings("unused")
         public List<CacheDescriptor> getCacheDescriptors() {
-            Jenkins jenkins = Jenkins.getInstance();
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
             if (jenkins != null) {
                 return jenkins.getDescriptorList(Cache.class);
             } else {
@@ -130,13 +130,14 @@ public class CacheWrapper extends SimpleBuildWrapper {
     }
 
     private static class CacheDisposer extends Disposer {
-        private ItemStorage storage;
+        private static final long serialVersionUID = 1L;
+        private ItemStorage<?> storage;
         private long maxCacheSize;
         private List<Cache> caches;
         private List<Cache.Saver> cacheSavers;
 
         @DataBoundConstructor
-        public CacheDisposer(ItemStorage storage, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
+        public CacheDisposer(ItemStorage<?> storage, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
             this.storage = storage;
             this.maxCacheSize = maxCacheSize;
             this.caches = caches;

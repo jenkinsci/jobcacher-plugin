@@ -172,7 +172,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
      * Get ancestor job when invoked via the stapler context
      * @return the job
      */
-    public Job getJob() {
+    public Job<?,?> getJob() {
         return Stapler.getCurrentRequest().findAncestorObject(Job.class);
     }
 
@@ -190,6 +190,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
      * Utility class to calculate the size of a potentially remote directory given a pattern and excludes
      */
     public static class DirectorySize extends MasterToSlaveFileCallable<Long> {
+        private static final long serialVersionUID = 1L;
         private final String glob;
         private final String excludes;
         public DirectorySize(String glob, String excludes) {

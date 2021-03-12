@@ -28,7 +28,6 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import hudson.remoting.VirtualChannel;
 import jenkins.MasterToSlaveFileCallable;
-import org.jenkinsci.remoting.RoleChecker;
 
 import java.io.File;
 import java.io.IOException;

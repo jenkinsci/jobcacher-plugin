@@ -25,19 +25,19 @@ public class CacheManager {
     // Could potential grow indefinitely as jobs are created and destroyed
     private static Map<String, Object> locks = new HashMap<>();
 
-    public static ObjectPath getCachePath(ItemStorage storage, Job<?, ?> job) {
+    public static ObjectPath getCachePath(ItemStorage<?> storage, Job<?, ?> job) {
         return storage.getObjectPath(job, "cache");
     }
 
-    public static ObjectPath getCachePath(ItemStorage storage, Run<?, ?> run) {
+    public static ObjectPath getCachePath(ItemStorage<?> storage, Run<?, ?> run) {
         return getCachePath(storage, run.getParent());
     }
 
-    public static ObjectPath getCachePathForBranch(ItemStorage storage, Run<?, ?> run, String branch) {
+    public static ObjectPath getCachePathForBranch(ItemStorage<?> storage, Run<?, ?> run, String branch) {
         return storage.getObjectPathForBranch(run.getParent(), "cache", branch);
     }
 
-    private static Object getLock(Job j) {
+    private static Object getLock(Job<?,?> j) {
         String jobFullName = j.getFullName();
         Object lock = locks.get(jobFullName);
         if (lock == null) {
@@ -50,7 +50,7 @@ public class CacheManager {
     /**
      * Internal method only
      */
-    public static List<Cache.Saver> cache(ItemStorage storage, Run run, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, List<Cache> caches, String defaultBranch) throws IOException, InterruptedException {
+    public static List<Cache.Saver> cache(ItemStorage<?> storage, Run<?,?> run, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, List<Cache> caches, String defaultBranch) throws IOException, InterruptedException {
         ObjectPath cachePath = getCachePath(storage, run);
 
 
@@ -75,7 +75,7 @@ public class CacheManager {
     /**
      * Internal method only
      */
-    public static void save(ItemStorage storage, Run run, FilePath workspace, Launcher launcher, TaskListener listener, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) throws IOException, InterruptedException {
+    public static void save(ItemStorage<?> storage, Run<?,?> run, FilePath workspace, Launcher launcher, TaskListener listener, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) throws IOException, InterruptedException {
         ObjectPath cachePath = getCachePath(storage, run);
 
         // First calculate size of cache to check if it should just be deleted

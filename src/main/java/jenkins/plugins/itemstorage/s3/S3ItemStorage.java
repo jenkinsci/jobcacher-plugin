@@ -102,12 +102,12 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
     }
 
     private static List<AmazonWebServicesCredentials> possibleCredentials() {
-        return CredentialsProvider.lookupCredentials(AmazonWebServicesCredentials.class, Jenkins.getInstance(),
+        return CredentialsProvider.lookupCredentials(AmazonWebServicesCredentials.class, Jenkins.get(),
                 ACL.SYSTEM, Collections.<DomainRequirement>emptyList());
     }
 
     @Extension(optional = true)
-    public static final class DescriptorImpl extends ItemStorageDescriptor {
+    public static final class DescriptorImpl extends ItemStorageDescriptor<S3ObjectPath> {
 
         @Nonnull
         @Override
@@ -117,11 +117,11 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
         @SuppressWarnings("unused")
         public ListBoxModel doFillCredentialsIdItems(@QueryParameter String value) {
-            if (!Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
                 return new ListBoxModel();
             }
             return new StandardListBoxModel()
-                    .withEmptySelection()
+                    .includeEmptyValue()
                     .withAll(possibleCredentials());
         }
 
@@ -158,7 +158,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         }
 
         private S3ItemStorage lookupS3Storage() {
-            ItemStorage storage = GlobalItemStorage.get().getStorage();
+            ItemStorage<?> storage = GlobalItemStorage.get().getStorage();
 
             if (storage instanceof S3ItemStorage) {
                 return (S3ItemStorage) storage;

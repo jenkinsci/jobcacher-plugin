@@ -9,9 +9,9 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import hudson.ProxyConfiguration;
+import hudson.util.Secret;
 
 import java.io.Serializable;
 import java.util.regex.Pattern;
@@ -112,7 +112,7 @@ public class ClientHelper implements Serializable {
             clientConfiguration.setProxyPort(proxy.port);
             if (proxy.getUserName() != null) {
                 clientConfiguration.setProxyUsername(proxy.getUserName());
-                clientConfiguration.setProxyPassword(proxy.getPassword());
+                clientConfiguration.setProxyPassword(Secret.toString(proxy.getSecretPassword()));
             }
         }
 

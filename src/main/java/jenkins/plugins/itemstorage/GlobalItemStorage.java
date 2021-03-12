@@ -41,7 +41,7 @@ import java.util.List;
  */
 @Extension
 public class GlobalItemStorage extends GlobalConfiguration {
-    private ItemStorage storage = new LocalItemStorage();
+    private ItemStorage<?> storage = new LocalItemStorage();
 
     @SuppressWarnings("unused")
     public GlobalItemStorage() {
@@ -53,12 +53,12 @@ public class GlobalItemStorage extends GlobalConfiguration {
     }
 
     @SuppressWarnings("unused")
-    public ItemStorage getStorage() {
+    public ItemStorage<?> getStorage() {
         return storage;
     }
 
     @SuppressWarnings("unused")
-    public void setStorage(ItemStorage storage) {
+    public void setStorage(ItemStorage<?> storage) {
         this.storage = storage;
         save();
     }
@@ -69,8 +69,8 @@ public class GlobalItemStorage extends GlobalConfiguration {
     }
 
     @SuppressWarnings("unused")
-    public List<ItemStorageDescriptor> getStorageDescriptors() {
-        Jenkins jenkins = Jenkins.getInstance();
+    public List<ItemStorageDescriptor<?>> getStorageDescriptors() {
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins != null) {
             return jenkins.getDescriptorList(ItemStorage.class);
         } else {

@@ -155,7 +155,7 @@ public class CacheStep extends AbstractStepImpl {
 
         public void complete(StepContext context) throws IOException, InterruptedException {
 
-            Run run = context.get(Run.class);
+            Run<?,?> run = context.get(Run.class);
             FilePath workspace = context.get(FilePath.class);
             Launcher launcher = context.get(Launcher.class);
             TaskListener listener = context.get(TaskListener.class);
@@ -200,7 +200,7 @@ public class CacheStep extends AbstractStepImpl {
 
         @SuppressWarnings("unused")
         public List<CacheDescriptor> getCacheDescriptors() {
-            Jenkins jenkins = Jenkins.getInstance();
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
             if (jenkins != null) {
                 return jenkins.getDescriptorList(Cache.class);
             } else {
