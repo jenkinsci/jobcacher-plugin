@@ -68,8 +68,8 @@ public class GlobalItemStorage extends GlobalConfiguration {
         return false;
     }
 
-    @SuppressWarnings("unused")
-    public List<ItemStorageDescriptor<?>> getStorageDescriptors() {
+    @SuppressWarnings("rawtypes")
+    public List<ItemStorageDescriptor> getStorageDescriptors() {
         Jenkins jenkins = Jenkins.getInstanceOrNull();
         if (jenkins != null) {
             return jenkins.getDescriptorList(ItemStorage.class);
