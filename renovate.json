@@ -1,21 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["local>visualon/renovate-config"],
-  "includeForks": true,
-  "packageRules": [
-    {
-      "updateTypes": ["patch", "digest"],
-      "automerge": true
-    },
-    {
-      "updateTypes": ["minor"],
-      "dependencyDashboardApproval": false,
-      "automerge": true,
-      "automergeType": "pr"
-    },
-    {
-      "updateTypes": ["major"],
-      "dependencyDashboardApproval": true
-    }
-  ]
+  "extends": ["visualon/renovate-config", "visualon/renovate-config:jenkins"],
+  "includeForks": true
 }
