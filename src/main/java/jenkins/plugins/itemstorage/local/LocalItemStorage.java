@@ -35,14 +35,16 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import javax.annotation.Nonnull;
 
 /**
- * Implementation of Item Storage that stores data on the Jenkins master within the existing job folder.
+ * Implementation of Item Storage that stores data on the Jenkins master within
+ * the existing job folder.
  *
  * @author Peter Hayes
  */
 public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
 
     @DataBoundConstructor
-    public LocalItemStorage() {}
+    public LocalItemStorage() {
+    }
 
     @Override
     public LocalObjectPath getObjectPath(Item item, String path) {
@@ -51,7 +53,10 @@ public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
 
     @Override
     public LocalObjectPath getObjectPathForBranch(Item item, String path, String branch) {
-        FilePath branchPath = new FilePath(item.getRootDir()).getParent().child(branch);
+        FilePath parent = new FilePath(item.getRootDir()).getParent();
+        if (parent == null)
+            return null;
+        FilePath branchPath = parent.child(branch);
         return new LocalObjectPath(branchPath.child(path));
     }
 
