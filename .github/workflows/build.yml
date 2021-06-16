@@ -54,7 +54,7 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Download plugin
-        uses: actions/download-artifact@v2.0.9
+        uses: actions/download-artifact@v2.0.10
         with:
           name: jobcacher
           path: .
