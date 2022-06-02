@@ -60,15 +60,15 @@ public class LocalObjectPath extends ObjectPath {
     }
 
     @Override
-    public int copyRecursiveTo(String fileMask, String excludes, FilePath target) throws IOException, InterruptedException {
+    public int copyRecursiveTo(String fileMask, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
         LOGGER.info("Copying from " + file + " to " + target);
-        return file.copyRecursiveTo(new IsModifiedGlob(fileMask, excludes, target), target, fileMask);
+        return file.copyRecursiveTo(new IsModifiedGlob(fileMask, excludes, useDefaultExcludes, target), target, fileMask);
     }
 
     @Override
-    public int copyRecursiveFrom(String fileMask, String excludes, FilePath source) throws IOException, InterruptedException {
+    public int copyRecursiveFrom(String fileMask, String excludes, boolean useDefaultExcludes, FilePath source) throws IOException, InterruptedException {
         LOGGER.info("Copying from " + source + " to " + file);
-        return source.copyRecursiveTo(new IsModifiedGlob(fileMask, excludes, file), file, fileMask);
+        return source.copyRecursiveTo(new IsModifiedGlob(fileMask, excludes, useDefaultExcludes, file), file, fileMask);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class LocalObjectPath extends ObjectPath {
     }
 
     @Override
-    public HttpResponse browse(StaplerRequest request, StaplerResponse response, Job<?,?> job, String name) {
+    public HttpResponse browse(StaplerRequest request, StaplerResponse response, Job<?, ?> job, String name) {
         return new DirectoryBrowserSupport(job, file, "Cache of " + name, "folder.png", true);
     }
 
@@ -98,8 +98,8 @@ public class LocalObjectPath extends ObjectPath {
 
         private final FilePath toCompare;
 
-        public IsModifiedGlob(String includes, String excludes, FilePath toCompare) {
-            super(includes, excludes);
+        public IsModifiedGlob(String includes, String excludes, boolean useDefaultExcludes, FilePath toCompare) {
+            super(includes, excludes, useDefaultExcludes);
             this.toCompare = toCompare;
         }
 

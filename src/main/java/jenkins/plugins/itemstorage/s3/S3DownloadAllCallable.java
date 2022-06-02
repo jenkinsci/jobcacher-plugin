@@ -46,12 +46,12 @@ public class S3DownloadAllCallable extends S3Callable<Integer> {
     private final DirScanner.Glob scanner;
 
 
-    public S3DownloadAllCallable(ClientHelper helper, String fileMask, String excludes, String bucketName, String pathPrefix) {
+    public S3DownloadAllCallable(ClientHelper helper, String fileMask, String excludes, boolean useDefaultExcludes, String bucketName, String pathPrefix) {
         super(helper);
         this.bucketName = bucketName;
         this.pathPrefix = pathPrefix;
 
-        scanner = new DirScanner.Glob(fileMask, excludes);
+        scanner = new DirScanner.Glob(fileMask, excludes, useDefaultExcludes);
     }
 
     /**

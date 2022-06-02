@@ -38,5 +38,9 @@
         <f:entry title="${%Excludes}" field="excludes">
             <f:textbox />
         </f:entry>
+
+        <f:entry title="${%UseDefaultExcludes}" field="useDefaultExcludes">
+            <f:checkbox default="true"/>
+        </f:entry>
     </f:advanced>
 </j:jelly>

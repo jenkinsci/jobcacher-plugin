@@ -51,12 +51,12 @@ public class S3UploadAllCallable extends S3BaseUploadCallable<Integer> {
     private final DirScanner.Glob scanner;
 
 
-    public S3UploadAllCallable(ClientHelper clientHelper, String fileMask, String excludes, String bucketName, String pathPrefix, Map<String, String> userMetadata, String storageClass, boolean useServerSideEncryption) {
+    public S3UploadAllCallable(ClientHelper clientHelper, String fileMask, String excludes, boolean useDefaultExcludes, String bucketName, String pathPrefix, Map<String, String> userMetadata, String storageClass, boolean useServerSideEncryption) {
         super(clientHelper, userMetadata, storageClass, useServerSideEncryption);
         this.bucketName = bucketName;
         this.pathPrefix = pathPrefix;
 
-        scanner = new DirScanner.Glob(fileMask, excludes);
+        scanner = new DirScanner.Glob(fileMask, excludes, useDefaultExcludes);
     }
 
     /**

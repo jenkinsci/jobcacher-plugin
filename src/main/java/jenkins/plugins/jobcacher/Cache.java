@@ -71,16 +71,17 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
     /**
      * This method recursively copies files from the sourceDir to the path on the executor
      *
-     * @param source The source directory of the cache
-     * @param workspace The executor workspace that the destination path will be referenced
-     * @param listener The task listener
-     * @param path The path on the executor to store the source cache on
-     * @param includes The glob expression that will filter the contents of the path
-     * @param excludes The excludes expression that will filter contents of the path
-     * @throws IOException If an error occurs connecting to the potentially remote executor
+     * @param source             The source directory of the cache
+     * @param workspace          The executor workspace that the destination path will be referenced
+     * @param listener           The task listener
+     * @param path               The path on the executor to store the source cache on
+     * @param includes           The glob expression that will filter the contents of the path
+     * @param excludes           The excludes expression that will filter contents of the path
+     * @param useDefaultExcludes Whether to use default excludes additionally to the manually specified excludes
+     * @throws IOException          If an error occurs connecting to the potentially remote executor
      * @throws InterruptedException If interrupted
      */
-    protected void cachePath(ObjectPath source, ObjectPath defaultSource, FilePath workspace, TaskListener listener, String path, String includes, String excludes) throws IOException, InterruptedException {
+    protected void cachePath(ObjectPath source, ObjectPath defaultSource, FilePath workspace, TaskListener listener, String path, String includes, String excludes, boolean useDefaultExcludes) throws IOException, InterruptedException {
 
         if (source.exists() || (defaultSource != null && defaultSource.exists())) {
             FilePath targetDirectory = workspace.child(path);
@@ -91,10 +92,10 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
 
             if (source.exists()) {
                 listener.getLogger().println("Caching " + path + " to executor");
-                source.copyRecursiveTo(includes, excludes, targetDirectory);
+                source.copyRecursiveTo(includes, excludes, useDefaultExcludes, targetDirectory);
             } else {
                 listener.getLogger().println("Caching " + path + " to executor using default cache");
-                defaultSource.copyRecursiveTo(includes, excludes, targetDirectory);
+                defaultSource.copyRecursiveTo(includes, excludes, useDefaultExcludes, targetDirectory);
             }
         } else {
             listener.getLogger().println("Skip caching as no cache exists for " + path);
@@ -141,22 +142,23 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
         /**
          * This method recursively copies files from the path on the executor to the master target directory
          *
-         * @param target The target directory of the cache
-         * @param workspace The executor workspace that the destination path will be referenced
-         * @param listener The task listener
-         * @param path The path on the executor to store the source cache on
-         * @param includes The glob expression that will filter the contents of the path
-         * @param excludes The excludes expression that will filter contents of the path
-         * @throws IOException If an error occurs connecting to the potentially remote executor
+         * @param target             The target directory of the cache
+         * @param workspace          The executor workspace that the destination path will be referenced
+         * @param listener           The task listener
+         * @param path               The path on the executor to store the source cache on
+         * @param includes           The glob expression that will filter the contents of the path
+         * @param excludes           The excludes expression that will filter contents of the path
+         * @param useDefaultExcludes Whether to use default excludes additionally to the manually specified excludes
+         * @throws IOException          If an error occurs connecting to the potentially remote executor
          * @throws InterruptedException If interrupted
          */
-        protected void savePath(ObjectPath target, FilePath workspace, TaskListener listener, String path, String includes, String excludes) throws IOException, InterruptedException {
+        protected void savePath(ObjectPath target, FilePath workspace, TaskListener listener, String path, String includes, String excludes, boolean useDefaultExcludes) throws IOException, InterruptedException {
 
             FilePath source = workspace.child(path);
 
             listener.getLogger().println("Storing " + path + " in cache");
 
-            target.copyRecursiveFrom(includes, excludes, source);
+            target.copyRecursiveFrom(includes, excludes, useDefaultExcludes, source);
         }
     }
 

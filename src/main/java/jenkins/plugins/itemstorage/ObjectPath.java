@@ -72,7 +72,7 @@ public abstract class ObjectPath {
      * @throws InterruptedException
      */
     public int copyRecursiveTo(String fileMask, FilePath target) throws IOException, InterruptedException {
-        return copyRecursiveTo(fileMask, null, target);
+        return copyRecursiveTo(fileMask, null, true, target);
     }
 
     /**
@@ -85,7 +85,7 @@ public abstract class ObjectPath {
      * @throws IOException
      * @throws InterruptedException
      */
-    public abstract int copyRecursiveTo(String fileMask, String excludes, FilePath target) throws IOException, InterruptedException;
+    public abstract int copyRecursiveTo(String fileMask, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException;
 
     /**
      * Copy to this object path from the pass file source
@@ -109,7 +109,7 @@ public abstract class ObjectPath {
      * @throws InterruptedException
      */
     public int copyRecursiveFrom(String fileMask, FilePath source) throws IOException, InterruptedException {
-        return copyRecursiveFrom(fileMask, null, source);
+        return copyRecursiveFrom(fileMask, null, true, source);
     }
 
     /**
@@ -122,7 +122,7 @@ public abstract class ObjectPath {
      * @throws IOException
      * @throws InterruptedException
      */
-    public abstract int copyRecursiveFrom(String fileMask, String excludes, FilePath source) throws IOException, InterruptedException;
+    public abstract int copyRecursiveFrom(String fileMask, String excludes, boolean useDefaultExcludes, FilePath source) throws IOException, InterruptedException;
 
     /**
      * Check if this path actually exists
@@ -147,5 +147,5 @@ public abstract class ObjectPath {
      * @param job
      * @return
      */
-    public abstract HttpResponse browse(StaplerRequest request, StaplerResponse response, Job<?,?> job, String name) throws IOException;
+    public abstract HttpResponse browse(StaplerRequest request, StaplerResponse response, Job<?, ?> job, String name) throws IOException;
 }

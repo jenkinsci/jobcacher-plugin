@@ -62,6 +62,7 @@ public class S3Profile {
                       final String path,
                       final String fileMask,
                       final String excludes,
+                      boolean useDefaultExcludes,
                       final FilePath source,
                       final Map<String, String> userMetadata,
                       final String storageClass,
@@ -70,6 +71,7 @@ public class S3Profile {
                 helper,
                 fileMask,
                 excludes,
+                useDefaultExcludes,
                 bucketName,
                 path,
                 userMetadata,
@@ -85,8 +87,8 @@ public class S3Profile {
         return !objectListing.getObjectSummaries().isEmpty();
     }
 
-    public int download(String bucketName, String pathPrefix, String fileMask, String excludes, FilePath target) throws IOException, InterruptedException {
-        FilePath.FileCallable<Integer> download = new S3DownloadAllCallable(helper, fileMask, excludes, bucketName, pathPrefix);
+    public int download(String bucketName, String pathPrefix, String fileMask, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
+        FilePath.FileCallable<Integer> download = new S3DownloadAllCallable(helper, fileMask, excludes, useDefaultExcludes, bucketName, pathPrefix);
 
         return target.act(download);
     }
