@@ -58,15 +58,21 @@ public class S3Profile {
         this.retryTime = retryTime != null ? retryTime : 5L;
     }
 
-    public int upload(final String bucketName,
-                      final String path,
-                      final String fileMask,
-                      final String excludes,
-                      boolean useDefaultExcludes,
-                      final FilePath source,
-                      final Map<String, String> userMetadata,
-                      final String storageClass,
-                      final boolean useServerSideEncryption) throws IOException, InterruptedException {
+    public void upload(final String bucketName, final String path, final FilePath source, final Map<String, String> userMetadata, final String storageClass, final boolean useServerSideEncryption) throws IOException, InterruptedException {
+        FilePath.FileCallable<Void> upload = new S3UploadCallable(helper, bucketName, path, userMetadata, storageClass, useServerSideEncryption);
+
+        source.act(upload);
+    }
+
+    public int uploadAll(final String bucketName,
+                         final String path,
+                         final String fileMask,
+                         final String excludes,
+                         boolean useDefaultExcludes,
+                         final FilePath source,
+                         final Map<String, String> userMetadata,
+                         final String storageClass,
+                         final boolean useServerSideEncryption) throws IOException, InterruptedException {
         FilePath.FileCallable<Integer> upload = new S3UploadAllCallable(
                 helper,
                 fileMask,
@@ -87,7 +93,13 @@ public class S3Profile {
         return !objectListing.getObjectSummaries().isEmpty();
     }
 
-    public int download(String bucketName, String pathPrefix, String fileMask, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
+    public void download(String bucketName, String key, FilePath target) throws IOException, InterruptedException {
+        FilePath.FileCallable<Void> download = new S3DownloadCallable(helper, bucketName, key);
+
+        target.act(download);
+    }
+
+    public int downloadAll(String bucketName, String pathPrefix, String fileMask, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
         FilePath.FileCallable<Integer> download = new S3DownloadAllCallable(helper, fileMask, excludes, useDefaultExcludes, bucketName, pathPrefix);
 
         return target.act(download);

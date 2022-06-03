@@ -24,21 +24,20 @@
 
 package jenkins.plugins.itemstorage.local;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.logging.Logger;
-
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
 import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Job;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import jenkins.plugins.itemstorage.ObjectPath;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.logging.Logger;
 
 /**
  * This implements the on master storage for object paths
@@ -60,9 +59,19 @@ public class LocalObjectPath extends ObjectPath {
     }
 
     @Override
+    public void copyTo(FilePath target) throws IOException, InterruptedException {
+        file.copyTo(target);
+    }
+
+    @Override
     public int copyRecursiveTo(String fileMask, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
         LOGGER.info("Copying from " + file + " to " + target);
         return file.copyRecursiveTo(new IsModifiedGlob(fileMask, excludes, useDefaultExcludes, target), target, fileMask);
+    }
+
+    @Override
+    public void copyFrom(FilePath source) throws IOException, InterruptedException {
+        file.copyFrom(source);
     }
 
     @Override

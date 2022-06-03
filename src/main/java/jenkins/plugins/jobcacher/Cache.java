@@ -69,40 +69,6 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
     public abstract Saver cache(ObjectPath cache, ObjectPath defaultCache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException;
 
     /**
-     * This method recursively copies files from the sourceDir to the path on the executor
-     *
-     * @param source             The source directory of the cache
-     * @param workspace          The executor workspace that the destination path will be referenced
-     * @param listener           The task listener
-     * @param path               The path on the executor to store the source cache on
-     * @param includes           The glob expression that will filter the contents of the path
-     * @param excludes           The excludes expression that will filter contents of the path
-     * @param useDefaultExcludes Whether to use default excludes additionally to the manually specified excludes
-     * @throws IOException          If an error occurs connecting to the potentially remote executor
-     * @throws InterruptedException If interrupted
-     */
-    protected void cachePath(ObjectPath source, ObjectPath defaultSource, FilePath workspace, TaskListener listener, String path, String includes, String excludes, boolean useDefaultExcludes) throws IOException, InterruptedException {
-
-        if (source.exists() || (defaultSource != null && defaultSource.exists())) {
-            FilePath targetDirectory = workspace.child(path);
-
-            if (!targetDirectory.exists()) {
-                targetDirectory.mkdirs();
-            }
-
-            if (source.exists()) {
-                listener.getLogger().println("Caching " + path + " to executor");
-                source.copyRecursiveTo(includes, excludes, useDefaultExcludes, targetDirectory);
-            } else {
-                listener.getLogger().println("Caching " + path + " to executor using default cache");
-                defaultSource.copyRecursiveTo(includes, excludes, useDefaultExcludes, targetDirectory);
-            }
-        } else {
-            listener.getLogger().println("Skip caching as no cache exists for " + path);
-        }
-    }
-
-    /**
      * Class that is used to save the cache on the remote system back to the master.  This class must be able to be
      * Serialized
      */
@@ -139,27 +105,6 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
          */
         public abstract void save(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
 
-        /**
-         * This method recursively copies files from the path on the executor to the master target directory
-         *
-         * @param target             The target directory of the cache
-         * @param workspace          The executor workspace that the destination path will be referenced
-         * @param listener           The task listener
-         * @param path               The path on the executor to store the source cache on
-         * @param includes           The glob expression that will filter the contents of the path
-         * @param excludes           The excludes expression that will filter contents of the path
-         * @param useDefaultExcludes Whether to use default excludes additionally to the manually specified excludes
-         * @throws IOException          If an error occurs connecting to the potentially remote executor
-         * @throws InterruptedException If interrupted
-         */
-        protected void savePath(ObjectPath target, FilePath workspace, TaskListener listener, String path, String includes, String excludes, boolean useDefaultExcludes) throws IOException, InterruptedException {
-
-            FilePath source = workspace.child(path);
-
-            listener.getLogger().println("Storing " + path + " in cache");
-
-            target.copyRecursiveFrom(includes, excludes, useDefaultExcludes, source);
-        }
     }
 
 

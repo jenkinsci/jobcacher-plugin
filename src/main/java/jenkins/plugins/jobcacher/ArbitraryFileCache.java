@@ -31,15 +31,20 @@ import hudson.Launcher;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.util.ListBoxModel;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ObjectPath;
+import jenkins.plugins.jobcacher.arbitrary.*;
+import jenkins.plugins.jobcacher.arbitrary.WorkspaceHelper.TempFile;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
 
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This class implements a Cache where the user can configure a path on the executor that will be cached.  Users can
@@ -49,14 +54,17 @@ import java.util.logging.Logger;
  * @author Peter Hayes
  */
 public class ArbitraryFileCache extends Cache {
-    private static Logger LOGGER = Logger.getLogger(ArbitraryFileCache.class.getName());
 
     private static final long serialVersionUID = 1L;
 
+    private static final String CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION = ".hash";
+
     private String path;
-    private String includes = "**/*";
+    private String includes;
     private String excludes;
     private boolean useDefaultExcludes = true;
+    private String cacheValidityDecidingFile;
+    private CompressionMethod compressionMethod = CompressionMethod.NONE;
 
     @DataBoundConstructor
     public ArbitraryFileCache(String path, String includes, String excludes) {
@@ -74,78 +82,209 @@ public class ArbitraryFileCache extends Cache {
         return useDefaultExcludes;
     }
 
-    public String getPath() {
-        return path;
+    @DataBoundSetter
+    public void setCompressionMethod(CompressionMethod compressionMethod) {
+        this.compressionMethod = compressionMethod;
+    }
+
+    public CompressionMethod getCompressionMethod() {
+        return compressionMethod;
+    }
+
+    @DataBoundSetter
+    public void setCacheValidityDecidingFile(String cacheValidityDecidingFile) {
+        this.cacheValidityDecidingFile = cacheValidityDecidingFile;
+    }
+
+    public String getCacheValidityDecidingFile() {
+        return cacheValidityDecidingFile;
     }
 
     public void setPath(String path) {
         this.path = path;
     }
 
-    public String getIncludes() {
-        return includes;
+    public String getPath() {
+        return path;
     }
 
     public void setIncludes(String includes) {
         this.includes = includes;
     }
 
-    public String getExcludes() {
-        return excludes;
+    public String getIncludes() {
+        return includes;
     }
 
     public void setExcludes(String excludes) {
         this.excludes = excludes;
     }
 
-    @Override
-    public String getTitle() {
-        return Messages.ArbitraryFileCache_displayName();
+    public String getExcludes() {
+        return excludes;
+    }
+
+    private String getCacheName() {
+        return compressionMethod.getCacheStrategy().createCacheName(getCacheBaseName());
+    }
+
+    private String getSkipCacheTriggerFileHashFileName() {
+        return getCacheBaseName() + CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION;
+    }
+
+    public String getCacheBaseName() {
+        return deriveCachePath(path);
     }
 
     @Override
-    public Saver cache(ObjectPath cache, ObjectPath defaultCache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
-        // Get a source dir for cached files for this path
-        ObjectPath source = cache.child(deriveCachePath(path));
-        ObjectPath defaultSource = null;
+    public String getTitle() {
+        return jenkins.plugins.jobcacher.Messages.ArbitraryFileCache_displayName();
+    }
 
-        if (defaultCache != null) {
-            defaultSource = defaultCache.child(deriveCachePath(path));
+    @Override
+    public Saver cache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        FilePath resolvedPath = resolvePath(workspace, initialEnvironment);
+
+        ObjectPath cache = resolveValidCache(cachesRoot, fallbackCachesRoot, workspace, listener);
+        if (cache == null) {
+            logMessage("Skip cache restoration as no up-to-date cache exists", listener);
+            return new SaverImpl(resolvedPath);
         }
 
-        // Resolve path variables if any
+        logMessage("Restoring cache...", listener);
+        compressionMethod.cacheStrategy.restore(cache, resolvedPath, workspace);
+
+        return new SaverImpl(resolvedPath);
+    }
+
+    private FilePath resolvePath(FilePath workspace, EnvVars initialEnvironment) {
         String expandedPath = initialEnvironment.expand(path);
 
-        cachePath(source, defaultSource, workspace, listener, expandedPath, includes, excludes, useDefaultExcludes);
+        return workspace.child(expandedPath);
+    }
 
-        return new SaverImpl(expandedPath);
+    private ObjectPath resolveValidCache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        ObjectPath cache = resolveValidCache(cachesRoot, workspace);
+        if (cache != null) {
+            logMessage("Found cache in job specific caches", listener);
+            return cache;
+        }
+
+        cache = resolveValidCache(fallbackCachesRoot, workspace);
+        if (cache != null) {
+            logMessage("Found cache in default caches", listener);
+            return cache;
+        }
+
+        return null;
+    }
+
+    private ObjectPath resolveValidCache(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
+        ObjectPath cache = resolveCache(cachesRoot);
+        if (cache == null || !cache.exists()) {
+            return null;
+        }
+
+        if (isCacheOutdated(cachesRoot, workspace)) {
+            return null;
+        }
+
+        return cache;
+    }
+
+    private ObjectPath resolveCache(ObjectPath cachesRoot) throws IOException, InterruptedException {
+        if (cachesRoot == null) {
+            return null;
+        }
+
+        return cachesRoot.child(getCacheName());
+    }
+
+    private boolean isCacheOutdated(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
+        if (cacheValidityDecidingFile == null) {
+            return false;
+        }
+
+        ObjectPath previousClearCacheTriggerFileHash = resolvePreviousCacheValidityDecidingFileHashFile(cachesRoot);
+        if (!previousClearCacheTriggerFileHash.exists()) {
+            return true;
+        }
+
+        return !matchesCurrentCacheValidityDecidingFileHash(previousClearCacheTriggerFileHash, workspace);
+    }
+
+    private ObjectPath resolvePreviousCacheValidityDecidingFileHashFile(ObjectPath cachesRoot) throws IOException, InterruptedException {
+        String skipCacheTriggerFileHashFileName = createCacheValidityDecidingFileHashFileName(getCacheBaseName());
+
+        return cachesRoot.child(skipCacheTriggerFileHashFileName);
+    }
+
+    private String createCacheValidityDecidingFileHashFileName(String baseName) {
+        return baseName + CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION;
+    }
+
+    private boolean matchesCurrentCacheValidityDecidingFileHash(ObjectPath previousCacheValidityDecidingFileHash, FilePath workspace) throws IOException, InterruptedException {
+        try (TempFile tempFile = WorkspaceHelper.createTempFile(workspace, CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION)) {
+            previousCacheValidityDecidingFileHash.copyTo(tempFile.get());
+            return StringUtils.equals(tempFile.get().readToString(), getCurrentCacheValidityDecidingFileHash(workspace));
+        }
+    }
+
+    private String getCurrentCacheValidityDecidingFileHash(FilePath workspace) throws IOException, InterruptedException {
+        FilePath fileToHash = workspace.child(cacheValidityDecidingFile);
+
+        return fileToHash.digest();
     }
 
     private class SaverImpl extends Saver {
 
         private static final long serialVersionUID = 1L;
 
-        private String expandedPath;
+        private final FilePath resolvedPath;
 
-        public SaverImpl(String expandedPath) {
-            this.expandedPath = expandedPath;
+        public SaverImpl(FilePath resolvedPath) {
+            this.resolvedPath = resolvedPath;
         }
 
         @Override
         public long calculateSize(ObjectPath objectPath, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-            // Locate the cache on the master node
-            FilePath targetDirectory = workspace.child(path);
-
-            return targetDirectory.act(new DirectorySize(includes, excludes));
+            return resolvedPath.act(new DirectorySize(includes, excludes));
         }
 
         @Override
-        public void save(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-            // Get a target dir for cached files for this path
-            ObjectPath target = cache.child(deriveCachePath(path));
+        public void save(ObjectPath cachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+            if (!resolvedPath.exists()) {
+                logMessage("Cannot create cache as the path does not exist", listener);
+                return;
+            }
 
-            savePath(target, workspace, listener, expandedPath, includes, excludes, useDefaultExcludes);
+            if (!isCacheOutdated(cachesRoot, workspace)) {
+                logMessage("Skip cache creation as the cache is up-to-date", listener);
+                return;
+            }
+
+            ObjectPath cache = resolveCache(cachesRoot);
+
+            logMessage("Creating cache...", listener);
+            compressionMethod.getCacheStrategy().cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
+            if (cacheValidityDecidingFile != null) {
+                updateSkipCacheTriggerFileHash(cachesRoot, workspace);
+            }
         }
+
+        private void updateSkipCacheTriggerFileHash(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
+            try (TempFile tempFile = WorkspaceHelper.createTempFile(workspace, CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION)) {
+                tempFile.get().write(getCurrentCacheValidityDecidingFileHash(workspace), StandardCharsets.UTF_8.displayName());
+
+                ObjectPath skipCacheTriggerFileHashFile = cachesRoot.child(getSkipCacheTriggerFileHashFileName());
+                skipCacheTriggerFileHashFile.copyFrom(tempFile.get());
+            }
+        }
+
+    }
+
+    private void logMessage(String message, TaskListener listener) {
+        listener.getLogger().println("[Cache for " + path + "] " + message);
     }
 
     public HttpResponse doDynamic(StaplerRequest req, StaplerResponse rsp, @AncestorInPath Job job) throws IOException, ServletException, InterruptedException {
@@ -153,7 +292,7 @@ public class ArbitraryFileCache extends Cache {
         ObjectPath cache = CacheManager.getCachePath(GlobalItemStorage.get().getStorage(), job).child(deriveCachePath(path));
 
         if (!cache.exists()) {
-            req.getView(this,"noCache.jelly").forward(req,rsp);
+            req.getView(this, "noCache.jelly").forward(req, rsp);
             return null;
         } else {
             return cache.browse(req, rsp, job, path);
@@ -162,10 +301,41 @@ public class ArbitraryFileCache extends Cache {
 
     @Extension
     public static final class DescriptorImpl extends CacheDescriptor {
+
         @Nonnull
         @Override
         public String getDisplayName() {
             return Messages.ArbitraryFileCache_displayName();
         }
+
+        @Restricted(NoExternalUse.class)
+        public ListBoxModel doFillCompressionMethodItems() {
+            ListBoxModel items = new ListBoxModel();
+            for (CompressionMethod method : CompressionMethod.values()) {
+                items.add(method.name());
+            }
+
+            return items;
+        }
+
     }
+
+    public enum CompressionMethod {
+
+        NONE(new SimpleArbitraryFileCacheStrategy()),
+        ZIP(new ZipArbitraryFileCacheStrategy()),
+        TARGZ(new TarGzArbitraryFileCacheStrategy());
+
+        private final ArbitraryFileCacheStrategy cacheStrategy;
+
+        CompressionMethod(ArbitraryFileCacheStrategy cacheStrategy) {
+            this.cacheStrategy = cacheStrategy;
+        }
+
+        public ArbitraryFileCacheStrategy getCacheStrategy() {
+            return cacheStrategy;
+        }
+
+    }
+
 }
