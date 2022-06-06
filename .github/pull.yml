@@ -1,9 +1,0 @@
-version: "1"
-# https://github.com/wei/pull#advanced-usage
-rules:
-  - base: main
-    upstream: jenkinsci:master
-    mergeMethod: squash
-    mergeUnstable: false
-    assignees:
-      - viceice
