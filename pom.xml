@@ -3,12 +3,13 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>2.19</version>
+        <version>4.19</version>
+        <relativePath />
     </parent>
 
     <artifactId>jobcacher</artifactId>
     <packaging>hpi</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>${revision}${changelist}</version>
     <name>Jenkins Job Cacher plugin</name>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Job+Cacher+Plugin</url>
     <description>Caches files on executors per job and reseeds executors on subsequent builds</description>
@@ -20,7 +21,10 @@
     </licenses>
 
     <properties>
-        <jenkins.version>1.642.3</jenkins.version>
+        <revision>1.1</revision>
+        <changelist>-SNAPSHOT</changelist>
+        <jenkins.version>2.263.4</jenkins.version>
+        <java.level>8</java.level>
     </properties>
 
     <distributionManagement>
@@ -48,53 +52,62 @@
         <tag>HEAD</tag>
     </scm>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-2.263.x</artifactId>
+                <version>831.v9814430e6383</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>aws-java-sdk</artifactId>
-            <version>1.10.16</version>
+            <version>1.11.995</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials</artifactId>
-            <version>2.1.10</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>aws-credentials</artifactId>
-            <version>1.16</version>
+            <version>1.29</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-step-api</artifactId>
-            <version>1.7</version>
 			<optional>true</optional>
+        </dependency>
+
+	    <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>script-security</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
 </project>

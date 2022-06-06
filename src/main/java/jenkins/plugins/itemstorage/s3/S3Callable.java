@@ -25,9 +25,9 @@
 package jenkins.plugins.itemstorage.s3;
 
 import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import hudson.remoting.VirtualChannel;
 import jenkins.MasterToSlaveFileCallable;
-import org.jenkinsci.remoting.RoleChecker;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +50,10 @@ abstract class S3Callable<T> extends MasterToSlaveFileCallable<T> {
      */
     @Override
     public T invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-        TransferManager transferManager = new TransferManager(helper.client());
+        TransferManager transferManager = TransferManagerBuilder.standard()
+            .withS3Client(helper.client())
+            .withDisableParallelDownloads(!helper.supportsParallelDownloads())
+            .build();
 
         try {
             return invoke(transferManager, f, channel);

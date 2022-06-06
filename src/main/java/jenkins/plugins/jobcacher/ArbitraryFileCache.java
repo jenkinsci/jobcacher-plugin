@@ -56,12 +56,22 @@ public class ArbitraryFileCache extends Cache {
     private String path;
     private String includes = "**/*";
     private String excludes;
+    private boolean useDefaultExcludes = true;
 
     @DataBoundConstructor
     public ArbitraryFileCache(String path, String includes, String excludes) {
         this.path = path;
         this.includes = StringUtils.isNotBlank(includes) ? includes : "**/*";
         this.excludes = excludes;
+    }
+
+    @DataBoundSetter
+    public void setUseDefaultExcludes(boolean useDefaultExcludes) {
+        this.useDefaultExcludes = useDefaultExcludes;
+    }
+
+    public boolean getUseDefaultExcludes() {
+        return useDefaultExcludes;
     }
 
     public String getPath() {
@@ -94,14 +104,19 @@ public class ArbitraryFileCache extends Cache {
     }
 
     @Override
-    public Saver cache(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+    public Saver cache(ObjectPath cache, ObjectPath defaultCache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         // Get a source dir for cached files for this path
         ObjectPath source = cache.child(deriveCachePath(path));
+        ObjectPath defaultSource = null;
+
+        if (defaultCache != null) {
+            defaultSource = defaultCache.child(deriveCachePath(path));
+        }
 
         // Resolve path variables if any
         String expandedPath = initialEnvironment.expand(path);
 
-        cachePath(source, workspace, listener, expandedPath, includes, excludes);
+        cachePath(source, defaultSource, workspace, listener, expandedPath, includes, excludes, useDefaultExcludes);
 
         return new SaverImpl(expandedPath);
     }
@@ -129,7 +144,7 @@ public class ArbitraryFileCache extends Cache {
             // Get a target dir for cached files for this path
             ObjectPath target = cache.child(deriveCachePath(path));
 
-            savePath(target, workspace, listener, expandedPath, includes, excludes);
+            savePath(target, workspace, listener, expandedPath, includes, excludes, useDefaultExcludes);
         }
     }
 

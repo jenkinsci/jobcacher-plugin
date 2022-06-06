@@ -25,15 +25,19 @@ public class CacheManager {
     // Could potential grow indefinitely as jobs are created and destroyed
     private static Map<String, Object> locks = new HashMap<>();
 
-    public static ObjectPath getCachePath(ItemStorage storage, Job<?, ?> job) {
+    public static ObjectPath getCachePath(ItemStorage<?> storage, Job<?, ?> job) {
         return storage.getObjectPath(job, "cache");
     }
 
-    public static ObjectPath getCachePath(ItemStorage storage, Run<?, ?> run) {
+    public static ObjectPath getCachePath(ItemStorage<?> storage, Run<?, ?> run) {
         return getCachePath(storage, run.getParent());
     }
 
-    private static Object getLock(Job j) {
+    public static ObjectPath getCachePathForBranch(ItemStorage<?> storage, Run<?, ?> run, String branch) {
+        return storage.getObjectPathForBranch(run.getParent(), "cache", branch);
+    }
+
+    private static Object getLock(Job<?,?> j) {
         String jobFullName = j.getFullName();
         Object lock = locks.get(jobFullName);
         if (lock == null) {
@@ -46,8 +50,15 @@ public class CacheManager {
     /**
      * Internal method only
      */
-    public static List<Cache.Saver> cache(ItemStorage storage, Run run, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, List<Cache> caches) throws IOException, InterruptedException {
+    public static List<Cache.Saver> cache(ItemStorage<?> storage, Run<?,?> run, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, List<Cache> caches, String defaultBranch) throws IOException, InterruptedException {
         ObjectPath cachePath = getCachePath(storage, run);
+
+
+        ObjectPath defaultCachePath = null;
+
+        if (defaultBranch != null && !defaultBranch.isEmpty()) {
+            defaultCachePath = getCachePathForBranch(storage, run, defaultBranch);
+        }
 
         LOG.fine("Preparing cache for build " + run);
 
@@ -55,7 +66,7 @@ public class CacheManager {
         List<Cache.Saver> cacheSavers = new ArrayList<>();
         synchronized (getLock(run.getParent())) {
             for (Cache cache : caches) {
-                cacheSavers.add(cache.cache(cachePath, run, workspace, launcher, listener, initialEnvironment));
+                cacheSavers.add(cache.cache(cachePath, defaultCachePath, run, workspace, launcher, listener, initialEnvironment));
             }
         }
         return cacheSavers;
@@ -64,7 +75,7 @@ public class CacheManager {
     /**
      * Internal method only
      */
-    public static void save(ItemStorage storage, Run run, FilePath workspace, Launcher launcher, TaskListener listener, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) throws IOException, InterruptedException {
+    public static void save(ItemStorage<?> storage, Run<?,?> run, FilePath workspace, Launcher launcher, TaskListener listener, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) throws IOException, InterruptedException {
         ObjectPath cachePath = getCachePath(storage, run);
 
         // First calculate size of cache to check if it should just be deleted
@@ -97,6 +108,10 @@ public class CacheManager {
         }
 
         // Add a build action so that users can navigate the cache stored on master through UI
-        run.addAction(new CacheBuildLastAction(caches));
+        if(run.getAction ( CacheBuildLastAction.class ) == null) {
+            run.addAction ( new CacheBuildLastAction ( caches ) );
+        } else {
+            run.getAction ( CacheBuildLastAction.class ).addCaches ( caches );
+        }
     }
 }

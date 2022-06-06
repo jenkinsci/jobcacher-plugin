@@ -1,4 +1,4 @@
-/*
+<!--
  * The MIT License
  *
  * Copyright 2016 Peter Hayes.
@@ -20,46 +20,37 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+         xmlns:p="/lib/hudson/project">
 
-package jenkins.plugins.jobcacher;
+    <f:entry title="${%Credentials}" field="credentialsId">
+        <f:select />
+    </f:entry>
 
-import hudson.model.Action;
-import hudson.model.Job;
-import org.kohsuke.stapler.Stapler;
+    <f:entry title="${%S3 Bucket Name}" field="bucketName">
+        <f:textbox />
+    </f:entry>
 
-import java.util.List;
+    <f:entry title="${%S3 Endpoint}" field="endpoint">
+        <f:textbox />
+    </f:entry>
 
-/**
- * @author Peter Hayes
- */
-public class CacheProjectAction implements Action {
-    private List<Cache> caches;
+    <f:entry title="${%Region}" field="region">
+        <f:textbox />
+    </f:entry>
 
-    public CacheProjectAction(List<Cache> caches) {
-        this.caches = caches;
-    }
+    <f:entry title="${%Signer Version}" field="signerVersion">
+        <f:select />
+    </f:entry>
 
-    @Override
-    public String getIconFileName() {
-        return "folder.png";
-    }
+    <f:entry title="${%Path Style Access}" field="pathStyleAccess">
+        <f:checkbox />
+    </f:entry>
 
-    @Override
-    public String getDisplayName() {
-        return Messages.CacheProjectAction_DisplayName();
-    }
-
-    @Override
-    public String getUrlName() {
-        return "cache";
-    }
-
-    public Job<?,?> getJob() {
-        return Stapler.getCurrentRequest().findAncestorObject(Job.class);
-    }
-
-    public List<Cache> getCaches() {
-        return caches;
-    }
-}
+    <f:entry title="${%Supports parallel downloads}" field="parallelDownloads">
+        <f:checkbox />
+    </f:entry>
+</j:jelly>

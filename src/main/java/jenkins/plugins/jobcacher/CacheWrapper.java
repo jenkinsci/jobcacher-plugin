@@ -37,6 +37,7 @@ import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.tasks.SimpleBuildWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -53,16 +54,19 @@ public class CacheWrapper extends SimpleBuildWrapper {
     private long maxCacheSize = 0L;
     private List<Cache> caches = new ArrayList<>();
 
+    @DataBoundSetter
+    public String defaultBranch = null;
+
     public CacheWrapper() { }
 
     @DataBoundConstructor
     public CacheWrapper(long maxCacheSize, List<Cache> caches) {
         this.maxCacheSize = maxCacheSize;
-        this.caches = caches == null ? Collections.EMPTY_LIST : new ArrayList<>(caches);
+        this.caches = caches == null ? Collections.emptyList() : new ArrayList<>(caches);
     }
 
     @SuppressWarnings("unused")
-    public ItemStorage getStorage() {
+    public ItemStorage<?> getStorage() {
         return GlobalItemStorage.get().getStorage();
     }
 
@@ -76,8 +80,14 @@ public class CacheWrapper extends SimpleBuildWrapper {
         this.maxCacheSize = maxCacheSize;
     }
 
+    @SuppressWarnings("unused")
+    public String getDefaultBranch() {
+        return defaultBranch;
+    }
+
+
     public List<Cache> getCaches() {
-        return caches == null ? Collections.EMPTY_LIST : Collections.unmodifiableList(caches);
+        return caches == null ? Collections.emptyList() : Collections.unmodifiableList(caches);
     }
 
     public void setCaches(List<Cache> caches) {
@@ -86,7 +96,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
 
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
-        List<Cache.Saver> cacheSavers = CacheManager.cache(getStorage(), build, workspace, launcher, listener, initialEnvironment, caches);
+        List<Cache.Saver> cacheSavers = CacheManager.cache(getStorage(), build, workspace, launcher, listener, initialEnvironment, caches, defaultBranch);
 
         context.setDisposer(new CacheDisposer(getStorage(), maxCacheSize, caches, cacheSavers));
     }
@@ -110,7 +120,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
 
         @SuppressWarnings("unused")
         public List<CacheDescriptor> getCacheDescriptors() {
-            Jenkins jenkins = Jenkins.getInstance();
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
             if (jenkins != null) {
                 return jenkins.getDescriptorList(Cache.class);
             } else {
@@ -120,13 +130,14 @@ public class CacheWrapper extends SimpleBuildWrapper {
     }
 
     private static class CacheDisposer extends Disposer {
-        private ItemStorage storage;
+        private static final long serialVersionUID = 1L;
+        private ItemStorage<?> storage;
         private long maxCacheSize;
         private List<Cache> caches;
         private List<Cache.Saver> cacheSavers;
 
         @DataBoundConstructor
-        public CacheDisposer(ItemStorage storage, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
+        public CacheDisposer(ItemStorage<?> storage, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
             this.storage = storage;
             this.maxCacheSize = maxCacheSize;
             this.caches = caches;

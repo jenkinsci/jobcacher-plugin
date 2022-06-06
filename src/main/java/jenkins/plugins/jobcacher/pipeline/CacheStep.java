@@ -39,6 +39,7 @@ import jenkins.plugins.jobcacher.CacheManager;
 import jenkins.plugins.jobcacher.Messages;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -53,6 +54,8 @@ import java.util.List;
 public class CacheStep extends AbstractStepImpl {
     private long maxCacheSize = 0L;
     private List<Cache> caches = new ArrayList<>();
+    @DataBoundSetter
+    public String defaultBranch = null;
 
     @DataBoundConstructor
     public CacheStep(long maxCacheSize, List<Cache> caches) {
@@ -67,6 +70,11 @@ public class CacheStep extends AbstractStepImpl {
 
     public List<Cache> getCaches() {
         return caches;
+    }
+
+    @SuppressWarnings("unused")
+    public String getDefaultBranch() {
+        return defaultBranch;
     }
 
     public static class ExecutionImpl extends AbstractStepExecutionImpl {
@@ -89,7 +97,7 @@ public class CacheStep extends AbstractStepImpl {
             TaskListener listener = context.get(TaskListener.class);
             EnvVars initialEnvironment = context.get(EnvVars.class);
 
-            List<Cache.Saver> cacheSavers = CacheManager.cache(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, initialEnvironment, cacheStep.caches);
+            List<Cache.Saver> cacheSavers = CacheManager.cache(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, initialEnvironment, cacheStep.caches, cacheStep.defaultBranch);
 
             context.newBodyInvoker().
                     withContext(context).
@@ -147,7 +155,7 @@ public class CacheStep extends AbstractStepImpl {
 
         public void complete(StepContext context) throws IOException, InterruptedException {
 
-            Run run = context.get(Run.class);
+            Run<?,?> run = context.get(Run.class);
             FilePath workspace = context.get(FilePath.class);
             Launcher launcher = context.get(Launcher.class);
             TaskListener listener = context.get(TaskListener.class);
@@ -192,7 +200,7 @@ public class CacheStep extends AbstractStepImpl {
 
         @SuppressWarnings("unused")
         public List<CacheDescriptor> getCacheDescriptors() {
-            Jenkins jenkins = Jenkins.getInstance();
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
             if (jenkins != null) {
                 return jenkins.getDescriptorList(Cache.class);
             } else {
