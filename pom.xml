@@ -28,6 +28,8 @@
         <aws-java-sdk.version>1.12.215-339.vdc07efc5320c</aws-java-sdk.version>
         <aws-credentials.version>1.29</aws-credentials.version>
         <jsr305.version>3.0.2</jsr305.version>
+        <assertj-core.version>3.21.0</assertj-core.version>
+        <pipeline-project-env.version>35.v5cf2c7272df2</pipeline-project-env.version>
     </properties>
 
     <name>Jenkins Job Cacher plugin</name>
@@ -74,6 +76,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj-core.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
@@ -81,6 +89,37 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>script-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-cps</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-durable-task-step</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-job</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>pipeline-utility-steps</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-basic-steps</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>pipeline-project-env</artifactId>
+            <version>${pipeline-project-env.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

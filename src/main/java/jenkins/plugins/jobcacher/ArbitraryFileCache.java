@@ -147,7 +147,7 @@ public class ArbitraryFileCache extends Cache {
 
         ObjectPath cache = resolveValidCache(cachesRoot, fallbackCachesRoot, workspace, listener);
         if (cache == null) {
-            logMessage("Skip cache restoration as no up-to-date cache exists", listener);
+            logMessage("Skip restoring cache as no up-to-date cache exists", listener);
             return new SaverImpl(resolvedPath);
         }
 
@@ -185,7 +185,7 @@ public class ArbitraryFileCache extends Cache {
             return null;
         }
 
-        if (isCacheOutdated(cachesRoot, workspace)) {
+        if (hasCacheValidityDecidingFile(workspace) && isCacheOutdated(cachesRoot, workspace)) {
             return null;
         }
 
@@ -201,16 +201,16 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private boolean isCacheOutdated(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
-        if (cacheValidityDecidingFile == null) {
-            return false;
-        }
-
         ObjectPath previousClearCacheTriggerFileHash = resolvePreviousCacheValidityDecidingFileHashFile(cachesRoot);
         if (!previousClearCacheTriggerFileHash.exists()) {
             return true;
         }
 
         return !matchesCurrentCacheValidityDecidingFileHash(previousClearCacheTriggerFileHash, workspace);
+    }
+
+    private boolean hasCacheValidityDecidingFile(FilePath workspace) throws IOException, InterruptedException {
+        return cacheValidityDecidingFile != null;
     }
 
     private ObjectPath resolvePreviousCacheValidityDecidingFileHashFile(ObjectPath cachesRoot) throws IOException, InterruptedException {
@@ -232,6 +232,9 @@ public class ArbitraryFileCache extends Cache {
 
     private String getCurrentCacheValidityDecidingFileHash(FilePath workspace) throws IOException, InterruptedException {
         FilePath fileToHash = workspace.child(cacheValidityDecidingFile);
+        if (!fileToHash.exists()) {
+            throw new IllegalStateException("path " + cacheValidityDecidingFile + " cannot be resolved within the current workspace");
+        }
 
         return fileToHash.digest();
     }
@@ -258,7 +261,7 @@ public class ArbitraryFileCache extends Cache {
                 return;
             }
 
-            if (!isCacheOutdated(cachesRoot, workspace)) {
+            if (hasCacheValidityDecidingFile(workspace) && !isCacheOutdated(cachesRoot, workspace)) {
                 logMessage("Skip cache creation as the cache is up-to-date", listener);
                 return;
             }

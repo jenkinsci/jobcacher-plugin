@@ -24,7 +24,6 @@
 
 package jenkins.plugins.jobcacher.pipeline;
 
-import com.google.inject.Inject;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -43,7 +42,6 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,9 +49,9 @@ import java.util.List;
  * Wrapping workflow step that automatically seeds the specified path with the previous run and on exit of the
  * block, saves that cache to the configured item storage.
  */
-public class CacheStep extends AbstractStepImpl {
-    private long maxCacheSize = 0L;
-    private List<Cache> caches = new ArrayList<>();
+public class CacheStep extends Step {
+    private long maxCacheSize;
+    private List<Cache> caches;
     @DataBoundSetter
     public String defaultBranch = null;
 
@@ -77,12 +75,25 @@ public class CacheStep extends AbstractStepImpl {
         return defaultBranch;
     }
 
-    public static class ExecutionImpl extends AbstractStepExecutionImpl {
+    @Override
+    public StepExecution start(StepContext context) throws Exception {
+        return new ExecutionImpl(context, maxCacheSize, caches, defaultBranch);
+    }
+
+    public static class ExecutionImpl extends GeneralNonBlockingStepExecution {
 
         private static final long serialVersionUID = 1L;
+        private final long maxCacheSize;
+        private final List<Cache> caches;
+        private final String defaultBranch;
 
-        @Inject(optional = true)
-        private transient CacheStep cacheStep = null;
+        protected ExecutionImpl(StepContext context, long maxCacheSize, List<Cache> caches, String defaultBranch) {
+            super(context);
+
+            this.maxCacheSize = maxCacheSize;
+            this.caches = caches;
+            this.defaultBranch = defaultBranch;
+        }
 
         /**
          * {@inheritDoc}
@@ -97,24 +108,16 @@ public class CacheStep extends AbstractStepImpl {
             TaskListener listener = context.get(TaskListener.class);
             EnvVars initialEnvironment = context.get(EnvVars.class);
 
-            List<Cache.Saver> cacheSavers = CacheManager.cache(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, initialEnvironment, cacheStep.caches, cacheStep.defaultBranch);
+            List<Cache.Saver> cacheSavers = CacheManager.cache(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, initialEnvironment, caches, defaultBranch);
 
             context.newBodyInvoker().
                     withContext(context).
-                    withCallback(new ExecutionCallback(cacheStep.maxCacheSize, cacheStep.caches, cacheSavers)).
+                    withCallback(new ExecutionCallback(maxCacheSize, caches, cacheSavers)).
                     start();
 
             return false;
         }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void stop(@Nonnull Throwable cause) throws Exception {
-            // If someone canceled the run, just propagate the failure and do not attempt to cache
-            getContext().onFailure(cause);
-        }
     }
 
     public static class ExecutionCallback extends BodyExecutionCallback {
