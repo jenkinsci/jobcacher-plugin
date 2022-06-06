@@ -1,63 +1,45 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.19</version>
+        <version>4.40</version>
         <relativePath />
     </parent>
 
     <artifactId>jobcacher</artifactId>
+    <version>${changelist}</version>
     <packaging>hpi</packaging>
-    <version>${revision}${changelist}</version>
-    <name>Jenkins Job Cacher plugin</name>
-    <url>https://wiki.jenkins-ci.org/display/JENKINS/Job+Cacher+Plugin</url>
-    <description>Caches files on executors per job and reseeds executors on subsequent builds</description>
-    <licenses>
-        <license>
-            <name>MIT</name>
-            <url>http://opensource.org/licenses/MIT</url>
-        </license>
-    </licenses>
 
     <properties>
-        <revision>1.1</revision>
-        <changelist>-SNAPSHOT</changelist>
-        <jenkins.version>2.263.4</jenkins.version>
+        <changelist>999999-SNAPSHOT</changelist>
+
+        <jenkins.version>2.303.3</jenkins.version>
+        <jenkins-tools-bom.artifactId>bom-2.303.x</jenkins-tools-bom.artifactId>
+        <jenkins-tools-bom.version>1409.v7659b_c072f18</jenkins-tools-bom.version>
+
         <java.level>8</java.level>
+        <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
+
+        <aws-java-sdk.version>1.11.995</aws-java-sdk.version>
+        <aws-credentials.version>1.29</aws-credentials.version>
+        <jsr305.version>3.0.2</jsr305.version>
     </properties>
 
-    <distributionManagement>
-        <repository>
-            <id>maven.jenkins-ci.org</id>
-            <url>https://repo.jenkins-ci.org/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>maven.jenkins-ci.org</id>
-            <url>https://repo.jenkins-ci.org/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-    <developers>
-        <developer>
-            <id>petehayes</id>
-            <name>Pete Hayes</name>
-        </developer>
-    </developers>
-
-    <scm>
-        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-        <tag>HEAD</tag>
-    </scm>
+    <name>Jenkins Job Cacher plugin</name>
+    <description>Caches files on executors per job and reseeds executors on subsequent builds</description>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/Job+Cacher+Plugin</url>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.263.x</artifactId>
-                <version>831.v9814430e6383</version>
+                <artifactId>${jenkins-tools-bom.artifactId}</artifactId>
+                <version>${jenkins-tools-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -66,14 +48,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-            <version>1.11.995</version>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-step-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
@@ -81,33 +57,68 @@
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>aws-credentials</artifactId>
-            <version>1.29</version>
+            <artifactId>aws-java-sdk</artifactId>
+            <version>${aws-java-sdk.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-step-api</artifactId>
-			<optional>true</optional>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>aws-credentials</artifactId>
+            <version>${aws-credentials.version}</version>
         </dependency>
 
-	    <dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>${jsr305.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>script-security</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>repolevedavaj</id>
+            <name>Jonas Bamberger</name>
+            <email>jonas.bamberger@gmail.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/${gitHubRepo}</connection>
+        <developerConnection>scm:git:https://github.com/${gitHubRepo}</developerConnection>
+        <url>https://github.com/${gitHubRepo}</url>
+        <tag>${scmTag}</tag>
+    </scm>
+
     <repositories>
         <repository>
-            <id>repo.jenkins-ci.org</id>
+            <id>public.jenkins-ci.org</id>
             <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
-            <id>repo.jenkins-ci.org</id>
+            <id>public.jenkins-ci.org</id>
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
+
 </project>

@@ -106,3 +106,11 @@ buildNumber.properties
 .classpath
 .factorypath
 .settings/
+
+.DS_Store
+
+# Generated profile from Project-Env
+.project-env
+
+# Tools store from Project-Env
+.tools

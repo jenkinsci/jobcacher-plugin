@@ -1,6 +1,9 @@
 # Job Cacher Plugin
 
-[![Build Status](https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/jobcacher-plugin)](https://jenkins.ci.cloudbees.com/job/plugins/jobcacher-plugin)
+[![Build Status](https://ci.jenkins.io/job/Plugins/job/jobcacher-plugin/job/master/badge/icon)](https://ci.jenkins.io/job/Plugins/job/jobcacher-plugin/job/master/)
+[![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/jobcacher.svg)](https://plugins.jenkins.io/jobcacher)
+[![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/jobcacher.svg?color=blue)](https://plugins.jenkins.io/jobcacher)
+
 
 This plugin was created to improve build performance for builds that utilize executors that start from a clean
 image each time such as docker based executors.  This plugin was inspired by the caching capability of TravisCI.
