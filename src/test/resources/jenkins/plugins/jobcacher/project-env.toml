@@ -1,0 +1,4 @@
+tools_directory = ".tools"
+
+[nodejs]
+version = "17.2.0"
