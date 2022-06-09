@@ -60,13 +60,23 @@ public class S3ObjectPath extends ObjectPath {
     }
 
     @Override
+    public void copyTo(FilePath target) throws IOException, InterruptedException {
+        profile.download(bucketName, fullName + "/" + path, target);
+    }
+
+    @Override
     public int copyRecursiveTo(String fileMask, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
-        return profile.download(bucketName, fullName + "/" + path, fileMask, excludes, useDefaultExcludes, target);
+        return profile.downloadAll(bucketName, fullName + "/" + path, fileMask, excludes, useDefaultExcludes, target);
+    }
+
+    @Override
+    public void copyFrom(FilePath source) throws IOException, InterruptedException {
+        profile.upload(bucketName, fullName + "/" + path, source, Collections.emptyMap(), null, false);
     }
 
     @Override
     public int copyRecursiveFrom(String fileMask, String excludes, boolean useDefaultExcludes, FilePath source) throws IOException, InterruptedException {
-        return profile.upload(bucketName, fullName + "/" + path, fileMask, excludes, useDefaultExcludes, source, Collections.emptyMap(), null, false);
+        return profile.uploadAll(bucketName, fullName + "/" + path, fileMask, excludes, useDefaultExcludes, source, Collections.emptyMap(), null, false);
     }
 
     @Override

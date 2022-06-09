@@ -25,6 +25,7 @@
 package jenkins.plugins.itemstorage;
 
 import hudson.Extension;
+import hudson.model.PersistentDescriptor;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.plugins.itemstorage.local.LocalItemStorage;
@@ -40,12 +41,8 @@ import java.util.List;
  * @author Peter Hayes
  */
 @Extension
-public class GlobalItemStorage extends GlobalConfiguration {
+public class GlobalItemStorage extends GlobalConfiguration implements PersistentDescriptor {
     private ItemStorage<?> storage = new LocalItemStorage();
-
-    public GlobalItemStorage() {
-        load();
-    }
 
     public static GlobalItemStorage get() {
         return GlobalConfiguration.all().get(GlobalItemStorage.class);

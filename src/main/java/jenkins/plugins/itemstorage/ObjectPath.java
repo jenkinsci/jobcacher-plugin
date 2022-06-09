@@ -49,6 +49,8 @@ public abstract class ObjectPath {
      */
     public abstract ObjectPath child(String path) throws IOException, InterruptedException;
 
+    public abstract void copyTo(FilePath target) throws IOException, InterruptedException;
+
     /**
      * Copy this object path to the file path.  Implementations may utilize last modified time to only copy what
      * has changed.
@@ -98,6 +100,8 @@ public abstract class ObjectPath {
     public int copyRecursiveFrom(FilePath source) throws IOException, InterruptedException {
         return copyRecursiveFrom("**/*", source);
     }
+
+    public abstract void copyFrom(FilePath source) throws IOException, InterruptedException;
 
     /**
      * Copy to this object path from the pass file source
