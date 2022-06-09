@@ -35,7 +35,7 @@ public class ArbitraryFileCachePipelineTest {
     }
 
     @Test
-    //@WithTimeout(120)
+    @WithTimeout(600)
     public void testArbitraryFileCacheWithinPipelineWithCacheValidityDecidingFile() throws Exception {
         String cacheDefinition = "[$class: 'ArbitraryFileCache', path: 'node_modules', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt']";
         WorkflowJob project = createTestProject(cacheDefinition);
@@ -64,19 +64,19 @@ public class ArbitraryFileCachePipelineTest {
     }
 
     @Test
-    @WithTimeout(120)
+    @WithTimeout(600)
     public void testUncompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'node_modules']");
     }
 
     @Test
-    @WithTimeout(120)
+    @WithTimeout(600)
     public void testZipCompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'node_modules', compressionMethod: 'ZIP']");
     }
 
     @Test
-    @WithTimeout(120)
+    @WithTimeout(600)
     public void testTarGzCompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'node_modules', compressionMethod: 'TARGZ']");
     }
