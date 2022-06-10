@@ -63,7 +63,7 @@ If activated, the jobcacher plugin will restore caches at the start of the build
 The plugin also supports the Pipeline plugin by introducing a cache build step that can be used within the pipeline definition. The cache will be restored before calling the closure and updated after executing it.
 
 ```groovy
- cache(maxCacheSize: 250, caches: [
+ cache(maxCacheSize: 250, defaultBranch: 'develop', caches: [
         [$class: 'ArbitraryFileCache', path: 'node_modules', cacheValidityDecidingFile: 'package-lock.json', compressionMethod: 'TARGZ']
 ]) {
     // ...
