@@ -28,7 +28,7 @@
         <aws-java-sdk.version>1.12.215-339.vdc07efc5320c</aws-java-sdk.version>
         <aws-credentials.version>1.29</aws-credentials.version>
         <jsr305.version>3.0.2</jsr305.version>
-        <assertj-core.version>3.21.0</assertj-core.version>
+        <assertj-core.version>3.23.1</assertj-core.version>
         <pipeline-project-env.version>35.v5cf2c7272df2</pipeline-project-env.version>
     </properties>
 
