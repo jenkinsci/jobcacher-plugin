@@ -4,85 +4,71 @@
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/jobcacher.svg)](https://plugins.jenkins.io/jobcacher)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/jobcacher.svg?color=blue)](https://plugins.jenkins.io/jobcacher)
 
+## Introduction
+
 This plugin was created to improve build performance for builds that utilize executors that start from a clean
-image each time such as docker based executors.  This plugin was inspired by the caching capability of TravisCI.
+image each time such as docker based executors.
 
-## Features
+### Features
 
-- Item storage extension point supporting on master storage and AWS S3
-- Cache Wrapper for free style jobs that manages the cache
-- Arbitrary File Cache where user specifies paths to be cached
-- UI on Job page to review the job's caches
-- Supports Pipeline jobs with a cache block
-- Cache Extension Point for other plugins to provide opinionated caching capability such as Gradle caches
+- Store caches on the Jenkins master storage, AWS S3 and S3 compatible services
+- Use caching in pipeline and free style jobs
+- Define maximum cache sizes so that the cache won't grow indefinitely
+- View job specific caches on job page
 
-## Global Configuration
+### Extension Points
+
+- `jenkins.plugins.itemstorage.ItemStorage` for adding custom cache storages
+- `jenkins.plugins.jobcacher.Cache` for adding custom caches
+
+## Configuration
+
+### Global Configuration Options
 
 By default, the plugin is configured to use on-master storage for the
-cache.
+cache. In addition to the on-master storage, a storage implementation for
+Amazon S3 and S3 compatible services are also available.
 
-![](docs/images/2017-01-21_12_58_22-Clipboard.png)
+The storage type can be configured in the global configuration section of Jenkins.
 
-This storage mechanism is not recommended for heavy use as it will
-burden the remoting channel with considerable data when the job starts.
+### Cache Configuration Options
 
-In addition to the on-master storage, a storage implementation for
-Amazon S3 is also available.
+The following cache configuration options apply to all supported job types.
 
-![](docs/images/2017-01-21_12_59_25-aws.png)
+| Option          | Mandatory | Description                                                                                                                                                                                                                                                              |
+|-----------------|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `maxCacheSize`  | yes       | The maximum size in megabytes of all configured caches that Jenkins will allow until it deletes all completely and starts the next build from an empty cache. This prevents caches from growing indefinitely with the downside of periodic fresh builds without a cache. |    
+| `defaultBranch` | no        | If the current branch has no cache, it will seed its cache from the specified branch. Leave empty to generate a fresh cache for each branch.                                                                                                                             |
+| `caches`        | yes       | Defines the caches to use in the job (see below).                                                                                                                                                                                                                        |
 
-Additional storage implementations can be contributed as well via the
-*ItemStorage* extension point.
+### `ArbitraryFileCache`
 
-## Job Configuration
+| Option                      | Mandatory | Default value | Description                                                                                                                                                                                                                |
+|-----------------------------|-----------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `path`                      | yes       |               | Defines the path to cache. The path can be defined absolute or relative to the workspace.                                                                                                                                  |   
+| `includes`                  | no        | `**/*`        | Pattern to match files that should be included during caching.                                                                                                                                                             |
+| `excludes`                  | no        |               | Pattern of excludes that should be avoided during caching.                                                                                                                                                                 |
+| `useDefaultExcludes`        | no        | `true`        | Whether to use default excludes (see [DirectoryScanner.java#L170](https://github.com/apache/ant/blob/eeacf501dd15327cd300ecd518284e68bb5af4a4/src/main/org/apache/tools/ant/DirectoryScanner.java#L170) for more details). |
+| `cacheValidityDecidingFile` | no        |               | The workspace-relative path to a file which should be used to determine whether the cache is up-to-date or not. Only up-to-date caches will be restored and only outdated caches will be created.                          |
+| `compressionMethod`         | yes       | `NONE`        | The compression method (`NONE`, `ZIP`, `TARGZ`) which should be used                                                                                                                                                       |
 
-The plugin offers a Build Wrapper extension point that can be configured
-for use in Free Style jobs. Prior to the build starting, the plugin
-checks if there is a populated cache and if so copies it from the
-storage area to the executor. At the end of the build, the plugin then
-copies the same cache, incrementally, back to storage.
+## Usage in Jobs
 
-![](docs/images/2017-01-21_13_02_53-onfig.png)
+### Free Style Jobs
 
-The above configuration caches the gradle cache and wrapper so that
-subsequent builds don't need to rebuild these folders and files through
-the dependency management repository. It also configures the cache to
-have a maximum size of 250 MB so that the cache won't grow indefinitely.
-Once this size is hit, the cache is deleted in the storage and the next
-build will need to repopulate the cache from scratch.
+If activated, the jobcacher plugin will restore caches at the start of the build and update caches at the end of the build.
 
-## Pipeline Configuration
+### Pipeline Jobs
 
-The plugin also supports the Pipeline plugin by introducing a cache
-build step that can be used within the pipeline definition. 
+The plugin also supports the Pipeline plugin by introducing a cache build step that can be used within the pipeline definition. The cache will be restored before calling the closure and updated after executing it.
 
-``` syntaxhighlighter-pre
+```groovy
  cache(maxCacheSize: 250, caches: [
-     [$class: 'ArbitraryFileCache', excludes: 'modules-2/modules-2.lock,*/plugin-resolution/**', includes: '**/*', path: '${HOME}/.gradle/caches'],
-     [$class: 'ArbitraryFileCache', excludes: '', includes: '**/*', path: '${HOME}/.gradle/wrapper']
-  ]) {
-  // some block
+        [$class: 'ArbitraryFileCache', path: 'node_modules', cacheValidityDecidingFile: 'package-lock.json', compressionMethod: 'TARGZ']
+]) {
+    // ...
 }
 ```
-
-## Cache Types
-
-The plugin currently ships with a single cache implementation called
-*ArbitraryFileCache*which must be explicitly configured with a path and
-includes / excludes rules to apply to find the files to cache. Since
-*Cache* is an extension point in the plugin, other plugins can
-contribute implementations that deliver specific behavior such as a
-*GradleCache* that could automatically look to cache all gradle related
-files that can be cached from build to build.
-
-## Visualizing the Cache
-
-A job action is added to the job so that users can look at the contents
-of the cache.
-
-Currently for on master storage, this is visualized through the Jenkins
-interface and for Amazon S3 storage, this redirects the user to the S3
-console to view the cache contents.
 
 ## Contributing
 
