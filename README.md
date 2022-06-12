@@ -6,13 +6,13 @@
 
 ## Introduction
 
-This plugin was created to improve build performance for builds that utilize executors that start from a clean
-image each time such as docker based executors.
+This plugin provides caching for dependencies and build artefacts to reduce build execution times.
+This is especially useful for Jenkins setups with ephemeral executors which always start from a clean state, such as container based ones.
 
 ### Features
 
-- Store caches on the Jenkins master storage, AWS S3 and S3 compatible services
-- Use caching in pipeline and free style jobs
+- Store caches on the Jenkins controller, AWS S3 and S3 compatible services
+- Use caching in pipeline and freestyle jobs
 - Define maximum cache sizes so that the cache won't grow indefinitely
 - View job specific caches on job page
 
@@ -25,9 +25,8 @@ image each time such as docker based executors.
 
 ### Global Configuration Options
 
-By default, the plugin is configured to use on-master storage for the
-cache. In addition to the on-master storage, a storage implementation for
-Amazon S3 and S3 compatible services are also available.
+By default, the plugin is configured to use on-controller storage for the cache.
+In addition, a storage implementation for Amazon S3 and S3 compatible services is also available.
 
 The storage type can be configured in the global configuration section of Jenkins.
 
@@ -45,25 +44,27 @@ The following cache configuration options apply to all supported job types.
 
 | Option                      | Mandatory | Default value | Description                                                                                                                                                                                                                |
 |-----------------------------|-----------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `path`                      | yes       |               | Defines the path to cache. The path can be defined absolute or relative to the workspace.                                                                                                                                  |   
-| `includes`                  | no        | `**/*`        | Pattern to match files that should be included during caching.                                                                                                                                                             |
-| `excludes`                  | no        |               | Pattern of excludes that should be avoided during caching.                                                                                                                                                                 |
+| `path`                      | yes       |               | The path to cache. It can be absolute or relative to the workspace.                                                                                                                                                        |
+| `includes`                  | no        | `**/*`        | The pattern to match files that should be included in caching.                                                                                                                                                             |
+| `excludes`                  | no        |               | The pattern to match files that should be excluded from caching.                                                                                                                                                           |
 | `useDefaultExcludes`        | no        | `true`        | Whether to use default excludes (see [DirectoryScanner.java#L170](https://github.com/apache/ant/blob/eeacf501dd15327cd300ecd518284e68bb5af4a4/src/main/org/apache/tools/ant/DirectoryScanner.java#L170) for more details). |
 | `cacheValidityDecidingFile` | no        |               | The workspace-relative path to a file which should be used to determine whether the cache is up-to-date or not. Only up-to-date caches will be restored and only outdated caches will be created.                          |
-| `compressionMethod`         | yes       | `NONE`        | The compression method (`NONE`, `ZIP`, `TARGZ`) which should be used                                                                                                                                                       |
+| `compressionMethod`         | yes       | `NONE`        | The compression method (`NONE`, `ZIP`, `TARGZ`) to use.                                                                                                                                                                    |
 
 ## Usage in Jobs
 
-### Free Style Jobs
+### Freestyle Jobs
 
-If activated, the jobcacher plugin will restore caches at the start of the build and update caches at the end of the build.
+The plugin provides a "Job Cacher" build environment.
+The cache(s) will be restored at the start of the build and updated at the end of the build.
 
 ### Pipeline Jobs
 
-The plugin also supports the Pipeline plugin by introducing a cache build step that can be used within the pipeline definition. The cache will be restored before calling the closure and updated after executing it.
+The plugin provides a `cache` build step that can be used within the pipeline definition.
+The cache(s) will be restored before calling the closure and updated after executing it.
 
 ```groovy
- cache(maxCacheSize: 250, defaultBranch: 'develop', caches: [
+cache(maxCacheSize: 250, defaultBranch: 'develop', caches: [
         [$class: 'ArbitraryFileCache', path: 'node_modules', cacheValidityDecidingFile: 'package-lock.json', compressionMethod: 'TARGZ']
 ]) {
     // ...
