@@ -61,7 +61,7 @@ public class S3UploadAllCallable extends S3BaseUploadCallable<Integer> {
     }
 
     /**
-     * Upload from slave
+     * Upload from agent
      */
     @Override
     public Integer invoke(final TransferManager transferManager, File base, VirtualChannel channel) throws IOException, InterruptedException {
