@@ -114,7 +114,7 @@ public class LocalObjectPath extends ObjectPath {
         }
 
         @Override
-        public void scan(File dir, final FileVisitor visitor) throws IOException {
+        public void scan(File dir, FileVisitor visitor) throws IOException {
             super.scan(dir, new IsNotThereOrOlderVisitor(toCompare, visitor));
         }
     }
@@ -139,7 +139,7 @@ public class LocalObjectPath extends ObjectPath {
         }
 
         @Override
-        public void visit(File f, final String relativePath) throws IOException {
+        public void visit(File f, String relativePath) throws IOException {
             // check if file is more recent than base one
             try {
                 FilePath targetFile = toCompare.child(relativePath);

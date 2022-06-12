@@ -105,7 +105,7 @@ public class ClientHelper implements Serializable {
     }
 
     public static ClientConfiguration getClientConfiguration(ProxyConfiguration proxy) {
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
+        ClientConfiguration clientConfiguration = new ClientConfiguration();
 
         if (shouldUseProxy(proxy, "s3.amazonaws.com")) {
             clientConfiguration.setProxyHost(proxy.name);

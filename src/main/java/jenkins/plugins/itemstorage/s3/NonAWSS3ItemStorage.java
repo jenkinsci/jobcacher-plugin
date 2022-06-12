@@ -164,7 +164,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
 
         @SuppressWarnings("unused")
         public ListBoxModel doFillSignerVersionItems() {
-            final ListBoxModel model = new ListBoxModel();
+            ListBoxModel model = new ListBoxModel();
             model.add("Version 4", SignerFactory.VERSION_FOUR_SIGNER);
             model.add("Version 3", SignerFactory.VERSION_THREE_SIGNER);
             model.add("Version 2", "S3SignerType");

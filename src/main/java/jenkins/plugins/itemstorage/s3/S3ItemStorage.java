@@ -128,7 +128,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
         @SuppressWarnings("unused")
         public ListBoxModel doFillRegionItems() {
-            final ListBoxModel model = new ListBoxModel();
+            ListBoxModel model = new ListBoxModel();
             for (Regions r : Regions.values()) {
                 model.add(r.getName(), r.getName());
             }
