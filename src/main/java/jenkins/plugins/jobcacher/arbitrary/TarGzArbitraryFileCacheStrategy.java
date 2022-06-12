@@ -51,7 +51,5 @@ public class TarGzArbitraryFileCacheStrategy extends AbstractCompressingArbitrar
 
             return null;
         }
-
     }
-
 }

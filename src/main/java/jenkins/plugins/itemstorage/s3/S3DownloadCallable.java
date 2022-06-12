@@ -35,6 +35,7 @@ import java.nio.file.Files;
 public class S3DownloadCallable extends S3Callable<Void> {
 
     private static final long serialVersionUID = 1L;
+
     private final String bucketName;
     private final String key;
 

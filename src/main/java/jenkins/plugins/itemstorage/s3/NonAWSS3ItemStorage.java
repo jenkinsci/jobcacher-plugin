@@ -54,6 +54,7 @@ import java.util.List;
  * @author Peter Hayes
  */
 public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
+
     private static final long serialVersionUID = 1L;
 
     private String credentialsId;
@@ -65,7 +66,13 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
     private boolean parallelDownloads;
 
     @DataBoundConstructor
-    public NonAWSS3ItemStorage(String credentialsId, String bucketName, String endpoint, String region, String signerVersion, boolean pathStyleAccess, boolean parallelDownloads) {
+    public NonAWSS3ItemStorage(String credentialsId,
+                               String bucketName,
+                               String endpoint,
+                               String region,
+                               String signerVersion,
+                               boolean pathStyleAccess,
+                               boolean parallelDownloads) {
         this.credentialsId = credentialsId;
         this.bucketName = bucketName;
         this.endpoint = endpoint;
@@ -168,6 +175,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
 
     @Extension(optional = true)
     public static final class S3ItemListener extends ItemListener {
+
         @Override
         public void onDeleted(Item item) {
             NonAWSS3ItemStorage s3Storage = lookupS3Storage();

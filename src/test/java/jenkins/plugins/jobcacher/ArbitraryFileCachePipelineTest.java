@@ -137,5 +137,4 @@ public class ArbitraryFileCachePipelineTest {
                 pipelineDefinition.replaceAll("sh '", "bat '") :
                 pipelineDefinition, true);
     }
-
 }

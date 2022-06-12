@@ -51,13 +51,15 @@ import java.util.List;
  * @author Peter Hayes
  */
 public class CacheWrapper extends SimpleBuildWrapper {
+
     private long maxCacheSize = 0L;
     private List<Cache> caches = new ArrayList<>();
 
     @DataBoundSetter
     public String defaultBranch = null;
 
-    public CacheWrapper() { }
+    public CacheWrapper() {
+    }
 
     @DataBoundConstructor
     public CacheWrapper(long maxCacheSize, List<Cache> caches) {
@@ -84,7 +86,6 @@ public class CacheWrapper extends SimpleBuildWrapper {
     public String getDefaultBranch() {
         return defaultBranch;
     }
-
 
     public List<Cache> getCaches() {
         return caches == null ? Collections.emptyList() : Collections.unmodifiableList(caches);
@@ -130,6 +131,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
     }
 
     private static class CacheDisposer extends Disposer {
+
         private static final long serialVersionUID = 1L;
         private ItemStorage<?> storage;
         private long maxCacheSize;

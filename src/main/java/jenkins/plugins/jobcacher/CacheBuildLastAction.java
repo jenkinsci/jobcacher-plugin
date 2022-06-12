@@ -47,7 +47,7 @@ public class CacheBuildLastAction extends InvisibleAction implements SimpleBuild
         return Collections.singletonList(cacheProjectAction);
     }
 
-    void addCaches ( List<Cache> caches ) {
-        cacheProjectAction.getCaches ().addAll ( caches );
+    void addCaches(List<Cache> caches) {
+        cacheProjectAction.getCaches().addAll(caches);
     }
 }

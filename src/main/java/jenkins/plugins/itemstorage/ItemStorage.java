@@ -37,6 +37,7 @@ import java.io.Serializable;
  * @author Peter Hayes
  */
 public abstract class ItemStorage<T extends ObjectPath> extends AbstractDescribableImpl<ItemStorage<T>> implements ExtensionPoint, Serializable {
+
     private static final long serialVersionUID = 1L;
 
     /**

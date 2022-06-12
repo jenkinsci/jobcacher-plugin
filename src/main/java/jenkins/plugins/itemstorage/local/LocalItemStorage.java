@@ -41,6 +41,7 @@ import javax.annotation.Nonnull;
  * @author Peter Hayes
  */
 public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
+
     private static final long serialVersionUID = 1L;
 
     @DataBoundConstructor

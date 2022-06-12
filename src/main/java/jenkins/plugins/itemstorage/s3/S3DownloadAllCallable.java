@@ -40,6 +40,7 @@ import java.io.IOException;
  * @author Peter Hayes
  */
 public class S3DownloadAllCallable extends S3Callable<Integer> {
+
     private static final long serialVersionUID = 1L;
     private String bucketName;
     private String pathPrefix;
@@ -59,7 +60,7 @@ public class S3DownloadAllCallable extends S3Callable<Integer> {
      */
     @Override
     public Integer invoke(TransferManager transferManager, File base, VirtualChannel channel) throws IOException, InterruptedException {
-        if(!base.exists()) {
+        if (!base.exists()) {
             if (!base.mkdirs()) {
                 throw new IOException("Failed to create directory : " + base);
             }
@@ -78,7 +79,6 @@ public class S3DownloadAllCallable extends S3Callable<Integer> {
             for (S3ObjectSummary summary : objectListing.getObjectSummaries()) {
                 downloads.startDownload(transferManager, base, pathPrefix, summary);
             }
-
         } while (objectListing.getNextMarker() != null);
 
         // Grab # of files copied

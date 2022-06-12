@@ -104,9 +104,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
          * @throws InterruptedException If interrupted
          */
         public abstract void save(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
-
     }
-
 
     /**
      * Get the human readable title for this cache to be shown on the user interface
@@ -119,7 +117,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
      * Get ancestor job when invoked via the stapler context
      * @return the job
      */
-    public Job<?,?> getJob() {
+    public Job<?, ?> getJob() {
         return Stapler.getCurrentRequest().findAncestorObject(Job.class);
     }
 
@@ -137,14 +135,19 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
      * Utility class to calculate the size of a potentially remote directory given a pattern and excludes
      */
     public static class DirectorySize extends MasterToSlaveFileCallable<Long> {
+
         private static final long serialVersionUID = 1L;
+
         private final String glob;
         private final String excludes;
+
         public DirectorySize(String glob, String excludes) {
             this.glob = glob;
             this.excludes = excludes;
         }
-        @Override public Long invoke(File f, VirtualChannel channel) throws IOException {
+
+        @Override
+        public Long invoke(File f, VirtualChannel channel) throws IOException {
             final AtomicLong total = new AtomicLong(0L);
 
             new DirScanner.Glob(glob, excludes).scan(f, new FileVisitor() {
@@ -155,6 +158,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
                     }
                 }
             });
+
             return total.get();
         }
     }

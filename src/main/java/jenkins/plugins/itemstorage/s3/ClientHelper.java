@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
  * Stores settings to be used at a later time.
  */
 public class ClientHelper implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private final String accessKey;
@@ -60,7 +61,6 @@ public class ClientHelper implements Serializable {
             this.secretKey = null;
         }
     }
-
 
     public boolean supportsParallelDownloads() {
         return parallelDownloads;
@@ -110,6 +110,7 @@ public class ClientHelper implements Serializable {
         if (shouldUseProxy(proxy, "s3.amazonaws.com")) {
             clientConfiguration.setProxyHost(proxy.name);
             clientConfiguration.setProxyPort(proxy.port);
+
             if (proxy.getUserName() != null) {
                 clientConfiguration.setProxyUsername(proxy.getUserName());
                 clientConfiguration.setProxyPassword(Secret.toString(proxy.getSecretPassword()));
@@ -120,7 +121,7 @@ public class ClientHelper implements Serializable {
     }
 
     private static boolean shouldUseProxy(ProxyConfiguration proxy, String hostname) {
-        if(proxy == null) {
+        if (proxy == null) {
             return false;
         }
 
@@ -135,7 +136,7 @@ public class ClientHelper implements Serializable {
         return shouldProxy;
     }
 
-    public synchronized  AWSCredentials getCredentials() {
+    public synchronized AWSCredentials getCredentials() {
         if (credentials == null && accessKey != null && secretKey != null) {
             credentials = new BasicAWSCredentials(accessKey, secretKey);
         }

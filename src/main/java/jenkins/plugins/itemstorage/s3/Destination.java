@@ -1,8 +1,6 @@
 package jenkins.plugins.itemstorage.s3;
 
-
 import java.io.Serializable;
-
 
 /**
  * From S3 Jenkins Plugin
@@ -16,15 +14,15 @@ import java.io.Serializable;
  *
  */
 public class Destination implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     public final String bucketName;
     public final String objectName;
 
     public Destination(final String userBucketName, final String fileName) {
-
         if (userBucketName == null || fileName == null)
-            throw new IllegalArgumentException("Not defined for null parameters: "+userBucketName+","+fileName);
+            throw new IllegalArgumentException("Not defined for null parameters: " + userBucketName + "," + fileName);
 
         final String[] bucketNameArray = userBucketName.split("/", 2);
         final String s3CompatibleFileName = replaceWindowsBackslashes(fileName);
@@ -44,7 +42,6 @@ public class Destination implements Serializable {
 
     @Override
     public String toString() {
-        return "Destination [bucketName="+bucketName+", objectName="+objectName+"]";
+        return "Destination [bucketName=" + bucketName + ", objectName=" + objectName + "]";
     }
-
 }

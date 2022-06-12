@@ -35,6 +35,7 @@ import java.util.Map;
 public class S3UploadCallable extends S3BaseUploadCallable<Void> {
 
     private static final long serialVersionUID = 1L;
+
     private final String bucketName;
     private final String key;
 
@@ -56,5 +57,4 @@ public class S3UploadCallable extends S3BaseUploadCallable<Void> {
 
         return null;
     }
-
 }

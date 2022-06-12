@@ -22,5 +22,4 @@ public class SimpleArbitraryFileCacheStrategy implements ArbitraryFileCacheStrat
         target.mkdirs();
         source.copyRecursiveTo(target);
     }
-
 }

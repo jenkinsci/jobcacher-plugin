@@ -83,6 +83,7 @@ public class CacheStep extends Step {
     public static class ExecutionImpl extends GeneralNonBlockingStepExecution {
 
         private static final long serialVersionUID = 1L;
+
         private final long maxCacheSize;
         private final List<Cache> caches;
         private final String defaultBranch;
@@ -117,10 +118,10 @@ public class CacheStep extends Step {
 
             return false;
         }
-
     }
 
     public static class ExecutionCallback extends BodyExecutionCallback {
+
         private static final long serialVersionUID = 1L;
 
         private long maxCacheSize;
@@ -157,8 +158,7 @@ public class CacheStep extends Step {
         }
 
         public void complete(StepContext context) throws IOException, InterruptedException {
-
-            Run<?,?> run = context.get(Run.class);
+            Run<?, ?> run = context.get(Run.class);
             FilePath workspace = context.get(FilePath.class);
             Launcher launcher = context.get(Launcher.class);
             TaskListener listener = context.get(TaskListener.class);

@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by hayep on 12/2/2016.
  */
 public class S3UploadAllCallable extends S3BaseUploadCallable<Integer> {
+
     private static final long serialVersionUID = 1L;
     private String bucketName;
     private String pathPrefix;

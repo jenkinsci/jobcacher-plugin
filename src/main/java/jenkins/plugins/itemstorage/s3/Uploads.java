@@ -43,12 +43,15 @@ import java.util.logging.Logger;
  * This class tracks uploads via the transfer manager as uploads are asynchronous
  */
 public class Uploads {
-    public Uploads() {}
+
     private static final Logger LOGGER = Logger.getLogger(Uploads.class.getName());
     private static final int MULTIPART_UPLOAD_THRESHOLD = 16*1024*1024; // 16 MB
 
     private final HashMap<File, Upload> startedUploads = new HashMap<>();
     private final HashMap<File, InputStream> openedStreams = new HashMap<>();
+
+    public Uploads() {
+    }
 
     public void startUploading(TransferManager manager, File file, InputStream inputStream, Destination dest, ObjectMetadata metadata) throws AmazonServiceException {
         final PutObjectRequest request = new PutObjectRequest(dest.bucketName, dest.objectName, inputStream, metadata);
@@ -76,10 +79,10 @@ public class Uploads {
             LOGGER.info("File: " + file.getName() + " already was uploaded");
             return;
         }
+
         try {
             upload.waitForCompletion();
-        }
-        finally {
+        } finally {
             closeStream(file, openedStreams.remove(file));
         }
     }

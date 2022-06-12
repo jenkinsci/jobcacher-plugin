@@ -50,7 +50,5 @@ public final class WorkspaceHelper {
         public void close() throws IOException, InterruptedException {
             tempFile.delete();
         }
-
     }
-
 }

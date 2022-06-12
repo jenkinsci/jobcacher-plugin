@@ -58,8 +58,19 @@ public class S3Profile {
         this.retryTime = retryTime != null ? retryTime : 5L;
     }
 
-    public void upload(final String bucketName, final String path, final FilePath source, final Map<String, String> userMetadata, final String storageClass, final boolean useServerSideEncryption) throws IOException, InterruptedException {
-        FilePath.FileCallable<Void> upload = new S3UploadCallable(helper, bucketName, path, userMetadata, storageClass, useServerSideEncryption);
+    public void upload(final String bucketName,
+                       final String path,
+                       final FilePath source,
+                       final Map<String, String> userMetadata,
+                       final String storageClass,
+                       final boolean useServerSideEncryption) throws IOException, InterruptedException {
+        FilePath.FileCallable<Void> upload = new S3UploadCallable(
+                helper,
+                bucketName,
+                path,
+                userMetadata,
+                storageClass,
+                useServerSideEncryption);
 
         source.act(upload);
     }
@@ -123,7 +134,6 @@ public class S3Profile {
     }
 
     public void rename(String bucketName, String currentPathPrefix, String newPathPrefix) {
-
         ObjectListing listing = null;
         do {
             listing = listing == null ? helper.client().listObjects(bucketName, currentPathPrefix) : helper.client().listNextBatchOfObjects(listing);

@@ -20,6 +20,7 @@ import java.util.logging.Logger;
  * @author Peter Hayes
  */
 public class CacheManager {
+
     private static final Logger LOG = Logger.getLogger(CacheManager.class.getName());
 
     // Could potential grow indefinitely as jobs are created and destroyed
@@ -37,7 +38,7 @@ public class CacheManager {
         return storage.getObjectPathForBranch(run.getParent(), "cache", branch);
     }
 
-    private static Object getLock(Job<?,?> j) {
+    private static Object getLock(Job<?, ?> j) {
         String jobFullName = j.getFullName();
         Object lock = locks.get(jobFullName);
         if (lock == null) {
@@ -50,9 +51,8 @@ public class CacheManager {
     /**
      * Internal method only
      */
-    public static List<Cache.Saver> cache(ItemStorage<?> storage, Run<?,?> run, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, List<Cache> caches, String defaultBranch) throws IOException, InterruptedException {
+    public static List<Cache.Saver> cache(ItemStorage<?> storage, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, List<Cache> caches, String defaultBranch) throws IOException, InterruptedException {
         ObjectPath cachePath = getCachePath(storage, run);
-
 
         ObjectPath defaultCachePath = null;
 
@@ -75,7 +75,7 @@ public class CacheManager {
     /**
      * Internal method only
      */
-    public static void save(ItemStorage<?> storage, Run<?,?> run, FilePath workspace, Launcher launcher, TaskListener listener, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) throws IOException, InterruptedException {
+    public static void save(ItemStorage<?> storage, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) throws IOException, InterruptedException {
         ObjectPath cachePath = getCachePath(storage, run);
 
         // First calculate size of cache to check if it should just be deleted
@@ -86,7 +86,6 @@ public class CacheManager {
 
         // synchronize on the build's parent object as we are going to write to the shared cache
         synchronized (getLock(run.getParent())) {
-
             // If total size is greater than configured maximum, delete all caches to start fresh next build
             if (totalSize > maxCacheSize * 1024 * 1024) {
                 listener.getLogger().println("Removing job cache as it has grown beyond configured maximum size of " +
@@ -108,10 +107,10 @@ public class CacheManager {
         }
 
         // Add a build action so that users can navigate the cache stored on master through UI
-        if(run.getAction ( CacheBuildLastAction.class ) == null) {
-            run.addAction ( new CacheBuildLastAction ( caches ) );
+        if (run.getAction(CacheBuildLastAction.class) == null) {
+            run.addAction(new CacheBuildLastAction(caches));
         } else {
-            run.getAction ( CacheBuildLastAction.class ).addCaches ( caches );
+            run.getAction(CacheBuildLastAction.class).addCaches(caches);
         }
     }
 }
