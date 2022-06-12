@@ -23,7 +23,7 @@ public class CacheManager {
 
     private static final Logger LOG = Logger.getLogger(CacheManager.class.getName());
 
-    // Could potential grow indefinitely as jobs are created and destroyed
+    // Could potentially grow indefinitely as jobs are created and destroyed
     private static Map<String, Object> locks = new HashMap<>();
 
     public static ObjectPath getCachePath(ItemStorage<?> storage, Job<?, ?> job) {

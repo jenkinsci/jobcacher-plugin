@@ -97,7 +97,7 @@ public class LocalObjectPath extends ObjectPath {
     }
 
     /**
-     * Scanner that filters out files that are up to date
+     * Scanner that filters out files that are up-to-date
      */
     private static class IsModifiedGlob extends DirScanner.Glob {
 
