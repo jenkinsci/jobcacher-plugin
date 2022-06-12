@@ -78,8 +78,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
 
         /**
          * Calculate the size of the cache on the executor which will be used to determine if the total size of the cache
-         * if returned to the master would be greater than the configured maxiumum cache size.
-         *
+         * if returned to the master would be greater than the configured maximum cache size.
          *
          * @param cache The root of the cache
          * @param build The build in progress
@@ -107,7 +106,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
     }
 
     /**
-     * Get the human readable title for this cache to be shown on the user interface
+     * Get the human-readable title for this cache to be shown on the user interface
      *
      * @return The title of the cache
      */
