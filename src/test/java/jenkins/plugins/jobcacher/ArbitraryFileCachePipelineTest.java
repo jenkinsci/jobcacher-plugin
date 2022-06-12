@@ -27,11 +27,11 @@ public class ArbitraryFileCachePipelineTest {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
-    private DumbSlave slave;
+    private DumbSlave agent;
 
     @Before
-    public void startSlave() throws Exception {
-        slave = jenkins.createSlave(Label.get("slave"));
+    public void startAgent() throws Exception {
+        agent = jenkins.createSlave(Label.get("test-agent"));
     }
 
     @Test
@@ -111,7 +111,7 @@ public class ArbitraryFileCachePipelineTest {
         String packageJsonFileContent = readTestResource("package.json");
 
         project.setDefinition(createOsSpecificPipelineDefinition("" +
-                "node('slave') {\n" +
+                "node('test-agent') {\n" +
                 "  writeFile text: '''" + projectEnvConfigFileContent + "''', file: 'project-env.toml'\n" +
                 "  withProjectEnv {\n" +
                 "    writeFile text: '''" + packageJsonFileContent + "''', file: 'package.json'\n" +
@@ -125,7 +125,7 @@ public class ArbitraryFileCachePipelineTest {
     }
 
     private void deleteNodeModulesInWorkspace(WorkflowJob project) throws IOException, InterruptedException {
-        slave.getWorkspaceFor(project).child("node_modules").deleteRecursive();
+        agent.getWorkspaceFor(project).child("node_modules").deleteRecursive();
     }
 
     private String readTestResource(String resource) throws IOException {
