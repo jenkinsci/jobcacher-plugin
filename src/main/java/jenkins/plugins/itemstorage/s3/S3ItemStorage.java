@@ -137,6 +137,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
     @Extension(optional = true)
     public static final class S3ItemListener extends ItemListener {
+
         @Override
         public void onDeleted(Item item) {
             S3ItemStorage s3Storage = lookupS3Storage();

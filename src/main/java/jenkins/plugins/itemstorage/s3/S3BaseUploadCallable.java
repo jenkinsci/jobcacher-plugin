@@ -42,14 +42,16 @@ import java.util.Map;
  * @param <T>
  */
 public abstract class S3BaseUploadCallable<T> extends S3Callable<T> {
+
     private static final long serialVersionUID = 1L;
+
     private final String storageClass;
     private final Map<String, String> userMetadata;
     private final boolean useServerSideEncryption;
 
-
     public S3BaseUploadCallable(ClientHelper clientHelper,
-                                Map<String, String> userMetadata, String storageClass,
+                                Map<String, String> userMetadata,
+                                String storageClass,
                                 boolean useServerSideEncryption) {
         super(clientHelper);
         this.storageClass = storageClass;
@@ -66,6 +68,7 @@ public abstract class S3BaseUploadCallable<T> extends S3Callable<T> {
         if (storageClass != null && !storageClass.isEmpty()) {
             metadata.setHeader("x-amz-storage-class", storageClass);
         }
+
         if (useServerSideEncryption) {
             metadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
         }

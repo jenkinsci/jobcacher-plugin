@@ -37,6 +37,7 @@ import java.io.IOException;
  * @param <T>
  */
 abstract class S3Callable<T> extends MasterToSlaveFileCallable<T> {
+
     private static final long serialVersionUID = 1L;
 
     private ClientHelper helper;

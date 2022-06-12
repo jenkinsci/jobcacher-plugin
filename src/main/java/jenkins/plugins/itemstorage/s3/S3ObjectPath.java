@@ -40,6 +40,7 @@ import java.util.Collections;
  * @author Peter Hayes
  */
 public class S3ObjectPath extends ObjectPath {
+
     private final S3Profile profile;
     private final String bucketName;
     private final String region;

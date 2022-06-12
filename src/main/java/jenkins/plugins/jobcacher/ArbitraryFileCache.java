@@ -283,7 +283,6 @@ public class ArbitraryFileCache extends Cache {
                 skipCacheTriggerFileHashFile.copyFrom(tempFile.get());
             }
         }
-
     }
 
     private void logMessage(String message, TaskListener listener) {
@@ -320,7 +319,6 @@ public class ArbitraryFileCache extends Cache {
 
             return items;
         }
-
     }
 
     public enum CompressionMethod {
@@ -338,7 +336,5 @@ public class ArbitraryFileCache extends Cache {
         public ArbitraryFileCacheStrategy getCacheStrategy() {
             return cacheStrategy;
         }
-
     }
-
 }

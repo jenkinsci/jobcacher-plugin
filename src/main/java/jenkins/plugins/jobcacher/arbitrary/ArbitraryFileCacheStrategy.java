@@ -13,5 +13,4 @@ public interface ArbitraryFileCacheStrategy extends Serializable {
     void cache(FilePath source, String includes, String excludes, boolean useDefaultExcludes, ObjectPath target, FilePath workspace) throws IOException, InterruptedException;
 
     void restore(ObjectPath source, FilePath target, FilePath workspace) throws IOException, InterruptedException;
-
 }

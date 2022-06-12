@@ -45,6 +45,7 @@ import java.util.logging.Logger;
  * @author Peter Hayes
  */
 public class LocalObjectPath extends ObjectPath {
+
     private static final Logger LOGGER = Logger.getLogger(LocalObjectPath.class.getName());
 
     private FilePath file;

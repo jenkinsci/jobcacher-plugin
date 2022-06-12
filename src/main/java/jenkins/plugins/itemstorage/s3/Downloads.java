@@ -40,11 +40,13 @@ import java.util.logging.Logger;
  * From the S3 Jenkins plugin modified a bit to meet this use case
  */
 public final class Downloads {
+
     private static final Logger LOGGER = Logger.getLogger(Downloads.class.getName());
 
     private final List<Memo> startedDownloads = new LinkedList<>();
 
-    public Downloads() {}
+    public Downloads() {
+    }
 
     public void startDownload(TransferManager manager, File base, String pathPrefix, S3ObjectSummary summary) throws AmazonServiceException, IOException {
         // calculate target file name

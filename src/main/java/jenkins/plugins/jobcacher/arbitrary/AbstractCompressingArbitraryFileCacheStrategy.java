@@ -36,5 +36,4 @@ public abstract class AbstractCompressingArbitraryFileCacheStrategy implements A
     protected abstract void uncompress(FilePath source, FilePath target) throws IOException, InterruptedException;
 
     protected abstract void compress(FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException;
-
 }
