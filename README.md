@@ -76,4 +76,4 @@ See [contribution guidelines](https://github.com/jenkinsci/.github/blob/master/C
 
 ## Changelog
 
-See [releases](https://github.com/jenkinsci/pipeline-project-env-plugin/releases)
+See [releases](https://github.com/jenkinsci/jobcacher-plugin/releases)
