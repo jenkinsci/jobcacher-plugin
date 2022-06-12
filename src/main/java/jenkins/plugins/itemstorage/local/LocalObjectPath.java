@@ -48,7 +48,7 @@ public class LocalObjectPath extends ObjectPath {
 
     private static final Logger LOGGER = Logger.getLogger(LocalObjectPath.class.getName());
 
-    private FilePath file;
+    private final FilePath file;
 
     public LocalObjectPath(FilePath file) {
         this.file = file;
@@ -129,9 +129,9 @@ public class LocalObjectPath extends ObjectPath {
          *
          */
         private static final long serialVersionUID = 1L;
-        
-        private FilePath toCompare;
-        private FileVisitor delegate;
+
+        private final FilePath toCompare;
+        private final FileVisitor delegate;
 
         public IsNotThereOrOlderVisitor(FilePath toCompare, FileVisitor delegate) {
             this.toCompare = toCompare;

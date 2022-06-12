@@ -40,7 +40,7 @@ abstract class S3Callable<T> extends MasterToSlaveFileCallable<T> {
 
     private static final long serialVersionUID = 1L;
 
-    private ClientHelper helper;
+    private final ClientHelper helper;
 
     S3Callable(ClientHelper helper) {
         this.helper = helper;

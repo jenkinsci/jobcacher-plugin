@@ -57,13 +57,13 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
 
     private static final long serialVersionUID = 1L;
 
-    private String credentialsId;
-    private String bucketName;
-    private String endpoint;
-    private String region;
-    private String signerVersion;
-    private boolean pathStyleAccess;
-    private boolean parallelDownloads;
+    private final String credentialsId;
+    private final String bucketName;
+    private final String endpoint;
+    private final String region;
+    private final String signerVersion;
+    private final boolean pathStyleAccess;
+    private final boolean parallelDownloads;
 
     @DataBoundConstructor
     public NonAWSS3ItemStorage(String credentialsId,

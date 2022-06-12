@@ -54,9 +54,10 @@ import java.util.List;
  * @author Peter Hayes
  */
 public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
-    private String credentialsId;
-    private String bucketName;
-    private String region;
+
+    private final String credentialsId;
+    private final String bucketName;
+    private final String region;
 
     @DataBoundConstructor
     public S3ItemStorage(String credentialsId, String bucketName, String region) {

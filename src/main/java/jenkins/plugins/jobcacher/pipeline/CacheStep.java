@@ -50,8 +50,9 @@ import java.util.List;
  * block, saves that cache to the configured item storage.
  */
 public class CacheStep extends Step {
-    private long maxCacheSize;
-    private List<Cache> caches;
+
+    private final long maxCacheSize;
+    private final List<Cache> caches;
     @DataBoundSetter
     public String defaultBranch = null;
 
@@ -124,9 +125,9 @@ public class CacheStep extends Step {
 
         private static final long serialVersionUID = 1L;
 
-        private long maxCacheSize;
-        private List<Cache> caches;
-        private List<Cache.Saver> cacheSavers;
+        private final long maxCacheSize;
+        private final List<Cache> caches;
+        private final List<Cache.Saver> cacheSavers;
 
         public ExecutionCallback(long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
             this.maxCacheSize = maxCacheSize;

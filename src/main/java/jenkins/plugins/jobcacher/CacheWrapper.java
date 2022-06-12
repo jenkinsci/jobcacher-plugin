@@ -133,10 +133,11 @@ public class CacheWrapper extends SimpleBuildWrapper {
     private static class CacheDisposer extends Disposer {
 
         private static final long serialVersionUID = 1L;
-        private ItemStorage<?> storage;
-        private long maxCacheSize;
-        private List<Cache> caches;
-        private List<Cache.Saver> cacheSavers;
+
+        private final ItemStorage<?> storage;
+        private final long maxCacheSize;
+        private final List<Cache> caches;
+        private final List<Cache.Saver> cacheSavers;
 
         @DataBoundConstructor
         public CacheDisposer(ItemStorage<?> storage, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {

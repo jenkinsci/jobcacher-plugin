@@ -47,10 +47,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class S3UploadAllCallable extends S3BaseUploadCallable<Integer> {
 
     private static final long serialVersionUID = 1L;
-    private String bucketName;
-    private String pathPrefix;
-    private final DirScanner.Glob scanner;
 
+    private final String bucketName;
+    private final String pathPrefix;
+    private final DirScanner.Glob scanner;
 
     public S3UploadAllCallable(ClientHelper clientHelper, String fileMask, String excludes, boolean useDefaultExcludes, String bucketName, String pathPrefix, Map<String, String> userMetadata, String storageClass, boolean useServerSideEncryption) {
         super(clientHelper, userMetadata, storageClass, useServerSideEncryption);
