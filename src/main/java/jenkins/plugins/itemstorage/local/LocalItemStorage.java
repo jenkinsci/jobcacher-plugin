@@ -69,10 +69,5 @@ public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
         public String getDisplayName() {
             return Messages.LocalItemStorage_DisplayName();
         }
-
-        @Override
-        public String getHelpFile() {
-            return super.getHelpFile();
-        }
     }
 }
