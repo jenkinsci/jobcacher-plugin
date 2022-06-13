@@ -104,7 +104,7 @@ public class CacheStep extends Step {
         public boolean start() throws Exception {
             StepContext context = getContext();
 
-            Run run = context.get(Run.class);
+            Run<?, ?> run = context.get(Run.class);
             FilePath workspace = context.get(FilePath.class);
             Launcher launcher = context.get(Launcher.class);
             TaskListener listener = context.get(TaskListener.class);
