@@ -40,15 +40,15 @@ public class ArbitraryFileCachePipelineTest {
         String cacheDefinition = "[$class: 'ArbitraryFileCache', path: 'node_modules', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt']";
         WorkflowJob project = createTestProject(cacheDefinition);
 
-        WorkflowRun run = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
-        assertThat(run.getLog())
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run1.getLog())
                 .contains("[Cache for node_modules] Skip restoring cache as no up-to-date cache exists")
                 .contains("added 1 package, and audited 2 packages in")
                 .contains("[Cache for node_modules] Creating cache...");
 
         deleteNodeModulesInWorkspace(project);
-        run = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
-        assertThat(run.getLog())
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog())
                 .contains("[Cache for node_modules] Found cache in job specific caches")
                 .contains("[Cache for node_modules] Restoring cache...")
                 .contains("up to date, audited 2 packages in")
@@ -56,8 +56,8 @@ public class ArbitraryFileCachePipelineTest {
 
         deleteNodeModulesInWorkspace(project);
         setProjectDefinition(project, cacheDefinition, StringUtils.reverse(DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT));
-        run = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
-        assertThat(run.getLog())
+        WorkflowRun run3 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run3.getLog())
                 .contains("[Cache for node_modules] Skip restoring cache as no up-to-date cache exists")
                 .contains("added 1 package, and audited 2 packages in")
                 .contains("[Cache for node_modules] Creating cache...");
@@ -84,15 +84,15 @@ public class ArbitraryFileCachePipelineTest {
     private void testArbitraryFileCacheWithinPipeline(String cacheDefinition) throws Exception {
         WorkflowJob project = createTestProject(cacheDefinition);
 
-        WorkflowRun run = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
-        assertThat(run.getLog())
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run1.getLog())
                 .contains("[Cache for node_modules] Skip restoring cache as no up-to-date cache exists")
                 .contains("added 1 package, and audited 2 packages in")
                 .contains("[Cache for node_modules] Creating cache...");
 
         deleteNodeModulesInWorkspace(project);
-        run = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
-        assertThat(run.getLog())
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog())
                 .contains("[Cache for node_modules] Found cache in job specific caches")
                 .contains("[Cache for node_modules] Restoring cache...")
                 .contains("up to date, audited 2 packages in")

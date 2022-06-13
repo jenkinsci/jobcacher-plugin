@@ -58,12 +58,12 @@ public class S3Profile {
         this.retryTime = retryTime != null ? retryTime : 5L;
     }
 
-    public void upload(final String bucketName,
-                       final String path,
-                       final FilePath source,
-                       final Map<String, String> userMetadata,
-                       final String storageClass,
-                       final boolean useServerSideEncryption) throws IOException, InterruptedException {
+    public void upload(String bucketName,
+                       String path,
+                       FilePath source,
+                       Map<String, String> userMetadata,
+                       String storageClass,
+                       boolean useServerSideEncryption) throws IOException, InterruptedException {
         FilePath.FileCallable<Void> upload = new S3UploadCallable(
                 helper,
                 bucketName,
@@ -75,15 +75,15 @@ public class S3Profile {
         source.act(upload);
     }
 
-    public int uploadAll(final String bucketName,
-                         final String path,
-                         final String fileMask,
-                         final String excludes,
+    public int uploadAll(String bucketName,
+                         String path,
+                         String fileMask,
+                         String excludes,
                          boolean useDefaultExcludes,
-                         final FilePath source,
-                         final Map<String, String> userMetadata,
-                         final String storageClass,
-                         final boolean useServerSideEncryption) throws IOException, InterruptedException {
+                         FilePath source,
+                         Map<String, String> userMetadata,
+                         String storageClass,
+                         boolean useServerSideEncryption) throws IOException, InterruptedException {
         FilePath.FileCallable<Integer> upload = new S3UploadAllCallable(
                 helper,
                 fileMask,

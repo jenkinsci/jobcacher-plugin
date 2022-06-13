@@ -20,12 +20,12 @@ public class Destination implements Serializable {
     public final String bucketName;
     public final String objectName;
 
-    public Destination(final String userBucketName, final String fileName) {
+    public Destination(String userBucketName, String fileName) {
         if (userBucketName == null || fileName == null)
             throw new IllegalArgumentException("Not defined for null parameters: " + userBucketName + "," + fileName);
 
-        final String[] bucketNameArray = userBucketName.split("/", 2);
-        final String s3CompatibleFileName = replaceWindowsBackslashes(fileName);
+        String[] bucketNameArray = userBucketName.split("/", 2);
+        String s3CompatibleFileName = replaceWindowsBackslashes(fileName);
 
         bucketName = bucketNameArray[0];
 

@@ -34,7 +34,8 @@ import java.util.List;
  * @author Peter Hayes
  */
 public class CacheProjectAction implements Action {
-    private List<Cache> caches;
+
+    private final List<Cache> caches;
 
     public CacheProjectAction(List<Cache> caches) {
         this.caches = caches;

@@ -82,9 +82,10 @@ public final class Downloads {
     }
 
     private static class Memo {
-        public Download download;
-        public File file;
-        public long timestamp;
+
+        public final Download download;
+        public final File file;
+        public final long timestamp;
 
         public Memo(Download download, File file, long timestamp) {
             this.download = download;

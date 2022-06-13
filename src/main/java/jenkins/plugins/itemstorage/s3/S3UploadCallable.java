@@ -46,7 +46,7 @@ public class S3UploadCallable extends S3BaseUploadCallable<Void> {
     }
 
     @Override
-    public Void invoke(final TransferManager transferManager, File source, VirtualChannel channel) throws IOException {
+    public Void invoke(TransferManager transferManager, File source, VirtualChannel channel) throws IOException {
         if (!source.exists()) {
             return null;
         }

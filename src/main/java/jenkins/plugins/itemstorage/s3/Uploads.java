@@ -54,14 +54,14 @@ public class Uploads {
     }
 
     public void startUploading(TransferManager manager, File file, InputStream inputStream, Destination dest, ObjectMetadata metadata) throws AmazonServiceException {
-        final PutObjectRequest request = new PutObjectRequest(dest.bucketName, dest.objectName, inputStream, metadata);
+        PutObjectRequest request = new PutObjectRequest(dest.bucketName, dest.objectName, inputStream, metadata);
 
         // Set the buffer size (ReadLimit) equal to the multipart upload size,
         // allowing us to resend data if the connection breaks.
         request.getRequestClientOptions().setReadLimit(MULTIPART_UPLOAD_THRESHOLD);
         manager.getConfiguration().setMultipartUploadThreshold( (long) MULTIPART_UPLOAD_THRESHOLD);
 
-        final Upload upload = manager.upload(request);
+        Upload upload = manager.upload(request);
         startedUploads.put(file, upload);
         openedStreams.put(file, inputStream);
     }

@@ -42,10 +42,10 @@ import java.io.IOException;
 public class S3DownloadAllCallable extends S3Callable<Integer> {
 
     private static final long serialVersionUID = 1L;
-    private String bucketName;
-    private String pathPrefix;
-    private final DirScanner.Glob scanner;
 
+    private final String bucketName;
+    private final String pathPrefix;
+    private final DirScanner.Glob scanner;
 
     public S3DownloadAllCallable(ClientHelper helper, String fileMask, String excludes, boolean useDefaultExcludes, String bucketName, String pathPrefix) {
         super(helper);

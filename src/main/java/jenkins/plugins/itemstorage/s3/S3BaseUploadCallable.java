@@ -60,7 +60,7 @@ public abstract class S3BaseUploadCallable<T> extends S3Callable<T> {
     }
 
     protected ObjectMetadata buildMetadata(File file) throws IOException {
-        final ObjectMetadata metadata = new ObjectMetadata();
+        ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(Mimetypes.getInstance().getMimetype(file.getName()));
         metadata.setContentLength(file.length());
         metadata.setLastModified(new Date(file.lastModified()));
@@ -74,14 +74,14 @@ public abstract class S3BaseUploadCallable<T> extends S3Callable<T> {
         }
 
         for (Map.Entry<String, String> entry : userMetadata.entrySet()) {
-            final String key = entry.getKey().toLowerCase();
+            String key = entry.getKey().toLowerCase();
             switch (key) {
                 case "cache-control":
                     metadata.setCacheControl(entry.getValue());
                     break;
                 case "expires":
                     try {
-                        final Date expires = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z").parse(entry.getValue());
+                        Date expires = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z").parse(entry.getValue());
                         metadata.setHttpExpiresDate(expires);
                     } catch (ParseException e) {
                         metadata.addUserMetadata(entry.getKey(), entry.getValue());

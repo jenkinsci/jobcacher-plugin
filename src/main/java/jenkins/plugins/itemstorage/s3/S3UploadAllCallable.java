@@ -47,10 +47,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class S3UploadAllCallable extends S3BaseUploadCallable<Integer> {
 
     private static final long serialVersionUID = 1L;
-    private String bucketName;
-    private String pathPrefix;
-    private final DirScanner.Glob scanner;
 
+    private final String bucketName;
+    private final String pathPrefix;
+    private final DirScanner.Glob scanner;
 
     public S3UploadAllCallable(ClientHelper clientHelper, String fileMask, String excludes, boolean useDefaultExcludes, String bucketName, String pathPrefix, Map<String, String> userMetadata, String storageClass, boolean useServerSideEncryption) {
         super(clientHelper, userMetadata, storageClass, useServerSideEncryption);
@@ -64,13 +64,13 @@ public class S3UploadAllCallable extends S3BaseUploadCallable<Integer> {
      * Upload from agent
      */
     @Override
-    public Integer invoke(final TransferManager transferManager, File base, VirtualChannel channel) throws IOException, InterruptedException {
+    public Integer invoke(TransferManager transferManager, File base, VirtualChannel channel) throws IOException, InterruptedException {
         if(!base.exists())  return 0;
 
-        final AtomicInteger count = new AtomicInteger(0);
-        final Uploads uploads = new Uploads();
+        AtomicInteger count = new AtomicInteger(0);
+        Uploads uploads = new Uploads();
 
-        final Map<String, S3ObjectSummary> summaries = lookupExistingCacheEntries(transferManager.getAmazonS3Client());
+        Map<String, S3ObjectSummary> summaries = lookupExistingCacheEntries(transferManager.getAmazonS3Client());
 
         // Find files to upload that match scan
         scanner.scan(base, new FileVisitor() {
@@ -81,7 +81,7 @@ public class S3UploadAllCallable extends S3BaseUploadCallable<Integer> {
 
                     S3ObjectSummary summary = summaries.get(key);
                     if (summary == null || f.lastModified() > summary.getLastModified().getTime()) {
-                        final ObjectMetadata metadata = buildMetadata(f);
+                        ObjectMetadata metadata = buildMetadata(f);
 
                         uploads.startUploading(transferManager, f, IOUtils.toBufferedInputStream(FileUtils.openInputStream(f)), new Destination(bucketName, key), metadata);
 

@@ -36,7 +36,8 @@ import java.util.List;
  * @author Peter Hayes
  */
 public class CacheBuildLastAction extends InvisibleAction implements SimpleBuildStep.LastBuildAction {
-    private CacheProjectAction cacheProjectAction;
+
+    private final CacheProjectAction cacheProjectAction;
 
     public CacheBuildLastAction(List<Cache> caches) {
         this.cacheProjectAction = new CacheProjectAction(caches);

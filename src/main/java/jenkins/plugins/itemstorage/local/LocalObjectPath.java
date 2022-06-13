@@ -48,7 +48,7 @@ public class LocalObjectPath extends ObjectPath {
 
     private static final Logger LOGGER = Logger.getLogger(LocalObjectPath.class.getName());
 
-    private FilePath file;
+    private final FilePath file;
 
     public LocalObjectPath(FilePath file) {
         this.file = file;
@@ -114,7 +114,7 @@ public class LocalObjectPath extends ObjectPath {
         }
 
         @Override
-        public void scan(File dir, final FileVisitor visitor) throws IOException {
+        public void scan(File dir, FileVisitor visitor) throws IOException {
             super.scan(dir, new IsNotThereOrOlderVisitor(toCompare, visitor));
         }
     }
@@ -129,9 +129,9 @@ public class LocalObjectPath extends ObjectPath {
          *
          */
         private static final long serialVersionUID = 1L;
-        
-        private FilePath toCompare;
-        private FileVisitor delegate;
+
+        private final FilePath toCompare;
+        private final FileVisitor delegate;
 
         public IsNotThereOrOlderVisitor(FilePath toCompare, FileVisitor delegate) {
             this.toCompare = toCompare;
@@ -139,7 +139,7 @@ public class LocalObjectPath extends ObjectPath {
         }
 
         @Override
-        public void visit(File f, final String relativePath) throws IOException {
+        public void visit(File f, String relativePath) throws IOException {
             // check if file is more recent than base one
             try {
                 FilePath targetFile = toCompare.child(relativePath);

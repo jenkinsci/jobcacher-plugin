@@ -147,7 +147,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
 
         @Override
         public Long invoke(File f, VirtualChannel channel) throws IOException {
-            final AtomicLong total = new AtomicLong(0L);
+            AtomicLong total = new AtomicLong(0L);
 
             new DirScanner.Glob(glob, excludes).scan(f, new FileVisitor() {
                 @Override
