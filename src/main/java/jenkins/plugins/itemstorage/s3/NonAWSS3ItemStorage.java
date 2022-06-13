@@ -180,7 +180,9 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
         public void onDeleted(Item item) {
             NonAWSS3ItemStorage s3Storage = lookupS3Storage();
 
-            if (s3Storage == null) return;
+            if (s3Storage == null) {
+                return;
+            }
 
             S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), s3Storage.getParallelDownloads(), 5, 5L);
             profile.delete(s3Storage.bucketName, item.getFullName());
@@ -190,7 +192,9 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
         public void onLocationChanged(Item item, String oldFullName, String newFullName) {
             NonAWSS3ItemStorage s3Storage = lookupS3Storage();
 
-            if (s3Storage == null) return;
+            if (s3Storage == null) {
+                return;
+            }
 
             S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), s3Storage.getParallelDownloads(), 5, 5L);
             profile.rename(s3Storage.bucketName, oldFullName, newFullName);

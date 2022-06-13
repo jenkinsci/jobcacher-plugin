@@ -153,7 +153,9 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         public void onLocationChanged(Item item, String oldFullName, String newFullName) {
             S3ItemStorage s3Storage = lookupS3Storage();
 
-            if (s3Storage == null) return;
+            if (s3Storage == null) {
+                return;
+            }
 
             S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, true, 5, 5L);
             profile.rename(s3Storage.bucketName, oldFullName, newFullName);

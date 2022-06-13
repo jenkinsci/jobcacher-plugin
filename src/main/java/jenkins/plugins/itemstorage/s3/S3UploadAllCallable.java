@@ -65,7 +65,9 @@ public class S3UploadAllCallable extends S3BaseUploadCallable<Integer> {
      */
     @Override
     public Integer invoke(TransferManager transferManager, File base, VirtualChannel channel) throws IOException, InterruptedException {
-        if(!base.exists())  return 0;
+        if (!base.exists()) {
+            return 0;
+        }
 
         AtomicInteger count = new AtomicInteger(0);
         Uploads uploads = new Uploads();
