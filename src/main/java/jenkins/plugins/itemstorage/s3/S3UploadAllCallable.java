@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Created by hayep on 12/2/2016.
+ * @author Peter Hayes
  */
 public class S3UploadAllCallable extends S3BaseUploadCallable<Integer> {
 
