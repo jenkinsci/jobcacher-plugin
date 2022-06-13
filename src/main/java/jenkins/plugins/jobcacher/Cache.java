@@ -57,7 +57,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
      * To be implemented method that will be called to seed the cache on the executor from the master
      *
      * @param cache The root of the object cache
-     * @param cache The root of the alternate default object cache
+     * @param defaultCache The root of the alternate default object cache
      * @param build The build in progress
      * @param workspace The executor workspace
      * @param launcher The launcher
