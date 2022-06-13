@@ -5,9 +5,6 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.RegionUtils;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import hudson.ProxyConfiguration;
@@ -90,18 +87,6 @@ public class ClientHelper implements Serializable {
         }
 
         return client;
-    }
-
-    private static Region getRegionFromString(String regionName) {
-        // In 0.7, selregion comes from Regions#name
-        Region region = RegionUtils.getRegion(regionName);
-
-        // In 0.6, selregion comes from Regions#valueOf
-        if (region == null) {
-            region = RegionUtils.getRegion(Regions.valueOf(regionName).getName());
-        }
-
-        return region;
     }
 
     public static ClientConfiguration getClientConfiguration(ProxyConfiguration proxy) {
