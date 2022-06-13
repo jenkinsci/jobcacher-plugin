@@ -29,7 +29,6 @@ import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
-import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.listeners.ItemListener;
@@ -104,7 +103,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
     private static List<AmazonWebServicesCredentials> possibleCredentials() {
         return CredentialsProvider.lookupCredentials(AmazonWebServicesCredentials.class, Jenkins.get(),
-                ACL.SYSTEM, Collections.<DomainRequirement>emptyList());
+                ACL.SYSTEM, Collections.emptyList());
     }
 
     @Extension(optional = true)
