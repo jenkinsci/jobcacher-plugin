@@ -1,6 +1,6 @@
 # Job Cacher Plugin
 
-[![Build Status](https://ci.jenkins.io/job/Plugins/job/jobcacher-plugin/job/master/badge/icon)](https://ci.jenkins.io/job/Plugins/job/jobcacher-plugin/job/master/)
+[![Build Status](https://ci.jenkins.io/job/Plugins/job/jobcacher-plugin/job/main/badge/icon)](https://ci.jenkins.io/job/Plugins/job/jobcacher-plugin/job/main/)
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/jobcacher.svg)](https://plugins.jenkins.io/jobcacher)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/jobcacher.svg?color=blue)](https://plugins.jenkins.io/jobcacher)
 
