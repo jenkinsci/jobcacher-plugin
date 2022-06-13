@@ -10,7 +10,6 @@ import java.util.UUID;
 public final class WorkspaceHelper {
 
     private WorkspaceHelper() {
-        // noop
     }
 
     public static TempFile createTempFile(FilePath workspace, String fileExtension) throws IOException, InterruptedException {
