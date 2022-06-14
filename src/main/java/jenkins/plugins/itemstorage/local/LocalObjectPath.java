@@ -101,9 +101,6 @@ public class LocalObjectPath extends ObjectPath {
      */
     private static class IsModifiedGlob extends DirScanner.Glob {
 
-        /**
-         *
-         */
         private static final long serialVersionUID = 1L;
 
         private final FilePath toCompare;
@@ -124,10 +121,7 @@ public class LocalObjectPath extends ObjectPath {
      * target file modification time to be same as source.
      */
     public static class IsNotThereOrOlderVisitor extends FileVisitor implements Serializable {
-        
-        /**
-         *
-         */
+
         private static final long serialVersionUID = 1L;
 
         private final FilePath toCompare;

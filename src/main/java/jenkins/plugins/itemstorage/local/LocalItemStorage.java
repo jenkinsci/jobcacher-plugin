@@ -56,8 +56,9 @@ public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
     @Override
     public LocalObjectPath getObjectPathForBranch(Item item, String path, String branch) {
         FilePath parent = new FilePath(item.getRootDir()).getParent();
-        if (parent == null)
+        if (parent == null) {
             return null;
+        }
         FilePath branchPath = parent.child(branch);
         return new LocalObjectPath(branchPath.child(path));
     }
@@ -68,11 +69,6 @@ public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
         @Override
         public String getDisplayName() {
             return Messages.LocalItemStorage_DisplayName();
-        }
-
-        @Override
-        public String getHelpFile() {
-            return super.getHelpFile();
         }
     }
 }

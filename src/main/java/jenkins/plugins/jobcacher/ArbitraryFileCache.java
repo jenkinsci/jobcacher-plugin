@@ -289,8 +289,7 @@ public class ArbitraryFileCache extends Cache {
         listener.getLogger().println("[Cache for " + path + "] " + message);
     }
 
-    public HttpResponse doDynamic(StaplerRequest req, StaplerResponse rsp, @AncestorInPath Job job) throws IOException, ServletException, InterruptedException {
-
+    public HttpResponse doDynamic(StaplerRequest req, StaplerResponse rsp, @AncestorInPath Job<?, ?> job) throws IOException, ServletException, InterruptedException {
         ObjectPath cache = CacheManager.getCachePath(GlobalItemStorage.get().getStorage(), job).child(deriveCachePath(path));
 
         if (!cache.exists()) {
