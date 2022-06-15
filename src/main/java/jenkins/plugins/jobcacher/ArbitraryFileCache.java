@@ -185,7 +185,7 @@ public class ArbitraryFileCache extends Cache {
             return null;
         }
 
-        if (hasCacheValidityDecidingFile(workspace) && isCacheOutdated(cachesRoot, workspace)) {
+        if (isCacheValidityDecidingFileConfigured() && isCacheOutdated(cachesRoot, workspace)) {
             return null;
         }
 
@@ -209,8 +209,8 @@ public class ArbitraryFileCache extends Cache {
         return !matchesCurrentCacheValidityDecidingFileHash(previousClearCacheTriggerFileHash, workspace);
     }
 
-    private boolean hasCacheValidityDecidingFile(FilePath workspace) throws IOException, InterruptedException {
-        return cacheValidityDecidingFile != null;
+    private boolean isCacheValidityDecidingFileConfigured() {
+        return StringUtils.isNotEmpty(cacheValidityDecidingFile);
     }
 
     private ObjectPath resolvePreviousCacheValidityDecidingFileHashFile(ObjectPath cachesRoot) throws IOException, InterruptedException {
@@ -261,7 +261,7 @@ public class ArbitraryFileCache extends Cache {
                 return;
             }
 
-            if (hasCacheValidityDecidingFile(workspace) && !isCacheOutdated(cachesRoot, workspace)) {
+            if (isCacheValidityDecidingFileConfigured() && !isCacheOutdated(cachesRoot, workspace)) {
                 logMessage("Skip cache creation as the cache is up-to-date", listener);
                 return;
             }
@@ -270,7 +270,7 @@ public class ArbitraryFileCache extends Cache {
 
             logMessage("Creating cache...", listener);
             compressionMethod.getCacheStrategy().cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
-            if (cacheValidityDecidingFile != null) {
+            if (isCacheValidityDecidingFileConfigured()) {
                 updateSkipCacheTriggerFileHash(cachesRoot, workspace);
             }
         }
