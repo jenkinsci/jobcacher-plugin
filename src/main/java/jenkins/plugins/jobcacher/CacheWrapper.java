@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * This is the entry point for the caching capability when used as a build wrapper.
@@ -52,19 +53,17 @@ import java.util.List;
  */
 public class CacheWrapper extends SimpleBuildWrapper {
 
-    private long maxCacheSize = 0L;
-    private List<Cache> caches = new ArrayList<>();
-
-    @DataBoundSetter
-    public String defaultBranch = null;
+    private long maxCacheSize;
+    private List<Cache> caches;
+    private String defaultBranch;
 
     public CacheWrapper() {
     }
 
     @DataBoundConstructor
     public CacheWrapper(long maxCacheSize, List<Cache> caches) {
-        this.maxCacheSize = maxCacheSize;
-        this.caches = caches == null ? Collections.emptyList() : new ArrayList<>(caches);
+        setMaxCacheSize(maxCacheSize);
+        setCaches(caches);
     }
 
     @SuppressWarnings("unused")
@@ -87,25 +86,31 @@ public class CacheWrapper extends SimpleBuildWrapper {
         return defaultBranch;
     }
 
+    @DataBoundSetter
+    public void setDefaultBranch(String defaultBranch) {
+        this.defaultBranch = defaultBranch;
+    }
+
     public List<Cache> getCaches() {
-        return caches == null ? Collections.emptyList() : Collections.unmodifiableList(caches);
+        return wrapList(caches, Collections::unmodifiableList);
     }
 
     public void setCaches(List<Cache> caches) {
-        this.caches = caches;
+        this.caches = wrapList(caches, ArrayList::new);
     }
 
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
-        List<Cache.Saver> cacheSavers = CacheManager.cache(getStorage(), build, workspace, launcher, listener, initialEnvironment, caches, defaultBranch);
+        List<Cache.Saver> cacheSavers = CacheManager.cache(getStorage(), build, workspace, launcher, listener, initialEnvironment, getCaches(), getDefaultBranch());
 
-        context.setDisposer(new CacheDisposer(getStorage(), maxCacheSize, caches, cacheSavers));
+        context.setDisposer(new CacheDisposer(getStorage(), getMaxCacheSize(), getCaches(), cacheSavers));
+    }
+
+    private static <T> List<T> wrapList(List<T> list, Function<List<T>, List<T>> listFactory) {
+        return list == null ? Collections.emptyList() : listFactory.apply(list);
     }
 
     @Extension
-    @SuppressWarnings("unused")
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
         @Nonnull
