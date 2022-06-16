@@ -40,7 +40,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**
- * This implements the on master storage for object paths
+ * This implements the on-controller storage for object paths.
  *
  * @author Peter Hayes
  */

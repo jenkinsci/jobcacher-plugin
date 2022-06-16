@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This class provides the Cache extension point that when implemented provides the caching logic for saving files
- * from the executor to the master and sending them back to the executor.
+ * from the executor to the cache storage system and sending them back to the executor.
  *
  * Note, that Cache is Serializable and all subclasses must conform as well to work with Pipeline plugin
  *
@@ -54,7 +54,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
     private static final long serialVersionUID = 1L;
 
     /**
-     * To be implemented method that will be called to seed the cache on the executor from the master
+     * Seeds the cache on the executor from the cache storage system.
      *
      * @param cache The root of the object cache
      * @param defaultCache The root of the alternate default object cache
@@ -69,16 +69,15 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
     public abstract Saver cache(ObjectPath cache, ObjectPath defaultCache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException;
 
     /**
-     * Class that is used to save the cache on the remote system back to the master.  This class must be able to be
-     * Serialized
+     * Class that is used to save the cache on the remote system back to the cache storage system.
      */
     public static abstract class Saver implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
         /**
-         * Calculate the size of the cache on the executor which will be used to determine if the total size of the cache
-         * if returned to the master would be greater than the configured maximum cache size.
+         * Calculates the size of the cache on the executor. It will be used to determine if the total size of the cache
+         * if returned to the cache storage system would be greater than the configured maximum cache size.
          *
          * @param cache The root of the cache
          * @param build The build in progress
@@ -92,7 +91,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
         public abstract long calculateSize(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
 
         /**
-         * To be implemented method that will be called to save the files from the executor to the master
+         * Saves the files from the executor to the cache storage system.
          *
          * @param cache The root of the cache where savers should store their cache within
          * @param build The build in progress
@@ -106,14 +105,15 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
     }
 
     /**
-     * Get the human-readable title for this cache to be shown on the user interface
+     * Gets the human-readable title for this cache to be shown on the user interface.
      *
      * @return The title of the cache
      */
     public abstract String getTitle();
 
     /**
-     * Get ancestor job when invoked via the stapler context
+     * Gets the ancestor job when invoked via the stapler context.
+     *
      * @return the job
      */
     public Job<?, ?> getJob() {
@@ -121,7 +121,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
     }
 
     /**
-     * Generate a path within the cache dir given a relative or absolute path that is being cached
+     * Generates a path within the cache dir given a relative or absolute path that is being cached.
      *
      * @param path The relative or absolute path that is being cached
      * @return A filepath where to save and read from the cache
@@ -131,7 +131,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
     }
 
     /**
-     * Utility class to calculate the size of a potentially remote directory given a pattern and excludes
+     * Utility class to calculate the size of a potentially remote directory given a pattern and excludes.
      */
     public static class DirectorySize extends MasterToSlaveFileCallable<Long> {
 
