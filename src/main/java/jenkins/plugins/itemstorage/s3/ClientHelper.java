@@ -11,7 +11,6 @@ import hudson.ProxyConfiguration;
 import hudson.util.Secret;
 
 import java.io.Serializable;
-import java.util.regex.Pattern;
 
 /**
  * Modification of the Jenkins S3 Plugin
@@ -110,15 +109,7 @@ public class ClientHelper implements Serializable {
             return false;
         }
 
-        boolean shouldProxy = true;
-        for(Pattern p : proxy.getNoProxyHostPatterns()) {
-            if(p.matcher(hostname).matches()) {
-                shouldProxy = false;
-                break;
-            }
-        }
-
-        return shouldProxy;
+        return proxy.getNoProxyHostPatterns().stream().noneMatch(p -> p.matcher(hostname).matches());
     }
 
     public synchronized AWSCredentials getCredentials() {
