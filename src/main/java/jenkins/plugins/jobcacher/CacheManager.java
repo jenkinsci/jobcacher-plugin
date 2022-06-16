@@ -40,12 +40,7 @@ public class CacheManager {
 
     private static Object getLock(Job<?, ?> j) {
         String jobFullName = j.getFullName();
-        Object lock = locks.get(jobFullName);
-        if (lock == null) {
-            lock = new Object();
-            locks.put(jobFullName, lock);
-        }
-        return lock;
+        return locks.computeIfAbsent(jobFullName, k -> new Object());
     }
 
     /**
