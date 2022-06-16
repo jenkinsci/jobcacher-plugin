@@ -35,8 +35,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import javax.annotation.Nonnull;
 
 /**
- * Implementation of Item Storage that stores data on the Jenkins master within
- * the existing job folder.
+ * Implementation of Item Storage that stores data on the Jenkins controller within the existing job folder.
  *
  * @author Peter Hayes
  */
