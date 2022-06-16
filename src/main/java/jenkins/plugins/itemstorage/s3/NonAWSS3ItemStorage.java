@@ -118,14 +118,14 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
 
     @Override
     public S3ObjectPath getObjectPath(Item item, String path) {
-        S3Profile profile = new S3Profile(lookupCredentials(), endpoint, signerVersion, pathStyleAccess, parallelDownloads, 5, 5L);
+        S3Profile profile = new S3Profile(lookupCredentials(), endpoint, signerVersion, pathStyleAccess, parallelDownloads);
 
         return new S3ObjectPath(profile, bucketName, region, item.getFullName(), path);
     }
 
     @Override
     public S3ObjectPath getObjectPathForBranch(Item item, String path, String branch) {
-        S3Profile profile = new S3Profile(lookupCredentials(), endpoint, signerVersion, pathStyleAccess, parallelDownloads, 5, 5L);
+        S3Profile profile = new S3Profile(lookupCredentials(), endpoint, signerVersion, pathStyleAccess, parallelDownloads);
 
         String branchPath = new File(item.getFullName()).getParent() + "/" + branch;
 
@@ -183,7 +183,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
                 return;
             }
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), s3Storage.getParallelDownloads(), 5, 5L);
+            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), s3Storage.getParallelDownloads());
             profile.delete(s3Storage.bucketName, item.getFullName());
         }
 
@@ -195,7 +195,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
                 return;
             }
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), s3Storage.getParallelDownloads(), 5, 5L);
+            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), s3Storage.getEndpoint(), s3Storage.getSignerVersion(), s3Storage.getPathStyleAccess(), s3Storage.getParallelDownloads());
             profile.rename(s3Storage.bucketName, oldFullName, newFullName);
         }
 

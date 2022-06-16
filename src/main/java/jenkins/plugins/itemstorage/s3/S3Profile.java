@@ -47,15 +47,12 @@ import java.util.Map;
  * @author Peter Hayes
  */
 public class S3Profile {
+
     private final ClientHelper helper;
-    private final int maxRetries;
-    private final long retryTime;
 
     @DataBoundConstructor
-    public S3Profile(AmazonWebServicesCredentials credentials, String endpoint, String signerVersion, boolean pathStyleAccess, boolean parallelDownloads, Integer maxRetries, Long retryTime) {
+    public S3Profile(AmazonWebServicesCredentials credentials, String endpoint, String signerVersion, boolean pathStyleAccess, boolean parallelDownloads) {
         this.helper = new ClientHelper(credentials != null ? credentials.getCredentials() : null, endpoint, null, getProxy(), signerVersion, pathStyleAccess, parallelDownloads);
-        this.maxRetries = maxRetries != null ? maxRetries : 5;
-        this.retryTime = retryTime != null ? retryTime : 5L;
     }
 
     public void upload(String bucketName,

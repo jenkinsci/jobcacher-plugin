@@ -82,14 +82,14 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
     @Override
     public S3ObjectPath getObjectPath(Item item, String path) {
-        S3Profile profile = new S3Profile(lookupCredentials(), null, null, false, true, 5, 5L);
+        S3Profile profile = new S3Profile(lookupCredentials(), null, null, false, true);
 
         return new S3ObjectPath(profile, bucketName, region, item.getFullName(), path);
     }
 
     @Override
     public S3ObjectPath getObjectPathForBranch(Item item, String path, String branch) {
-        S3Profile profile = new S3Profile(lookupCredentials(), null, null, false, true, 5, 5L);
+        S3Profile profile = new S3Profile(lookupCredentials(), null, null, false, true);
         String branchPath = new File(item.getFullName()).getParent() + "/" + branch;
 
         return new S3ObjectPath(profile, bucketName, region, branchPath, path);
@@ -144,7 +144,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
             if (s3Storage == null) return;
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, true, 5, 5L);
+            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, true);
             profile.delete(s3Storage.bucketName, item.getFullName());
         }
 
@@ -156,7 +156,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
                 return;
             }
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, true, 5, 5L);
+            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, true);
             profile.rename(s3Storage.bucketName, oldFullName, newFullName);
         }
 
