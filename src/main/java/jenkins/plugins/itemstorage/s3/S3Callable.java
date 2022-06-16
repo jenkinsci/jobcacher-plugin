@@ -59,7 +59,7 @@ abstract class S3Callable<T> extends MasterToSlaveFileCallable<T> {
         try {
             return invoke(transferManager, f, channel);
         } finally {
-            transferManager.shutdownNow();
+            transferManager.shutdownNow(false);
         }
     }
 
