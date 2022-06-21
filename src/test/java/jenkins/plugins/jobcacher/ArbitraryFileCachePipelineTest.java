@@ -9,8 +9,8 @@ import org.apache.commons.lang3.SystemUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.WithTimeout;
@@ -23,13 +23,13 @@ public class ArbitraryFileCachePipelineTest {
 
     private static final String DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT = "abcdefghijklmnopqrstuvwxyz";
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+    @ClassRule
+    public static JenkinsRule jenkins = new JenkinsRule();
 
-    private DumbSlave agent;
+    private static DumbSlave agent;
 
-    @Before
-    public void startAgent() throws Exception {
+    @BeforeClass
+    public static void startAgent() throws Exception {
         agent = jenkins.createSlave(Label.get("test-agent"));
     }
 
