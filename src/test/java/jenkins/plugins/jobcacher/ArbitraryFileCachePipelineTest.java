@@ -1,9 +1,9 @@
 package jenkins.plugins.jobcacher;
 
+import hudson.FilePath;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.slaves.DumbSlave;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -16,7 +16,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,48 +36,50 @@ public class ArbitraryFileCachePipelineTest {
     @Test
     @WithTimeout(600)
     public void testArbitraryFileCacheWithinPipelineWithCacheValidityDecidingFile() throws Exception {
-        String cacheDefinition = "[$class: 'ArbitraryFileCache', path: 'node_modules', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt']";
+        String cacheDefinition = "[$class: 'ArbitraryFileCache', path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt']";
         WorkflowJob project = createTestProject(cacheDefinition);
 
         WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run1.getLog())
-                .contains("[Cache for node_modules] Skip restoring cache as no up-to-date cache exists")
-                .contains("added 1 package, and audited 2 packages in")
-                .contains("[Cache for node_modules] Creating cache...");
+                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .doesNotContain("expected output from test file")
+                .contains("[Cache for test-path] Creating cache...");
 
-        deleteNodeModulesInWorkspace(project);
+        deleteCachedDirectoryInWorkspace(project);
+
         WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run2.getLog())
-                .contains("[Cache for node_modules] Found cache in job specific caches")
-                .contains("[Cache for node_modules] Restoring cache...")
-                .contains("up to date, audited 2 packages in")
-                .contains("[Cache for node_modules] Skip cache creation as the cache is up-to-date");
+                .contains("[Cache for test-path] Found cache in job specific caches")
+                .contains("[Cache for test-path] Restoring cache...")
+                .contains("expected output from test file")
+                .contains("[Cache for test-path] Skip cache creation as the cache is up-to-date");
 
-        deleteNodeModulesInWorkspace(project);
+        deleteCachedDirectoryInWorkspace(project);
         setProjectDefinition(project, cacheDefinition, StringUtils.reverse(DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT));
+
         WorkflowRun run3 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run3.getLog())
-                .contains("[Cache for node_modules] Skip restoring cache as no up-to-date cache exists")
-                .contains("added 1 package, and audited 2 packages in")
-                .contains("[Cache for node_modules] Creating cache...");
+                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .doesNotContain("expected output from test file")
+                .contains("[Cache for test-path] Creating cache...");
     }
 
     @Test
     @WithTimeout(600)
     public void testUncompressedArbitraryFileCacheWithinPipeline() throws Exception {
-        testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'node_modules']");
+        testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path']");
     }
 
     @Test
     @WithTimeout(600)
     public void testZipCompressedArbitraryFileCacheWithinPipeline() throws Exception {
-        testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'node_modules', compressionMethod: 'ZIP']");
+        testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path', compressionMethod: 'ZIP']");
     }
 
     @Test
     @WithTimeout(600)
     public void testTarGzCompressedArbitraryFileCacheWithinPipeline() throws Exception {
-        testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'node_modules', compressionMethod: 'TARGZ']");
+        testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path', compressionMethod: 'TARGZ']");
     }
 
     private void testArbitraryFileCacheWithinPipeline(String cacheDefinition) throws Exception {
@@ -86,17 +87,18 @@ public class ArbitraryFileCachePipelineTest {
 
         WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run1.getLog())
-                .contains("[Cache for node_modules] Skip restoring cache as no up-to-date cache exists")
-                .contains("added 1 package, and audited 2 packages in")
-                .contains("[Cache for node_modules] Creating cache...");
+                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .doesNotContain("expected output from test file")
+                .contains("[Cache for test-path] Creating cache...");
 
-        deleteNodeModulesInWorkspace(project);
+        deleteCachedDirectoryInWorkspace(project);
+
         WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run2.getLog())
-                .contains("[Cache for node_modules] Found cache in job specific caches")
-                .contains("[Cache for node_modules] Restoring cache...")
-                .contains("up to date, audited 2 packages in")
-                .contains("[Cache for node_modules] Creating cache...");
+                .contains("[Cache for test-path] Found cache in job specific caches")
+                .contains("[Cache for test-path] Restoring cache...")
+                .contains("expected output from test file")
+                .contains("[Cache for test-path] Creating cache...");
     }
 
     private WorkflowJob createTestProject(String cacheDefinition) throws IOException {
@@ -106,35 +108,48 @@ public class ArbitraryFileCachePipelineTest {
         return project;
     }
 
-    private void setProjectDefinition(WorkflowJob project, String cacheDefinition, String cacheValidityDecidingFileContent) throws IOException {
-        String projectEnvConfigFileContent = readTestResource("project-env.toml");
-        String packageJsonFileContent = readTestResource("package.json");
-
-        project.setDefinition(createOsSpecificPipelineDefinition("" +
-                "node('test-agent') {\n" +
-                "  writeFile text: '''" + projectEnvConfigFileContent + "''', file: 'project-env.toml'\n" +
-                "  withProjectEnv {\n" +
-                "    writeFile text: '''" + packageJsonFileContent + "''', file: 'package.json'\n" +
-                "    writeFile text: '" + cacheValidityDecidingFileContent + "', file: 'cacheValidityDecidingFile.txt'\n" +
-                "    cache(maxCacheSize: 100, caches: [" + cacheDefinition + "]) {\n" +
-                "      println \"PATH: ${env.PATH}\"\n" +
-                "      sh 'npm install'\n" +
-                "    }\n" +
-                "  }\n" +
-                "}"));
+    private void setProjectDefinition(WorkflowJob project, String cacheDefinition, String cacheValidityDecidingFileContent) {
+        String scriptedPipeline = ""
+                + "node('test-agent') {\n"
+                + "    writeFile text: '" + cacheValidityDecidingFileContent + "', file: 'cacheValidityDecidingFile.txt'\n"
+                + "    cache(maxCacheSize: 100, caches: [" + cacheDefinition + "]) {\n"
+                + "        " + fileCreationCode("test-path", "test-file") + "\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
     }
 
-    private void deleteNodeModulesInWorkspace(WorkflowJob project) throws IOException, InterruptedException {
-        agent.getWorkspaceFor(project).child("node_modules").deleteRecursive();
+    private String fileCreationCode(String folder, String file) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            return "bat '''" + fileCreationCodeForWindows(folder, file + ".bat") + "'''";
+        } else {
+            return "sh '''" + fileCreationCodeForLinux(folder, file + ".sh") + "'''";
+        }
     }
 
-    private String readTestResource(String resource) throws IOException {
-        return IOUtils.toString(getClass().getResource(resource), StandardCharsets.UTF_8);
+    private String fileCreationCodeForWindows(String folder, String file) {
+        String filePath = folder + "/" + file;
+        return ""
+                + "echo off\n"
+                + "if exist \"" + filePath + "\" \"" + filePath + "\"\n"
+                + "if not exist \"" + folder + "\" mkdir \"" + folder + "\"\n"
+                + "echo echo expected output from test file > \"" + filePath + "\"\n";
     }
 
-    private CpsFlowDefinition createOsSpecificPipelineDefinition(String pipelineDefinition) {
-        return new CpsFlowDefinition(SystemUtils.IS_OS_WINDOWS ?
-                pipelineDefinition.replaceAll("sh '", "bat '") :
-                pipelineDefinition, true);
+    private String fileCreationCodeForLinux(String folder, String file) {
+        String filePath = folder + "/" + file;
+        return ""
+                + "set +x\n"
+                + "[ -f '" + filePath + "' ] && './" + filePath + "'\n"
+                + "mkdir -p '" + folder + "'\n"
+                + "echo echo expected output from test file > '" + filePath + "'\n"
+                + "chmod a+x '" + filePath + "'\n";
+    }
+
+    private void deleteCachedDirectoryInWorkspace(WorkflowJob project) throws IOException, InterruptedException {
+        FilePath workspace = agent.getWorkspaceFor(project);
+        if (workspace != null) {
+            workspace.child("test-path").deleteRecursive();
+        }
     }
 }
