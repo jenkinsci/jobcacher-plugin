@@ -29,7 +29,6 @@
         <aws-credentials.version>1.29</aws-credentials.version>
         <jsr305.version>3.0.2</jsr305.version>
         <assertj-core.version>3.23.1</assertj-core.version>
-        <pipeline-project-env.version>35.v5cf2c7272df2</pipeline-project-env.version>
     </properties>
 
     <name>Jenkins Job Cacher plugin</name>
@@ -115,12 +114,6 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-basic-steps</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>pipeline-project-env</artifactId>
-            <version>${pipeline-project-env.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
