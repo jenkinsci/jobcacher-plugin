@@ -22,7 +22,6 @@
         <jenkins-tools-bom.artifactId>bom-2.303.x</jenkins-tools-bom.artifactId>
         <jenkins-tools-bom.version>987.v4ade2e49fe70</jenkins-tools-bom.version>
 
-        <java.level>8</java.level>
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
         <aws-java-sdk.version>1.12.215-339.vdc07efc5320c</aws-java-sdk.version>
