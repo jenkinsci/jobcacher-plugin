@@ -25,7 +25,7 @@
         <java.level>8</java.level>
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
-        <aws-java-sdk.version>1.12.215-339.vdc07efc5320c</aws-java-sdk.version>
+        <aws-java-sdk.version>1.12.246-349.v96b_b_f7eb_a_c3c</aws-java-sdk.version>
         <aws-credentials.version>1.29</aws-credentials.version>
         <jsr305.version>3.0.2</jsr305.version>
         <assertj-core.version>3.23.1</assertj-core.version>
