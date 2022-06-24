@@ -24,6 +24,7 @@
 
 package jenkins.plugins.jobcacher;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -41,7 +42,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
 
-import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -303,7 +303,7 @@ public class ArbitraryFileCache extends Cache {
     @Extension
     public static final class DescriptorImpl extends CacheDescriptor {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ArbitraryFileCache_displayName();

@@ -24,6 +24,7 @@
 
 package jenkins.plugins.jobcacher;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -39,7 +40,6 @@ import jenkins.tasks.SimpleBuildWrapper;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -113,7 +113,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
     @Extension
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.CacheWrapper_DisplayName();
