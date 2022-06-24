@@ -24,6 +24,7 @@
 
 package jenkins.plugins.itemstorage.local;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Item;
@@ -31,8 +32,6 @@ import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.plugins.itemstorage.ItemStorageDescriptor;
 import jenkins.plugins.itemstorage.Messages;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import javax.annotation.Nonnull;
 
 /**
  * Implementation of Item Storage that stores data on the Jenkins controller within the existing job folder.
@@ -64,7 +63,7 @@ public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
 
     @Extension
     public static final class DescriptorImpl extends ItemStorageDescriptor<LocalObjectPath> {
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.LocalItemStorage_DisplayName();

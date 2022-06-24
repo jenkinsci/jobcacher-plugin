@@ -29,6 +29,7 @@ import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.listeners.ItemListener;
@@ -42,7 +43,6 @@ import jenkins.plugins.itemstorage.Messages;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -146,7 +146,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
     @Extension(optional = true)
     public static final class DescriptorImpl extends ItemStorageDescriptor<S3ObjectPath> {
 
-        @Nonnull
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.NonAWSS3ItemStorage_DisplayName();
