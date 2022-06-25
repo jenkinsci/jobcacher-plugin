@@ -82,17 +82,14 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
     @Override
     public S3ObjectPath getObjectPath(Item item, String path) {
-        S3Profile profile = new S3Profile(lookupCredentials(), null, null, false, true);
-
-        return new S3ObjectPath(profile, bucketName, region, item.getFullName(), path);
+        return new S3ObjectPath(createS3Profile(), bucketName, region, item.getFullName(), path);
     }
 
     @Override
     public S3ObjectPath getObjectPathForBranch(Item item, String path, String branch) {
-        S3Profile profile = new S3Profile(lookupCredentials(), null, null, false, true);
         String branchPath = new File(item.getFullName()).getParent() + "/" + branch;
 
-        return new S3ObjectPath(profile, bucketName, region, branchPath, path);
+        return new S3ObjectPath(createS3Profile(), bucketName, region, branchPath, path);
     }
 
     private AmazonWebServicesCredentials lookupCredentials() {
@@ -104,6 +101,10 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
     private static List<AmazonWebServicesCredentials> possibleCredentials() {
         return CredentialsProvider.lookupCredentials(AmazonWebServicesCredentials.class, Jenkins.get(),
                 ACL.SYSTEM, Collections.emptyList());
+    }
+
+    private S3Profile createS3Profile() {
+        return new S3Profile(lookupCredentials(), null, region, null, false, true);
     }
 
     @Extension(optional = true)
@@ -141,23 +142,21 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         @Override
         public void onDeleted(Item item) {
             S3ItemStorage s3Storage = lookupS3Storage();
+            if (s3Storage == null) {
+                return;
+            }
 
-            if (s3Storage == null) return;
-
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, true);
-            profile.delete(s3Storage.bucketName, item.getFullName());
+            s3Storage.createS3Profile().delete(s3Storage.bucketName, item.getFullName());
         }
 
         @Override
         public void onLocationChanged(Item item, String oldFullName, String newFullName) {
             S3ItemStorage s3Storage = lookupS3Storage();
-
             if (s3Storage == null) {
                 return;
             }
 
-            S3Profile profile = new S3Profile(s3Storage.lookupCredentials(), null, null, false, true);
-            profile.rename(s3Storage.bucketName, oldFullName, newFullName);
+            s3Storage.createS3Profile().rename(s3Storage.bucketName, oldFullName, newFullName);
         }
 
         private S3ItemStorage lookupS3Storage() {

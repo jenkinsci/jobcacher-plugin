@@ -41,7 +41,7 @@ import java.util.Map;
 
 /**
  * Based on same named class in S3 Jenkins Plugin
- *
+ * <p>
  * Reusable class for interacting with S3 for file operations
  *
  * @author Peter Hayes
@@ -51,8 +51,8 @@ public class S3Profile {
     private final ClientHelper helper;
 
     @DataBoundConstructor
-    public S3Profile(AmazonWebServicesCredentials credentials, String endpoint, String signerVersion, boolean pathStyleAccess, boolean parallelDownloads) {
-        this.helper = new ClientHelper(credentials != null ? credentials.getCredentials() : null, endpoint, null, getProxy(), signerVersion, pathStyleAccess, parallelDownloads);
+    public S3Profile(AmazonWebServicesCredentials credentials, String endpoint, String region, String signerVersion, boolean pathStyleAccess, boolean parallelDownloads) {
+        this.helper = new ClientHelper(credentials != null ? credentials.getCredentials() : null, endpoint, region, getProxy(), signerVersion, pathStyleAccess, parallelDownloads);
     }
 
     public void upload(String bucketName,
