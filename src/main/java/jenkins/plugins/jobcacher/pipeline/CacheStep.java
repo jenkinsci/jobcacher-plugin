@@ -31,6 +31,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import io.jenkins.plugins.pipeline.cache.CacheStepExecution;
 import jenkins.model.Jenkins;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.jobcacher.Cache;
@@ -42,6 +43,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,15 +53,23 @@ import java.util.List;
  */
 public class CacheStep extends Step {
 
-    private final long maxCacheSize;
-    private final List<Cache> caches;
+    @DataBoundSetter
+    private Long maxCacheSize;
+    @DataBoundSetter
+    private List<Cache> caches;
     @DataBoundSetter
     public String defaultBranch = null;
+    @DataBoundSetter
+    private String path;
+    @DataBoundSetter
+    private String key;
+    @DataBoundSetter
+    private String[] restoreKeys;
+    @DataBoundSetter
+    private String filter;
 
     @DataBoundConstructor
-    public CacheStep(long maxCacheSize, List<Cache> caches) {
-        this.maxCacheSize = maxCacheSize;
-        this.caches = caches;
+    public CacheStep() {
     }
 
     @SuppressWarnings("unused")
@@ -76,9 +86,42 @@ public class CacheStep extends Step {
         return defaultBranch;
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String[] getRestoreKeys() {
+        return restoreKeys == null ? null : Arrays.copyOf(restoreKeys, restoreKeys.length);
+    }
+
+    public String getFilter() {
+        return filter;
+    }
+
     @Override
     public StepExecution start(StepContext context) throws Exception {
-        return new ExecutionImpl(context, maxCacheSize, caches, defaultBranch);
+        validateProperties();
+
+        if (maxCacheSize != null || caches != null) {
+            // execute legacy cache implementation
+            return new ExecutionImpl(context, maxCacheSize, caches, defaultBranch);
+        }
+
+        // execute github action style cache implementation
+        return new CacheStepExecution(context, path, key, restoreKeys, filter);
+    }
+
+    protected void validateProperties() {
+        boolean legacyProperties = maxCacheSize != null && caches != null;
+        boolean properties = path != null && key != null;
+
+        if (!legacyProperties && !properties) {
+            throw new IllegalArgumentException();
+        }
     }
 
     public static class ExecutionImpl extends GeneralNonBlockingStepExecution {

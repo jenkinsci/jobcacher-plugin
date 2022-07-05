@@ -130,7 +130,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
         return new S3ObjectPath(createS3Profile(), bucketName, region, branchPath, path);
     }
 
-    private AmazonWebServicesCredentials lookupCredentials() {
+    public AmazonWebServicesCredentials lookupCredentials() {
         return (credentialsId == null) ? null : CredentialsMatchers.firstOrNull(
                 possibleCredentials(),
                 CredentialsMatchers.withId(credentialsId));
