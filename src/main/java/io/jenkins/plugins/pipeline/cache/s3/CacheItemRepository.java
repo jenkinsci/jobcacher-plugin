@@ -8,8 +8,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -38,7 +36,7 @@ public class CacheItemRepository {
         return AmazonS3ClientBuilder
                 .standard()
                 .withPathStyleAccessEnabled(true)
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(config.getUsername(), config.getPassword())))
+                .withCredentials(config.getCredentials())
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(config.getEndpoint(), config.getRegion()))
                 .build();
     }

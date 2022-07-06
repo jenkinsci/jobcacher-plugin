@@ -5,8 +5,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
-
 import io.jenkins.cli.shaded.org.apache.commons.lang.NotImplementedException;
 import io.jenkins.plugins.pipeline.cache.s3.CacheItemRepository;
 import io.jenkins.plugins.pipeline.cache.s3.S3Config;
@@ -25,10 +23,8 @@ public abstract class AbstractMasterToAgentS3Callable extends MasterToSlaveFileC
     protected AbstractMasterToAgentS3Callable(ItemStorage<?> storage) {
         if (storage instanceof NonAWSS3ItemStorage) {
             NonAWSS3ItemStorage nonAWSS3ItemStorage = (NonAWSS3ItemStorage) storage;
-            AmazonWebServicesCredentials credentials = nonAWSS3ItemStorage.lookupCredentials();
             this.s3Config = new S3Config(
-                    credentials.getCredentials().getAWSAccessKeyId(),
-                    credentials.getCredentials().getAWSSecretKey(),
+                    nonAWSS3ItemStorage.lookupCredentials(),
                     nonAWSS3ItemStorage.getRegion(),
                     nonAWSS3ItemStorage.getEndpoint(),
                     nonAWSS3ItemStorage.getBucketName()
