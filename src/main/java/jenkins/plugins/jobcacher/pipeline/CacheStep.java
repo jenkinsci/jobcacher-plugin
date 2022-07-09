@@ -106,7 +106,7 @@ public class CacheStep extends Step {
     public StepExecution start(StepContext context) throws Exception {
         validateProperties();
 
-        if (maxCacheSize != null || caches != null) {
+        if (maxCacheSize != null && caches != null) {
             // execute legacy cache implementation
             return new ExecutionImpl(context, maxCacheSize, caches, defaultBranch);
         }

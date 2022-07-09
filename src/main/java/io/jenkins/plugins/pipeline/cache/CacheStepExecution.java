@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipeline.cache;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -39,7 +40,7 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
         super(context);
         this.path = path;
         this.key = key;
-        this.restoreKeys = restoreKeys;
+        this.restoreKeys = restoreKeys == null ? null : Arrays.copyOf(restoreKeys, restoreKeys.length);
         this.filter = filter;
         this.logger = context.get(TaskListener.class).getLogger();
         this.config = GlobalItemStorage.get().getStorage();
