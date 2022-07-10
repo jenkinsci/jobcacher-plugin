@@ -24,6 +24,8 @@
 
 package jenkins.plugins.itemstorage.s3;
 
+import static hudson.Util.fixEmptyAndTrim;
+
 import com.amazonaws.auth.SignerFactory;
 import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
@@ -72,11 +74,11 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
                                String signerVersion,
                                boolean pathStyleAccess,
                                boolean parallelDownloads) {
-        this.credentialsId = credentialsId;
-        this.bucketName = bucketName;
-        this.endpoint = endpoint;
-        this.region = region;
-        this.signerVersion = signerVersion;
+        this.credentialsId = fixEmptyAndTrim(credentialsId);
+        this.bucketName = fixEmptyAndTrim(bucketName);
+        this.endpoint = fixEmptyAndTrim(endpoint);
+        this.region = fixEmptyAndTrim(region);
+        this.signerVersion = fixEmptyAndTrim(signerVersion);
         this.pathStyleAccess = pathStyleAccess;
         this.parallelDownloads = parallelDownloads;
     }
@@ -164,6 +166,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
         @SuppressWarnings("unused")
         public ListBoxModel doFillSignerVersionItems() {
             ListBoxModel model = new ListBoxModel();
+            model.add("None", "");
             model.add("Version 4", SignerFactory.VERSION_FOUR_SIGNER);
             model.add("Version 3", SignerFactory.VERSION_THREE_SIGNER);
             model.add("Version 2", "S3SignerType");

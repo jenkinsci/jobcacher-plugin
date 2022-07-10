@@ -75,9 +75,7 @@ public class ClientHelper implements Serializable {
                 builder.setEndpointConfiguration(new EndpointConfiguration(endpoint, region));
                 builder.setPathStyleAccessEnabled(pathStyleAccess);
                 config.setSignerOverride(signerVersion);
-            }
-
-            if (region != null) {
+            } else if (region != null) {
                 builder.setRegion(region);
             }
 
