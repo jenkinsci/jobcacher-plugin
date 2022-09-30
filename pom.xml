@@ -28,7 +28,7 @@
         <aws-credentials.version>1.29</aws-credentials.version>
         <jsr305.version>3.0.2</jsr305.version>
         <assertj-core.version>3.23.1</assertj-core.version>
-        <testcontainers.version>1.17.3</testcontainers.version>
+        <testcontainers.version>1.17.4</testcontainers.version>
     </properties>
 
     <name>Jenkins Job Cacher plugin</name>
