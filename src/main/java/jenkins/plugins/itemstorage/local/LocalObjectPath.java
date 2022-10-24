@@ -96,6 +96,10 @@ public class LocalObjectPath extends ObjectPath {
         return new DirectoryBrowserSupport(job, file, "Cache of " + name, "folder.png", true);
     }
 
+    protected String getPath() {
+        return file.getRemote();
+    }
+
     /**
      * Scanner that filters out files that are up-to-date
      */
