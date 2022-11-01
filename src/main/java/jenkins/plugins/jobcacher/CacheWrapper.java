@@ -30,6 +30,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapperDescriptor;
@@ -154,7 +155,9 @@ public class CacheWrapper extends SimpleBuildWrapper {
 
         @Override
         public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-            CacheManager.save(storage, build, workspace, launcher, listener, maxCacheSize, caches, cacheSavers);
+            if (build.getResult() != Result.FAILURE && build.getResult() != Result.ABORTED) {
+                CacheManager.save(storage, build, workspace, launcher, listener, maxCacheSize, caches, cacheSavers);
+            }
         }
     }
 }

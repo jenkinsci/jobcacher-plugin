@@ -148,13 +148,6 @@ public class CacheStep extends Step {
 
         @Override
         public void onFailure(StepContext context, Throwable t) {
-            try {
-                // attempt to save the caches even though we failed
-                complete(context);
-            } catch (Throwable ignored) {
-                // ignore error as we are failed anyway
-            }
-
             context.onFailure(t);
         }
 
