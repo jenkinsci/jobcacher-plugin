@@ -152,7 +152,13 @@ public class ArbitraryFileCache extends Cache {
         }
 
         logMessage("Restoring cache...", listener);
-        compressionMethod.cacheStrategy.restore(cache, resolvedPath, workspace);
+
+        try {
+            compressionMethod.cacheStrategy.restore(cache, resolvedPath, workspace);
+        } catch (Exception e) {
+            logMessage("Failed to restore cache, cleaning up " + path + "...", listener);
+            resolvedPath.deleteRecursive();
+        }
 
         return new SaverImpl(resolvedPath);
     }
