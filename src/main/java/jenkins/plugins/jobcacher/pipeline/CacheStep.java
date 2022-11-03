@@ -42,8 +42,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Wrapping workflow step that automatically seeds the specified path with the previous run and on exit of the
@@ -97,11 +96,13 @@ public class CacheStep extends Step {
             this.defaultBranch = defaultBranch;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean start() throws Exception {
+            run(this::execute);
+            return false;
+        }
+
+        private void execute() throws Exception {
             StepContext context = getContext();
 
             Run<?, ?> run = context.get(Run.class);
@@ -112,13 +113,12 @@ public class CacheStep extends Step {
 
             List<Cache.Saver> cacheSavers = CacheManager.cache(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, initialEnvironment, caches, defaultBranch);
 
-            context.newBodyInvoker().
-                    withContext(context).
-                    withCallback(new ExecutionCallback(maxCacheSize, caches, cacheSavers)).
-                    start();
-
-            return false;
+            context.newBodyInvoker()
+                    .withContext(context)
+                    .withCallback(new ExecutionCallback(maxCacheSize, caches, cacheSavers))
+                    .start();
         }
+
     }
 
     public static class ExecutionCallback extends BodyExecutionCallback {
@@ -164,17 +164,11 @@ public class CacheStep extends Step {
     @Extension(optional = true)
     public static class DescriptorImpl extends AbstractStepDescriptorImpl {
 
-        /**
-         * Constructor.
-         */
         @SuppressWarnings("unused")
         public DescriptorImpl() {
             super(ExecutionImpl.class);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String getFunctionName() {
             return "cache";
@@ -186,9 +180,6 @@ public class CacheStep extends Step {
             return Messages.CacheStep_DisplayName();
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean takesImplicitBlockArgument() {
             return true;
