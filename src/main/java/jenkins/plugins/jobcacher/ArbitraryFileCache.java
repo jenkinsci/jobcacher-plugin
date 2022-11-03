@@ -230,6 +230,10 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private boolean matchesCurrentCacheValidityDecidingFileHash(ObjectPath previousCacheValidityDecidingFileHash, FilePath workspace) throws IOException, InterruptedException {
+        if (!isCacheValidityDecidingFilePresent(workspace)) {
+            return false;
+        }
+
         try (TempFile tempFile = WorkspaceHelper.createTempFile(workspace, CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION)) {
             previousCacheValidityDecidingFileHash.copyTo(tempFile.get());
             return StringUtils.equals(tempFile.get().readToString(), getCurrentCacheValidityDecidingFileHash(workspace));
@@ -237,12 +241,19 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private String getCurrentCacheValidityDecidingFileHash(FilePath workspace) throws IOException, InterruptedException {
-        FilePath fileToHash = workspace.child(cacheValidityDecidingFile);
-        if (!fileToHash.exists()) {
+        if (!isCacheValidityDecidingFilePresent(workspace)) {
             throw new IllegalStateException("path " + cacheValidityDecidingFile + " cannot be resolved within the current workspace");
         }
 
-        return fileToHash.digest();
+        return resolveCacheValidityDecidingFile(workspace).digest();
+    }
+
+    private boolean isCacheValidityDecidingFilePresent(FilePath workspace) throws IOException, InterruptedException {
+        return resolveCacheValidityDecidingFile(workspace).exists();
+    }
+
+    private FilePath resolveCacheValidityDecidingFile(FilePath workspace) throws IOException, InterruptedException {
+        return workspace.child(cacheValidityDecidingFile);
     }
 
     private class SaverImpl extends Saver {
@@ -276,7 +287,7 @@ public class ArbitraryFileCache extends Cache {
 
             logMessage("Creating cache...", listener);
             compressionMethod.getCacheStrategy().cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
-            if (isCacheValidityDecidingFileConfigured()) {
+            if (isCacheValidityDecidingFileConfigured() && isCacheValidityDecidingFilePresent(workspace)) {
                 updateSkipCacheTriggerFileHash(cachesRoot, workspace);
             }
         }

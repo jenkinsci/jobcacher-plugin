@@ -66,6 +66,27 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
+    public void testNonExistingCacheValidityDecidingFile() throws Exception {
+        String cacheDefinition = "[$class: 'ArbitraryFileCache', path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile-unknown.txt']";
+        WorkflowJob project = createTestProject(cacheDefinition);
+
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run1.getLog())
+                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .doesNotContain("expected output from test file")
+                .contains("[Cache for test-path] Creating cache...");
+
+        deleteCachedDirectoryInWorkspace(project);
+
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog())
+                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .doesNotContain("expected output from test file")
+                .contains("[Cache for test-path] Creating cache...");
+    }
+
+    @Test
+    @WithTimeout(600)
     public void testUncompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path']");
     }
