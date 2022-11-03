@@ -82,6 +82,12 @@ public class ArbitraryFileCachePipelineTest {
         testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path', compressionMethod: 'TARGZ']");
     }
 
+    @Test
+    @WithTimeout(600)
+    public void testZstandardCompressedArbitraryFileCacheWithinPipeline() throws Exception {
+        testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path', compressionMethod: 'TAR_ZSTD']");
+    }
+
     private void testArbitraryFileCacheWithinPipeline(String cacheDefinition) throws Exception {
         WorkflowJob project = createTestProject(cacheDefinition);
 
