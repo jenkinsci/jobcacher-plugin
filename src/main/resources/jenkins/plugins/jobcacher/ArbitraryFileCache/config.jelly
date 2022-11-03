@@ -30,6 +30,11 @@
     </f:entry>
 
     <f:advanced>
+
+        <f:entry title="${%Cache name}" field="cacheName">
+            <f:textbox/>
+        </f:entry>
+
         <f:entry title="${%Includes}" field="includes">
             <f:textbox default="**/*"/>
         </f:entry>
