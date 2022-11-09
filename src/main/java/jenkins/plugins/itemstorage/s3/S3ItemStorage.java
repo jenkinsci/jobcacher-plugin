@@ -30,7 +30,6 @@ import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.listeners.ItemListener;
 import hudson.security.ACL;
@@ -40,6 +39,8 @@ import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.plugins.itemstorage.ItemStorageDescriptor;
 import jenkins.plugins.itemstorage.Messages;
+
+import org.jenkinsci.plugins.variant.OptionalExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -107,7 +108,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         return new S3Profile(lookupCredentials(), null, region, null, false, true);
     }
 
-    @Extension(optional = true)
+    @OptionalExtension(requirePlugins={"aws-java-sdk", "aws-credentials"})
     public static final class DescriptorImpl extends ItemStorageDescriptor<S3ObjectPath> {
 
         @NonNull
@@ -136,7 +137,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         }
     }
 
-    @Extension(optional = true)
+    @OptionalExtension(requirePlugins={"aws-java-sdk", "aws-credentials"})
     public static final class S3ItemListener extends ItemListener {
 
         @Override
