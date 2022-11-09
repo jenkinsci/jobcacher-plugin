@@ -65,7 +65,7 @@ The cache(s) will be restored before calling the closure and updated after execu
 
 ```groovy
 cache(maxCacheSize: 250, defaultBranch: 'develop', caches: [
-        [$class: 'ArbitraryFileCache', path: 'node_modules', cacheValidityDecidingFile: 'package-lock.json', compressionMethod: 'TARGZ']
+        arbitraryFileCache(path: 'node_modules', cacheValidityDecidingFile: 'package-lock.json', compressionMethod: 'TARGZ')
 ]) {
     // ...
 }
