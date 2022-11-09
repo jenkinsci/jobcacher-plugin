@@ -30,6 +30,7 @@
         <jsr305.version>3.0.2</jsr305.version>
         <assertj-core.version>3.23.1</assertj-core.version>
         <testcontainers.version>1.17.5</testcontainers.version>
+        <zstd-jni.version>1.5.2-5</zstd-jni.version>
     </properties>
 
     <name>Jenkins Job Cacher plugin</name>
@@ -74,6 +75,12 @@
             <artifactId>aws-credentials</artifactId>
             <version>${aws-credentials.version}</version>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.luben</groupId>
+            <artifactId>zstd-jni</artifactId>
+            <version>${zstd-jni.version}</version>
         </dependency>
 
         <dependency>

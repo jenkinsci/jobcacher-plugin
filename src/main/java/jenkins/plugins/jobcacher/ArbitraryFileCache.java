@@ -359,7 +359,8 @@ public class ArbitraryFileCache extends Cache {
 
         NONE(new SimpleArbitraryFileCacheStrategy()),
         ZIP(new ZipArbitraryFileCacheStrategy()),
-        TARGZ(new TarGzArbitraryFileCacheStrategy());
+        TARGZ(new TarArbitraryFileCacheStrategy("gz", ".tgz")),
+        TAR_ZSTD(new TarArbitraryFileCacheStrategy("zstd", ".tar.zst"));
 
         private final ArbitraryFileCacheStrategy cacheStrategy;
 

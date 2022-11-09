@@ -51,5 +51,6 @@ public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
 
             return null;
         }
+
     }
 }
