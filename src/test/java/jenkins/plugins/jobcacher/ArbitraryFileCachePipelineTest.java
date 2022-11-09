@@ -36,7 +36,7 @@ public class ArbitraryFileCachePipelineTest {
     @Test
     @WithTimeout(600)
     public void testArbitraryFileCacheWithinPipelineWithCacheValidityDecidingFile() throws Exception {
-        String cacheDefinition = "[$class: 'ArbitraryFileCache', path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt']";
+        String cacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt')";
         WorkflowJob project = createTestProject(cacheDefinition);
 
         WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
@@ -67,7 +67,7 @@ public class ArbitraryFileCachePipelineTest {
     @Test
     @WithTimeout(600)
     public void testNonExistingCacheValidityDecidingFile() throws Exception {
-        String cacheDefinition = "[$class: 'ArbitraryFileCache', path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile-unknown.txt']";
+        String cacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile-unknown.txt')";
         WorkflowJob project = createTestProject(cacheDefinition);
 
         WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
@@ -88,19 +88,19 @@ public class ArbitraryFileCachePipelineTest {
     @Test
     @WithTimeout(600)
     public void testUncompressedArbitraryFileCacheWithinPipeline() throws Exception {
-        testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path']");
+        testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path')");
     }
 
     @Test
     @WithTimeout(600)
     public void testZipCompressedArbitraryFileCacheWithinPipeline() throws Exception {
-        testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path', compressionMethod: 'ZIP']");
+        testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'ZIP')");
     }
 
     @Test
     @WithTimeout(600)
     public void testTarGzCompressedArbitraryFileCacheWithinPipeline() throws Exception {
-        testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path', compressionMethod: 'TARGZ']");
+        testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'TARGZ')");
     }
 
     private void testArbitraryFileCacheWithinPipeline(String cacheDefinition) throws Exception {

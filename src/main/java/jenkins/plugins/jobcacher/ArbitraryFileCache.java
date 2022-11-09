@@ -33,6 +33,7 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
+import org.jenkinsci.Symbol;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ObjectPath;
 import jenkins.plugins.jobcacher.arbitrary.*;
@@ -318,6 +319,7 @@ public class ArbitraryFileCache extends Cache {
     }
 
     @Extension
+    @Symbol("arbitraryFileCache")
     public static final class DescriptorImpl extends CacheDescriptor {
 
         @NonNull

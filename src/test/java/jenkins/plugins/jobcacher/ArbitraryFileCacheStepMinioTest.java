@@ -79,7 +79,7 @@ public class ArbitraryFileCacheStepMinioTest {
         // GIVEN
         WorkflowJob job = j.createProject(WorkflowJob.class);
         job.setDefinition(new CpsFlowDefinition("node {\n" +
-                "  cache(maxCacheSize: 250, caches: [[$class: 'ArbitraryFileCache', path: 'sub', compressionMethod: 'TARGZ']]){\n" +
+                "  cache(maxCacheSize: 250, caches: [arbitraryFileCache(path: 'sub', compressionMethod: 'TARGZ')]){\n" +
                 "    sh 'mkdir sub'\n" +
                 "    sh 'echo sub-content > sub/file'\n" +
                 "  }\n" +
@@ -97,7 +97,7 @@ public class ArbitraryFileCacheStepMinioTest {
         // GIVEN
         job.setDefinition(new CpsFlowDefinition("node {\n" +
                 "  sh 'rm -rf *'\n" +
-                "  cache(maxCacheSize: 250, caches: [[$class: 'ArbitraryFileCache', path: 'sub', compressionMethod: 'TARGZ']]){\n" +
+                "  cache(maxCacheSize: 250, caches: [arbitraryFileCache(path: 'sub', compressionMethod: 'TARGZ')]){\n" +
                 "    sh 'cat sub/file'\n" +
                 "  }\n" +
                 "}", true));
