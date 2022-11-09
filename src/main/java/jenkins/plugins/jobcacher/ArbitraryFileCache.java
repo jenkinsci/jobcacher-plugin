@@ -59,6 +59,7 @@ public class ArbitraryFileCache extends Cache {
     private static final long serialVersionUID = 1L;
 
     private static final String CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION = ".hash";
+    private static final String CACHE_FILENAME_PART_SEP = "-";
 
     private String path;
     private String includes;
@@ -66,6 +67,7 @@ public class ArbitraryFileCache extends Cache {
     private boolean useDefaultExcludes = true;
     private String cacheValidityDecidingFile;
     private CompressionMethod compressionMethod = CompressionMethod.NONE;
+    private String cacheName;
 
     @DataBoundConstructor
     public ArbitraryFileCache(String path, String includes, String excludes) {
@@ -125,16 +127,30 @@ public class ArbitraryFileCache extends Cache {
         return excludes;
     }
 
-    private String getCacheName() {
-        return compressionMethod.getCacheStrategy().createCacheName(getCacheBaseName());
+    public String getCacheName() {
+        return cacheName;
+    }
+
+    @DataBoundSetter
+    public void setCacheName(String cacheName) {
+        this.cacheName = cacheName;
+    }
+
+    private String createCacheFilename() {
+        return compressionMethod.getCacheStrategy().createCacheName(createCacheBaseName());
     }
 
     private String getSkipCacheTriggerFileHashFileName() {
-        return getCacheBaseName() + CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION;
+        return createCacheBaseName() + CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION;
     }
 
-    public String getCacheBaseName() {
-        return deriveCachePath(path);
+    public String createCacheBaseName() {
+        String generatedCacheName = deriveCachePath(path);
+        if (StringUtils.isEmpty(this.cacheName)) {
+            return generatedCacheName;
+        }
+
+        return generatedCacheName + CACHE_FILENAME_PART_SEP + this.cacheName;
     }
 
     @Override
@@ -204,7 +220,7 @@ public class ArbitraryFileCache extends Cache {
             return null;
         }
 
-        return cachesRoot.child(getCacheName());
+        return cachesRoot.child(createCacheFilename());
     }
 
     private boolean isCacheOutdated(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
@@ -221,7 +237,7 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private ObjectPath resolvePreviousCacheValidityDecidingFileHashFile(ObjectPath cachesRoot) throws IOException, InterruptedException {
-        String skipCacheTriggerFileHashFileName = createCacheValidityDecidingFileHashFileName(getCacheBaseName());
+        String skipCacheTriggerFileHashFileName = createCacheValidityDecidingFileHashFileName(createCacheBaseName());
 
         return cachesRoot.child(skipCacheTriggerFileHashFileName);
     }

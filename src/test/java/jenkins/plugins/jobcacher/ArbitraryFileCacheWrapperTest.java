@@ -32,6 +32,7 @@ public class ArbitraryFileCacheWrapperTest {
         cache.setCacheValidityDecidingFile("cacheValidityDecidingFile");
         cache.setCompressionMethod(CompressionMethod.TARGZ);
         cache.setUseDefaultExcludes(false);
+        cache.setCacheName("cacheName");
 
         CacheWrapper cacheWrapper = new CacheWrapper(999, Collections.singletonList(cache));
         cacheWrapper.setDefaultBranch("develop");
