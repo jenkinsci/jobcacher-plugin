@@ -33,12 +33,12 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
-import org.jenkinsci.Symbol;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ObjectPath;
 import jenkins.plugins.jobcacher.arbitrary.*;
 import jenkins.plugins.jobcacher.arbitrary.WorkspaceHelper.TempFile;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
@@ -46,6 +46,7 @@ import org.kohsuke.stapler.*;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 /**
  * This class implements a Cache where the user can configure a path on the executor that will be cached.  Users can
@@ -169,6 +170,7 @@ public class ArbitraryFileCache extends Cache {
         }
 
         logMessage("Restoring cache...", listener);
+        long cacheRestorationStartTime = System.nanoTime();
 
         try {
             compressionMethod.cacheStrategy.restore(cache, resolvedPath, workspace);
@@ -176,6 +178,8 @@ public class ArbitraryFileCache extends Cache {
             logMessage("Failed to restore cache, cleaning up " + path + "...", listener);
             resolvedPath.deleteRecursive();
         }
+        long cacheRestorationEndTime = System.nanoTime();
+        logMessage("Cache restored in " + Duration.ofNanos(cacheRestorationEndTime - cacheRestorationStartTime).toMillis() + "ms", listener);
 
         return new SaverImpl(resolvedPath);
     }
@@ -303,10 +307,13 @@ public class ArbitraryFileCache extends Cache {
             ObjectPath cache = resolveCache(cachesRoot);
 
             logMessage("Creating cache...", listener);
+            long cacheCreationStartTime = System.nanoTime();
             compressionMethod.getCacheStrategy().cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
             if (isCacheValidityDecidingFileConfigured() && isCacheValidityDecidingFilePresent(workspace)) {
                 updateSkipCacheTriggerFileHash(cachesRoot, workspace);
             }
+            long cacheCreationEndTime = System.nanoTime();
+            logMessage("Cache created in " + Duration.ofNanos(cacheCreationEndTime - cacheCreationStartTime).toMillis() + "ms", listener);
         }
 
         private void updateSkipCacheTriggerFileHash(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
@@ -320,7 +327,12 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private void logMessage(String message, TaskListener listener) {
-        listener.getLogger().println("[Cache for " + path + "] " + message);
+        String cacheIdentifier = path;
+        if (getCacheName() != null) {
+            cacheIdentifier += " (" + getCacheName() + ")";
+        }
+
+        listener.getLogger().println("[Cache for " + cacheIdentifier + "] " + message);
     }
 
     public HttpResponse doDynamic(StaplerRequest req, StaplerResponse rsp, @AncestorInPath Job<?, ?> job) throws IOException, ServletException, InterruptedException {
