@@ -8,7 +8,7 @@
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>4.50</version>
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <artifactId>jobcacher</artifactId>
@@ -62,7 +62,7 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>variant</artifactId>
             <version>${variant.version}</version>
-          </dependency>
+        </dependency>
 
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
@@ -77,6 +77,10 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.github.luben</groupId>
             <artifactId>zstd-jni</artifactId>
@@ -137,6 +141,20 @@
             </exclusions>
         </dependency>
     </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jenkins-ci.tools</groupId>
+                    <artifactId>maven-hpi-plugin</artifactId>
+                    <configuration>
+                        <pluginFirstClassLoader>true</pluginFirstClassLoader>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
     <licenses>
         <license>
