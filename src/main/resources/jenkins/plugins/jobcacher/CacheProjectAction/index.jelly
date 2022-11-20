@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
 -->
-
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <l:layout title="${%Caches} : ${it.job.name}">
@@ -42,7 +41,7 @@
                                 <table class="pane">
                                     <j:forEach var="cache" items="${it.caches}" indexVar="cacheIndex">
                                         <tbody>
-                                            <st:include page="cache-entry.jelly" it="${cache}" />
+                                            <st:include page="cache-entry.jelly" it="${cache}"/>
                                         </tbody>
                                     </j:forEach>
                                 </table>

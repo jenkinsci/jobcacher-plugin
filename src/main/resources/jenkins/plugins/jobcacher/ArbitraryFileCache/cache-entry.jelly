@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
 <!-- tell user that there's no workspace yet -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
@@ -33,5 +32,4 @@ THE SOFTWARE.
             </a>
         </td>
     </tr>
-
 </j:jelly>
