@@ -29,7 +29,7 @@
         <variant.version>59.vf075fe829ccb</variant.version>
         <jsr305.version>3.0.2</jsr305.version>
         <assertj-core.version>3.23.1</assertj-core.version>
-        <testcontainers.version>1.17.5</testcontainers.version>
+        <testcontainers.version>1.17.6</testcontainers.version>
         <zstd-jni.version>1.5.2-5</zstd-jni.version>
     </properties>
 
