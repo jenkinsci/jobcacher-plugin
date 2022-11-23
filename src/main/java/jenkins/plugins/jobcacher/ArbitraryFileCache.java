@@ -27,10 +27,7 @@ package jenkins.plugins.jobcacher;
 import com.github.luben.zstd.ZstdInputStream;
 import com.github.luben.zstd.ZstdOutputStream;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
+import hudson.*;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -41,6 +38,8 @@ import jenkins.plugins.jobcacher.arbitrary.*;
 import jenkins.plugins.jobcacher.arbitrary.WorkspaceHelper.TempFile;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -49,7 +48,11 @@ import org.kohsuke.stapler.*;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 
 /**
@@ -64,6 +67,7 @@ public class ArbitraryFileCache extends Cache {
     private static final long serialVersionUID = 1L;
 
     private static final String CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION = ".hash";
+    private static final String CACHE_VALIDITY_DECIDING_FILE_DIGEST_ALGORITHM = "MD5";
     private static final String CACHE_FILENAME_PART_SEP = "-";
 
     private String path;
@@ -255,7 +259,7 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private boolean matchesCurrentCacheValidityDecidingFileHash(ObjectPath previousCacheValidityDecidingFileHash, FilePath workspace) throws IOException, InterruptedException {
-        if (!isCacheValidityDecidingFilePresent(workspace)) {
+        if (!isOneCacheValidityDecidingFilePresent(workspace)) {
             return false;
         }
 
@@ -266,19 +270,31 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private String getCurrentCacheValidityDecidingFileHash(FilePath workspace) throws IOException, InterruptedException {
-        if (!isCacheValidityDecidingFilePresent(workspace)) {
+        if (!isOneCacheValidityDecidingFilePresent(workspace)) {
             throw new IllegalStateException("path " + cacheValidityDecidingFile + " cannot be resolved within the current workspace");
         }
 
-        return resolveCacheValidityDecidingFile(workspace).digest();
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance(CACHE_VALIDITY_DECIDING_FILE_DIGEST_ALGORITHM);
+            for (FilePath cacheValidityDecidingFile : resolveCacheValidityDecidingFiles(workspace)) {
+                try (InputStream inputStream = cacheValidityDecidingFile.read()) {
+                    DigestInputStream digestInputStream = new DigestInputStream(inputStream, messageDigest);
+                    IOUtils.copy(digestInputStream, NullOutputStream.NULL_OUTPUT_STREAM);
+                }
+            }
+
+            return Util.toHexString(messageDigest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException(e);
+        }
     }
 
-    private boolean isCacheValidityDecidingFilePresent(FilePath workspace) throws IOException, InterruptedException {
-        return resolveCacheValidityDecidingFile(workspace).exists();
+    private boolean isOneCacheValidityDecidingFilePresent(FilePath workspace) throws IOException, InterruptedException {
+        return resolveCacheValidityDecidingFiles(workspace).length > 0;
     }
 
-    private FilePath resolveCacheValidityDecidingFile(FilePath workspace) throws IOException, InterruptedException {
-        return workspace.child(cacheValidityDecidingFile);
+    private FilePath[] resolveCacheValidityDecidingFiles(FilePath workspace) throws IOException, InterruptedException {
+        return workspace.list(cacheValidityDecidingFile);
     }
 
     private class SaverImpl extends Saver {
@@ -313,7 +329,7 @@ public class ArbitraryFileCache extends Cache {
             logMessage("Creating cache...", listener);
             long cacheCreationStartTime = System.nanoTime();
             compressionMethod.getCacheStrategy().cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
-            if (isCacheValidityDecidingFileConfigured() && isCacheValidityDecidingFilePresent(workspace)) {
+            if (isCacheValidityDecidingFileConfigured() && isOneCacheValidityDecidingFilePresent(workspace)) {
                 updateSkipCacheTriggerFileHash(cachesRoot, workspace);
             }
             long cacheCreationEndTime = System.nanoTime();
@@ -400,4 +416,5 @@ public class ArbitraryFileCache extends Cache {
             return cacheStrategy;
         }
     }
+
 }

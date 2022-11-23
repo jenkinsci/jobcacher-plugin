@@ -35,6 +35,39 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
+    public void testMultipleCacheValidityDecidingFiles() throws Exception {
+        String module1PackagesLock = "abcdefghijklmnopqrstuvwxyz";
+        String module2PackagesLock = StringUtils.reverse(module1PackagesLock);
+
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+        String scriptedPipeline = ""
+                + "node('test-agent') {\n"
+                + "    writeFile text: '" + module1PackagesLock + "', file: 'module1/packages.lock.json'\n"
+                + "    writeFile text: '" + module2PackagesLock + "', file: 'module2/packages.lock.json'\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: '**/packages.lock.json')]) {\n"
+                + "        " + fileCreationCode("test-path", "test-file") + "\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run1.getLog())
+                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .doesNotContain("expected output from test file")
+                .contains("[Cache for test-path] Creating cache...");
+
+        deleteCachedDirectoryInWorkspace(project);
+
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog())
+                .contains("[Cache for test-path] Found cache in job specific caches")
+                .contains("[Cache for test-path] Restoring cache...")
+                .contains("expected output from test file")
+                .contains("[Cache for test-path] Skip cache creation as the cache is up-to-date");
+    }
+
+    @Test
+    @WithTimeout(600)
     public void testArbitraryFileCacheWithinPipelineWithCacheValidityDecidingFile() throws Exception {
         String cacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt')";
         WorkflowJob project = createTestProject(cacheDefinition);
