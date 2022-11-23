@@ -145,10 +145,6 @@ public class ArbitraryFileCache extends Cache {
         this.cacheName = cacheName;
     }
 
-    private String createCacheFilename() {
-        return compressionMethod.getCacheStrategy().createCacheName(createCacheBaseName());
-    }
-
     private String getSkipCacheTriggerFileHashFileName() {
         return createCacheBaseName() + CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION;
     }
@@ -171,8 +167,8 @@ public class ArbitraryFileCache extends Cache {
     public Saver cache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         FilePath resolvedPath = resolvePath(workspace, initialEnvironment);
 
-        ObjectPath cache = resolveValidCache(cachesRoot, fallbackCachesRoot, workspace, listener);
-        if (cache == null) {
+        ExistingCache existingCache = resolveExistingValidCache(cachesRoot, fallbackCachesRoot, workspace, listener);
+        if (existingCache == null) {
             logMessage("Skip restoring cache as no up-to-date cache exists", listener);
             return new SaverImpl(resolvedPath);
         }
@@ -181,7 +177,7 @@ public class ArbitraryFileCache extends Cache {
         long cacheRestorationStartTime = System.nanoTime();
 
         try {
-            compressionMethod.cacheStrategy.restore(cache, resolvedPath, workspace);
+            existingCache.restore(resolvedPath, workspace);
         } catch (Exception e) {
             logMessage("Failed to restore cache, cleaning up " + path + "...", listener);
             resolvedPath.deleteRecursive();
@@ -198,14 +194,14 @@ public class ArbitraryFileCache extends Cache {
         return workspace.child(expandedPath);
     }
 
-    private ObjectPath resolveValidCache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
-        ObjectPath cache = resolveValidCache(cachesRoot, workspace);
+    private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        ExistingCache cache = resolveExistingValidCache(cachesRoot, workspace);
         if (cache != null) {
             logMessage("Found cache in job specific caches", listener);
             return cache;
         }
 
-        cache = resolveValidCache(fallbackCachesRoot, workspace);
+        cache = resolveExistingValidCache(fallbackCachesRoot, workspace);
         if (cache != null) {
             logMessage("Found cache in default caches", listener);
             return cache;
@@ -214,9 +210,9 @@ public class ArbitraryFileCache extends Cache {
         return null;
     }
 
-    private ObjectPath resolveValidCache(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
-        ObjectPath cache = resolveCache(cachesRoot);
-        if (cache == null || !cache.exists()) {
+    private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
+        ExistingCache existingCache = resolveExistingCache(cachesRoot);
+        if (existingCache == null) {
             return null;
         }
 
@@ -224,15 +220,26 @@ public class ArbitraryFileCache extends Cache {
             return null;
         }
 
-        return cache;
+        return existingCache;
     }
 
-    private ObjectPath resolveCache(ObjectPath cachesRoot) throws IOException, InterruptedException {
+    private ExistingCache resolveExistingCache(ObjectPath cachesRoot) throws IOException, InterruptedException {
         if (cachesRoot == null) {
             return null;
         }
 
-        return cachesRoot.child(createCacheFilename());
+        for (CompressionMethod compressionMethod : CompressionMethod.values()) {
+            ObjectPath cache = resolveCachePathForCompressionMethod(cachesRoot, compressionMethod);
+            if (cache.exists()) {
+                return new ExistingCache(cache, compressionMethod);
+            }
+        }
+
+        return null;
+    }
+
+    private ObjectPath resolveCachePathForCompressionMethod(ObjectPath cachesRoot, CompressionMethod compressionMethod) throws IOException, InterruptedException {
+        return cachesRoot.child(compressionMethod.getCacheStrategy().createCacheName(createCacheBaseName()));
     }
 
     private boolean isCacheOutdated(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
@@ -319,12 +326,21 @@ public class ArbitraryFileCache extends Cache {
                 return;
             }
 
-            if (isCacheValidityDecidingFileConfigured() && !isCacheOutdated(cachesRoot, workspace)) {
-                logMessage("Skip cache creation as the cache is up-to-date", listener);
-                return;
+            if (isCacheValidityDecidingFileConfigured()) {
+                ExistingCache existingValidCache = resolveExistingValidCache(cachesRoot, workspace);
+                if (existingValidCache != null) {
+                    logMessage("Skip cache creation as the cache is up-to-date", listener);
+                    return;
+                }
             }
 
-            ObjectPath cache = resolveCache(cachesRoot);
+            ExistingCache existingCache = resolveExistingCache(cachesRoot);
+            if (existingCache != null && existingCache.getCompressionMethod() != compressionMethod) {
+                logMessage("Delete existing cache as the compression method has been changed", listener);
+                existingCache.getCache().deleteRecursive();
+            }
+
+            ObjectPath cache = resolveCachePathForCompressionMethod(cachesRoot, compressionMethod);
 
             logMessage("Creating cache...", listener);
             long cacheCreationStartTime = System.nanoTime();
@@ -415,6 +431,30 @@ public class ArbitraryFileCache extends Cache {
         public ArbitraryFileCacheStrategy getCacheStrategy() {
             return cacheStrategy;
         }
+    }
+
+    private static class ExistingCache {
+
+        private final ObjectPath cache;
+        private final CompressionMethod compressionMethod;
+
+        private ExistingCache(ObjectPath cache, CompressionMethod compressionMethod) {
+            this.cache = cache;
+            this.compressionMethod = compressionMethod;
+        }
+
+        public ObjectPath getCache() {
+            return cache;
+        }
+
+        public CompressionMethod getCompressionMethod() {
+            return compressionMethod;
+        }
+
+        public void restore(FilePath target, FilePath workspace) throws IOException, InterruptedException {
+            compressionMethod.getCacheStrategy().restore(cache, target, workspace);
+        }
+
     }
 
 }
