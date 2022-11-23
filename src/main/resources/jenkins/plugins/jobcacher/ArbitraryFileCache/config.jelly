@@ -22,15 +22,12 @@
  * THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core"
-         xmlns:f="/lib/form">
-
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
     <f:entry title="${%Path}" field="path">
         <f:textbox/>
     </f:entry>
 
     <f:advanced>
-
         <f:entry title="${%Cache name}" field="cacheName">
             <f:textbox/>
         </f:entry>
@@ -43,17 +40,16 @@
             <f:textbox/>
         </f:entry>
 
-        <f:entry title="${%UseDefaultExcludes}" field="useDefaultExcludes">
+        <f:entry title="${%Use default excludes}" field="useDefaultExcludes">
             <f:checkbox default="true"/>
         </f:entry>
 
-        <f:entry title="${%CacheValidityDecidingFile}" field="cacheValidityDecidingFile">
+        <f:entry title="${%Cache validity deciding file}" field="cacheValidityDecidingFile">
             <f:textbox/>
         </f:entry>
 
-        <f:entry title="${%CompressionMethod}" field="compressionMethod">
+        <f:entry title="${%Compression method}" field="compressionMethod">
             <f:select default="NONE"/>
         </f:entry>
-
     </f:advanced>
 </j:jelly>
