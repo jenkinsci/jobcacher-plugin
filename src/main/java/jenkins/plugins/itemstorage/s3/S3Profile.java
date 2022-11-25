@@ -24,10 +24,7 @@
 
 package jenkins.plugins.itemstorage.s3;
 
-import com.amazonaws.services.s3.model.DeleteObjectsRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.*;
 import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
@@ -96,9 +93,7 @@ public class S3Profile {
     }
 
     public boolean exists(String bucketName, String path) {
-        ObjectListing objectListing = helper.client().listObjects(new ListObjectsRequest(bucketName, path, null, null, 1));
-
-        return !objectListing.getObjectSummaries().isEmpty();
+        return helper.client().doesObjectExist(bucketName, path);
     }
 
     public void download(String bucketName, String key, FilePath target) throws IOException, InterruptedException {

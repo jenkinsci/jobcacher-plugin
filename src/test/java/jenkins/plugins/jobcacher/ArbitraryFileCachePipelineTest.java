@@ -99,6 +99,40 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
+    public void testChangeCompressionMethod() throws Exception {
+        String tarGzCacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt', compressionMethod: 'TARGZ')";
+        WorkflowJob project = createTestProject(tarGzCacheDefinition);
+
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run1.getLog())
+                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .doesNotContain("expected output from test file")
+                .contains("[Cache for test-path] Creating cache...");
+
+        deleteCachedDirectoryInWorkspace(project);
+        String zStandardCacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt', compressionMethod: 'TAR_ZSTD')";
+        setProjectDefinition(project, zStandardCacheDefinition);
+
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog())
+                .contains("[Cache for test-path] Found cache in job specific caches")
+                .contains("[Cache for test-path] Restoring cache...")
+                .contains("expected output from test file")
+                .contains("[Cache for test-path] Skip cache creation as the cache is up-to-date");
+
+        deleteCachedDirectoryInWorkspace(project);
+        setProjectDefinition(project, zStandardCacheDefinition, StringUtils.reverse(DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT));
+
+        WorkflowRun run3 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run3.getLog())
+                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .doesNotContain("expected output from test file")
+                .contains("[Cache for test-path] Delete existing cache as the compression method has been changed")
+                .contains("[Cache for test-path] Creating cache...");
+    }
+
+    @Test
+    @WithTimeout(600)
     public void testNonExistingCacheValidityDecidingFile() throws Exception {
         String cacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile-unknown.txt')";
         WorkflowJob project = createTestProject(cacheDefinition);
@@ -166,6 +200,10 @@ public class ArbitraryFileCachePipelineTest {
         setProjectDefinition(project, cacheDefinition, DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT);
 
         return project;
+    }
+
+    private void setProjectDefinition(WorkflowJob project, String cacheDefinition) {
+        setProjectDefinition(project, cacheDefinition, DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT);
     }
 
     private void setProjectDefinition(WorkflowJob project, String cacheDefinition, String cacheValidityDecidingFileContent) {
