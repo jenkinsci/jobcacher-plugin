@@ -24,6 +24,8 @@
 
 package jenkins.plugins.jobcacher;
 
+import com.github.luben.zstd.ZstdInputStream;
+import com.github.luben.zstd.ZstdOutputStream;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -37,6 +39,8 @@ import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ObjectPath;
 import jenkins.plugins.jobcacher.arbitrary.*;
 import jenkins.plugins.jobcacher.arbitrary.WorkspaceHelper.TempFile;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -371,8 +375,20 @@ public class ArbitraryFileCache extends Cache {
 
         NONE(new SimpleArbitraryFileCacheStrategy()),
         ZIP(new ZipArbitraryFileCacheStrategy()),
-        TARGZ(new TarArbitraryFileCacheStrategy("gz", ".tgz")),
-        TAR_ZSTD(new TarArbitraryFileCacheStrategy("zstd", ".tar.zst"));
+        TARGZ(new TarArbitraryFileCacheStrategy(
+                GzipCompressorOutputStream::new,
+                GzipCompressorInputStream::new,
+                ".tgz")
+        ),
+        TAR_ZSTD(new TarArbitraryFileCacheStrategy(
+                out -> {
+                    ZstdOutputStream outputStream = new ZstdOutputStream(out);
+                    outputStream.setWorkers(0); // use all available cores
+                    return outputStream;
+                },
+                ZstdInputStream::new,
+                ".tar.zst")
+        );
 
         private final ArbitraryFileCacheStrategy cacheStrategy;
 

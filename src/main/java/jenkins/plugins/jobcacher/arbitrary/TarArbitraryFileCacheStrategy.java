@@ -6,18 +6,22 @@ import hudson.util.DirScanner;
 import hudson.util.io.ArchiverFactory;
 import jenkins.MasterToSlaveFileCallable;
 import org.apache.commons.compress.compressors.CompressorException;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
 import java.io.*;
 import java.nio.file.Files;
 
 public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryFileCacheStrategy {
 
-    private final String compressorName;
+    private final CompressingOutputStreamFactory compressingOutputStreamFactory;
+    private final CompressingInputStreamFactory compressingInputStreamFactory;
     private final String archiveExtension;
 
-    public TarArbitraryFileCacheStrategy(String compressorName, String archiveExtension) {
-        this.compressorName = compressorName;
+    public TarArbitraryFileCacheStrategy(CompressingOutputStreamFactory compressingOutputStreamFactory,
+                                         CompressingInputStreamFactory compressingInputStreamFactory,
+                                         String archiveExtension) {
+
+        this.compressingOutputStreamFactory = compressingOutputStreamFactory;
+        this.compressingInputStreamFactory = compressingInputStreamFactory;
         this.archiveExtension = archiveExtension;
     }
 
@@ -28,22 +32,22 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
 
     @Override
     protected void uncompress(FilePath source, FilePath target) throws IOException, InterruptedException {
-        source.act(new ExtractTarCallable(target, compressorName));
+        source.act(new ExtractTarCallable(target, compressingInputStreamFactory));
     }
 
     @Override
     protected void compress(FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
-        target.act(new CreateTarCallable(source, includes, excludes, useDefaultExcludes, compressorName));
+        target.act(new CreateTarCallable(source, includes, excludes, useDefaultExcludes, compressingOutputStreamFactory));
     }
 
     private static class ExtractTarCallable extends MasterToSlaveFileCallable<Void> {
 
         private final FilePath target;
-        private final String compressorName;
+        private final CompressingInputStreamFactory compressingInputStreamFactory;
 
-        public ExtractTarCallable(FilePath target, String compressorName) {
+        public ExtractTarCallable(FilePath target, CompressingInputStreamFactory compressingInputStreamFactory) {
             this.target = target;
-            this.compressorName = compressorName;
+            this.compressingInputStreamFactory = compressingInputStreamFactory;
         }
 
         @Override
@@ -60,7 +64,7 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
         private InputStream createInputStream(File sourceFile) throws IOException, CompressorException {
             InputStream inputStream = Files.newInputStream(sourceFile.toPath());
             inputStream = new BufferedInputStream(inputStream);
-            inputStream = new CompressorStreamFactory().createCompressorInputStream(compressorName, inputStream);
+            inputStream = compressingInputStreamFactory.createCompressingInputStream(inputStream);
 
             return new BufferedInputStream(inputStream);
         }
@@ -72,14 +76,14 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
         private final String includes;
         private final String excludes;
         private final boolean useDefaultExcludes;
-        private final String compressorName;
+        private final CompressingOutputStreamFactory compressingOutputStreamFactory;
 
-        public CreateTarCallable(FilePath source, String includes, String excludes, boolean useDefaultExcludes, String compressorName) {
+        public CreateTarCallable(FilePath source, String includes, String excludes, boolean useDefaultExcludes, CompressingOutputStreamFactory compressingOutputStreamFactory) {
             this.source = source;
             this.includes = includes;
             this.excludes = excludes;
             this.useDefaultExcludes = useDefaultExcludes;
-            this.compressorName = compressorName;
+            this.compressingOutputStreamFactory = compressingOutputStreamFactory;
         }
 
         @Override
@@ -96,10 +100,22 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
         private OutputStream createOutputStream(File targetFile) throws IOException, CompressorException {
             OutputStream outputStream = Files.newOutputStream(targetFile.toPath());
             outputStream = new BufferedOutputStream(outputStream);
-            outputStream = new CompressorStreamFactory().createCompressorOutputStream(compressorName, outputStream);
+            outputStream = compressingOutputStreamFactory.createCompressingOutputStream(outputStream);
 
             return outputStream;
         }
+    }
+
+    public interface CompressingOutputStreamFactory extends Serializable {
+
+        OutputStream createCompressingOutputStream(OutputStream outputStream) throws IOException;
+
+    }
+
+    public interface CompressingInputStreamFactory extends Serializable {
+
+        InputStream createCompressingInputStream(InputStream inputStream) throws IOException;
+
     }
 
 }
