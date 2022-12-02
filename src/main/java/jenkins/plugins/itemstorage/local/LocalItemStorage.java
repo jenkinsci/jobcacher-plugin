@@ -33,6 +33,7 @@ import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.plugins.itemstorage.ItemStorageDescriptor;
 import jenkins.plugins.itemstorage.Messages;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -83,7 +84,7 @@ public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
     }
 
     private FilePath getItemRoot(Item item) {
-        if (root != null) {
+        if (StringUtils.isNotEmpty(root)) {
             return getItemRoot(item.getFullName());
         } else {
             return new FilePath(item.getRootDir());
