@@ -195,13 +195,13 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
-        ExistingCache cache = resolveExistingValidCache(cachesRoot, workspace);
+        ExistingCache cache = resolveExistingValidCache(cachesRoot, workspace, listener);
         if (cache != null) {
             logMessage("Found cache in job specific caches", listener);
             return cache;
         }
 
-        cache = resolveExistingValidCache(fallbackCachesRoot, workspace);
+        cache = resolveExistingValidCache(fallbackCachesRoot, workspace, listener);
         if (cache != null) {
             logMessage("Found cache in default caches", listener);
             return cache;
@@ -210,17 +210,22 @@ public class ArbitraryFileCache extends Cache {
         return null;
     }
 
-    private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
+    private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         ExistingCache existingCache = resolveExistingCache(cachesRoot);
         if (existingCache == null) {
             return null;
         }
 
-        if (isCacheValidityDecidingFileConfigured() && isCacheOutdated(cachesRoot, workspace)) {
-            return null;
+        if (!isCacheValidityDecidingFileConfigured()) {
+            return existingCache;
         }
 
-        return existingCache;
+        if (!isOneCacheValidityDecidingFilePresent(workspace)) {
+            logMessage("cacheValidityDecidingFile configured, but file(s) not present in workspace - considering cache anyway", listener);
+            return existingCache;
+        }
+
+        return isCacheOutdated(cachesRoot, workspace) ? null : existingCache;
     }
 
     private ExistingCache resolveExistingCache(ObjectPath cachesRoot) throws IOException, InterruptedException {
@@ -327,7 +332,7 @@ public class ArbitraryFileCache extends Cache {
             }
 
             if (isCacheValidityDecidingFileConfigured()) {
-                ExistingCache existingValidCache = resolveExistingValidCache(cachesRoot, workspace);
+                ExistingCache existingValidCache = resolveExistingValidCache(cachesRoot, workspace, listener);
                 if (existingValidCache != null) {
                     logMessage("Skip cache creation as the cache is up-to-date", listener);
                     return;

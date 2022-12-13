@@ -35,6 +35,30 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
+    public void testMissingCacheValidityDecidingFile() throws Exception {
+        String cacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt')";
+        WorkflowJob project = createTestProject(cacheDefinition);
+
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run1.getLog())
+                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .doesNotContain("expected output from test file")
+                .contains("[Cache for test-path] Creating cache...");
+
+        deleteCachedDirectoryInWorkspace(project);
+        setProjectDefinition(project, cacheDefinition, null);
+
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog())
+                .contains("[Cache for test-path] cacheValidityDecidingFile configured, but file(s) not present in workspace - considering cache anyway")
+                .contains("[Cache for test-path] Found cache in job specific caches")
+                .contains("[Cache for test-path] Restoring cache...")
+                .contains("expected output from test file")
+                .contains("[Cache for test-path] Skip cache creation as the cache is up-to-date");
+    }
+
+    @Test
+    @WithTimeout(600)
     public void testMultipleCacheValidityDecidingFiles() throws Exception {
         String module1PackagesLock = "abcdefghijklmnopqrstuvwxyz";
         String module2PackagesLock = StringUtils.reverse(module1PackagesLock);
@@ -147,9 +171,11 @@ public class ArbitraryFileCachePipelineTest {
 
         WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run2.getLog())
-                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
-                .doesNotContain("expected output from test file")
-                .contains("[Cache for test-path] Creating cache...");
+                .contains("[Cache for test-path] cacheValidityDecidingFile configured, but file(s) not present in workspace - considering cache anyway")
+                .contains("[Cache for test-path] Found cache in job specific caches")
+                .contains("[Cache for test-path] Restoring cache...")
+                .contains("expected output from test file")
+                .contains("[Cache for test-path] Skip cache creation as the cache is up-to-date");
     }
 
     @Test
@@ -209,12 +235,28 @@ public class ArbitraryFileCachePipelineTest {
     private void setProjectDefinition(WorkflowJob project, String cacheDefinition, String cacheValidityDecidingFileContent) {
         String scriptedPipeline = ""
                 + "node('test-agent') {\n"
-                + "    writeFile text: '" + cacheValidityDecidingFileContent + "', file: 'cacheValidityDecidingFile.txt'\n"
+                + "   " + cacheValidityDecidingFileCode(cacheValidityDecidingFileContent) + "\n"
                 + "    cache(maxCacheSize: 100, caches: [" + cacheDefinition + "]) {\n"
                 + "        " + fileCreationCode("test-path", "test-file") + "\n"
                 + "    }\n"
                 + "}";
         project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+    }
+
+    private String cacheValidityDecidingFileCode(String cacheValidityDecidingFileContent) {
+        if (cacheValidityDecidingFileContent != null) {
+            return "writeFile text: '" + cacheValidityDecidingFileContent + "', file: 'cacheValidityDecidingFile.txt'";
+        } else {
+            return fileDeletionCode("cacheValidityDecidingFile.txt");
+        }
+    }
+
+    private String fileDeletionCode(String file) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            return "bat '''del " + file + "'''";
+        } else {
+            return "sh '''rm " + file + "'''";
+        }
     }
 
     private String fileCreationCode(String folder, String file) {
