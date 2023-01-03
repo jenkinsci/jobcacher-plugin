@@ -75,7 +75,7 @@ public class ArbitraryFileCache extends Cache {
     private String excludes;
     private boolean useDefaultExcludes = true;
     private String cacheValidityDecidingFile;
-    private CompressionMethod compressionMethod = CompressionMethod.NONE;
+    private CompressionMethod compressionMethod = CompressionMethod.TARGZ;
     private String cacheName;
 
     @DataBoundConstructor
