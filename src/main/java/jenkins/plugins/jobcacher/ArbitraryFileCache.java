@@ -195,12 +195,14 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+        logMessage("Searching cache in job specific caches...", listener);
         ExistingCache cache = resolveExistingValidCache(cachesRoot, workspace, listener);
         if (cache != null) {
             logMessage("Found cache in job specific caches", listener);
             return cache;
         }
 
+        logMessage("Searching cache in default caches...", listener);
         cache = resolveExistingValidCache(fallbackCachesRoot, workspace, listener);
         if (cache != null) {
             logMessage("Found cache in default caches", listener);
@@ -225,7 +227,7 @@ public class ArbitraryFileCache extends Cache {
             return existingCache;
         }
 
-        return isCacheOutdated(cachesRoot, workspace) ? null : existingCache;
+        return isCacheOutdated(cachesRoot, workspace, listener) ? null : existingCache;
     }
 
     private ExistingCache resolveExistingCache(ObjectPath cachesRoot) throws IOException, InterruptedException {
@@ -247,13 +249,19 @@ public class ArbitraryFileCache extends Cache {
         return cachesRoot.child(compressionMethod.getCacheStrategy().createCacheName(createCacheBaseName()));
     }
 
-    private boolean isCacheOutdated(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
+    private boolean isCacheOutdated(ObjectPath cachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         ObjectPath previousClearCacheTriggerFileHash = resolvePreviousCacheValidityDecidingFileHashFile(cachesRoot);
         if (!previousClearCacheTriggerFileHash.exists()) {
+            logMessage("cacheValidityDecidingFile configured, but previous hash not available - cache outdated", listener);
             return true;
         }
 
-        return !matchesCurrentCacheValidityDecidingFileHash(previousClearCacheTriggerFileHash, workspace);
+        if (!matchesCurrentCacheValidityDecidingFileHash(previousClearCacheTriggerFileHash, workspace)) {
+            logMessage("cacheValidityDecidingFile configured, but previous hash does not match - cache outdated", listener);
+            return true;
+        }
+
+        return false;
     }
 
     private boolean isCacheValidityDecidingFileConfigured() {
@@ -270,14 +278,20 @@ public class ArbitraryFileCache extends Cache {
         return baseName + CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION;
     }
 
-    private boolean matchesCurrentCacheValidityDecidingFileHash(ObjectPath previousCacheValidityDecidingFileHash, FilePath workspace) throws IOException, InterruptedException {
+    private boolean matchesCurrentCacheValidityDecidingFileHash(ObjectPath previousCacheValidityDecidingFileHashFile, FilePath workspace) throws IOException, InterruptedException {
         if (!isOneCacheValidityDecidingFilePresent(workspace)) {
             return false;
         }
 
         try (TempFile tempFile = WorkspaceHelper.createTempFile(workspace, CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION)) {
-            previousCacheValidityDecidingFileHash.copyTo(tempFile.get());
-            return StringUtils.equals(tempFile.get().readToString(), getCurrentCacheValidityDecidingFileHash(workspace));
+            previousCacheValidityDecidingFileHashFile.copyTo(tempFile.get());
+
+            try (InputStream inputStream = tempFile.get().read()) {
+                String previousCacheValidityDecidingFileHash = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                String currentCacheValidityDecidingFileHash = getCurrentCacheValidityDecidingFileHash(workspace);
+
+                return StringUtils.equals(previousCacheValidityDecidingFileHash, currentCacheValidityDecidingFileHash);
+            }
         }
     }
 
@@ -373,7 +387,7 @@ public class ArbitraryFileCache extends Cache {
             cacheIdentifier += " (" + getCacheName() + ")";
         }
 
-        listener.getLogger().println("[Cache for " + cacheIdentifier + "] " + message);
+        listener.getLogger().println("[Cache for " + cacheIdentifier + " with id " + deriveCachePath(path) + "] " + message);
     }
 
     public HttpResponse doDynamic(StaplerRequest req, StaplerResponse rsp, @AncestorInPath Job<?, ?> job) throws IOException, ServletException, InterruptedException {

@@ -41,20 +41,20 @@ public class ArbitraryFileCachePipelineTest {
 
         WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run1.getLog())
-                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip restoring cache as no up-to-date cache exists")
                 .doesNotContain("expected output from test file")
-                .contains("[Cache for test-path] Creating cache...");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...");
 
         deleteCachedDirectoryInWorkspace(project);
         setProjectDefinition(project, cacheDefinition, null);
 
         WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run2.getLog())
-                .contains("[Cache for test-path] cacheValidityDecidingFile configured, but file(s) not present in workspace - considering cache anyway")
-                .contains("[Cache for test-path] Found cache in job specific caches")
-                .contains("[Cache for test-path] Restoring cache...")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] cacheValidityDecidingFile configured, but file(s) not present in workspace - considering cache anyway")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Found cache in job specific caches")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Restoring cache...")
                 .contains("expected output from test file")
-                .contains("[Cache for test-path] Skip cache creation as the cache is up-to-date");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip cache creation as the cache is up-to-date");
     }
 
     @Test
@@ -76,18 +76,18 @@ public class ArbitraryFileCachePipelineTest {
 
         WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run1.getLog())
-                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip restoring cache as no up-to-date cache exists")
                 .doesNotContain("expected output from test file")
-                .contains("[Cache for test-path] Creating cache...");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...");
 
         deleteCachedDirectoryInWorkspace(project);
 
         WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run2.getLog())
-                .contains("[Cache for test-path] Found cache in job specific caches")
-                .contains("[Cache for test-path] Restoring cache...")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Found cache in job specific caches")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Restoring cache...")
                 .contains("expected output from test file")
-                .contains("[Cache for test-path] Skip cache creation as the cache is up-to-date");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip cache creation as the cache is up-to-date");
     }
 
     @Test
@@ -98,27 +98,29 @@ public class ArbitraryFileCachePipelineTest {
 
         WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run1.getLog())
-                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Searching cache in job specific caches...")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Searching cache in default caches...")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip restoring cache as no up-to-date cache exists")
                 .doesNotContain("expected output from test file")
-                .contains("[Cache for test-path] Creating cache...");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...");
 
         deleteCachedDirectoryInWorkspace(project);
 
         WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run2.getLog())
-                .contains("[Cache for test-path] Found cache in job specific caches")
-                .contains("[Cache for test-path] Restoring cache...")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Found cache in job specific caches")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Restoring cache...")
                 .contains("expected output from test file")
-                .contains("[Cache for test-path] Skip cache creation as the cache is up-to-date");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip cache creation as the cache is up-to-date");
 
         deleteCachedDirectoryInWorkspace(project);
         setProjectDefinition(project, cacheDefinition, StringUtils.reverse(DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT));
 
         WorkflowRun run3 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run3.getLog())
-                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip restoring cache as no up-to-date cache exists")
                 .doesNotContain("expected output from test file")
-                .contains("[Cache for test-path] Creating cache...");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...");
     }
 
     @Test
@@ -129,9 +131,9 @@ public class ArbitraryFileCachePipelineTest {
 
         WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run1.getLog())
-                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip restoring cache as no up-to-date cache exists")
                 .doesNotContain("expected output from test file")
-                .contains("[Cache for test-path] Creating cache...");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...");
 
         deleteCachedDirectoryInWorkspace(project);
         String zStandardCacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt', compressionMethod: 'TAR_ZSTD')";
@@ -139,20 +141,20 @@ public class ArbitraryFileCachePipelineTest {
 
         WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run2.getLog())
-                .contains("[Cache for test-path] Found cache in job specific caches")
-                .contains("[Cache for test-path] Restoring cache...")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Found cache in job specific caches")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Restoring cache...")
                 .contains("expected output from test file")
-                .contains("[Cache for test-path] Skip cache creation as the cache is up-to-date");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip cache creation as the cache is up-to-date");
 
         deleteCachedDirectoryInWorkspace(project);
         setProjectDefinition(project, zStandardCacheDefinition, StringUtils.reverse(DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT));
 
         WorkflowRun run3 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run3.getLog())
-                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip restoring cache as no up-to-date cache exists")
                 .doesNotContain("expected output from test file")
-                .contains("[Cache for test-path] Delete existing cache as the compression method has been changed")
-                .contains("[Cache for test-path] Creating cache...");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Delete existing cache as the compression method has been changed")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...");
     }
 
     @Test
@@ -163,19 +165,19 @@ public class ArbitraryFileCachePipelineTest {
 
         WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run1.getLog())
-                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip restoring cache as no up-to-date cache exists")
                 .doesNotContain("expected output from test file")
-                .contains("[Cache for test-path] Creating cache...");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...");
 
         deleteCachedDirectoryInWorkspace(project);
 
         WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run2.getLog())
-                .contains("[Cache for test-path] cacheValidityDecidingFile configured, but file(s) not present in workspace - considering cache anyway")
-                .contains("[Cache for test-path] Found cache in job specific caches")
-                .contains("[Cache for test-path] Restoring cache...")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] cacheValidityDecidingFile configured, but file(s) not present in workspace - considering cache anyway")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Found cache in job specific caches")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Restoring cache...")
                 .contains("expected output from test file")
-                .contains("[Cache for test-path] Skip cache creation as the cache is up-to-date");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip cache creation as the cache is up-to-date");
     }
 
     @Test
@@ -207,18 +209,18 @@ public class ArbitraryFileCachePipelineTest {
 
         WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run1.getLog())
-                .contains("[Cache for test-path] Skip restoring cache as no up-to-date cache exists")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip restoring cache as no up-to-date cache exists")
                 .doesNotContain("expected output from test file")
-                .contains("[Cache for test-path] Creating cache...");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...");
 
         deleteCachedDirectoryInWorkspace(project);
 
         WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run2.getLog())
-                .contains("[Cache for test-path] Found cache in job specific caches")
-                .contains("[Cache for test-path] Restoring cache...")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Found cache in job specific caches")
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Restoring cache...")
                 .contains("expected output from test file")
-                .contains("[Cache for test-path] Creating cache...");
+                .contains("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...");
     }
 
     private WorkflowJob createTestProject(String cacheDefinition) throws IOException {
