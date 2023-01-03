@@ -70,19 +70,16 @@ public class CacheManager {
     /**
      * Internal method only
      */
-    public static void save(ItemStorage<?> storage, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) throws IOException, InterruptedException {
+    public static void save(ItemStorage<?> storage, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, Long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) throws IOException, InterruptedException {
         ObjectPath cachePath = getCachePath(storage, run);
 
         // First calculate size of cache to check if it should just be deleted
-        long totalSize = 0L;
-        for (Cache.Saver saver : cacheSavers) {
-            totalSize += saver.calculateSize(cachePath, run, workspace, launcher, listener);
-        }
+        boolean exceedsMaxCacheSize = exceedsMaxCacheSize(cachePath, run, workspace, launcher, listener, maxCacheSize, cacheSavers);
 
         // synchronize on the build's parent object as we are going to write to the shared cache
         synchronized (getLock(run.getParent())) {
             // If total size is greater than configured maximum, delete all caches to start fresh next build
-            if (totalSize > maxCacheSize * 1024 * 1024) {
+            if (exceedsMaxCacheSize) {
                 listener.getLogger().println("Removing job cache as it has grown beyond configured maximum size of " +
                         maxCacheSize + "M. Next build will start with no cache.");
 
@@ -108,4 +105,18 @@ public class CacheManager {
             run.getAction(CacheBuildLastAction.class).addCaches(caches);
         }
     }
+
+    private static boolean exceedsMaxCacheSize(ObjectPath cachePath, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, Long maxCacheSize, List<Cache.Saver> cacheSavers) throws IOException, InterruptedException {
+        if (maxCacheSize == null || maxCacheSize == 0) {
+            return false;
+        }
+
+        long totalSize = 0L;
+        for (Cache.Saver saver : cacheSavers) {
+            totalSize += saver.calculateSize(cachePath, run, workspace, launcher, listener);
+        }
+
+        return totalSize > maxCacheSize * 1024 * 1024;
+    }
+
 }

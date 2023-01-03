@@ -42,7 +42,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Wrapping workflow step that automatically seeds the specified path with the previous run and on exit of the
@@ -50,29 +51,41 @@ import java.util.*;
  */
 public class CacheStep extends Step {
 
-    private final long maxCacheSize;
     private final List<Cache> caches;
-    @DataBoundSetter
-    public String defaultBranch = null;
+    private Long maxCacheSize;
+
+    public String defaultBranch;
 
     @DataBoundConstructor
-    public CacheStep(long maxCacheSize, List<Cache> caches) {
+    public CacheStep(Long maxCacheSize, List<Cache> caches) {
         this.maxCacheSize = maxCacheSize;
         this.caches = caches;
     }
 
+    @DataBoundSetter
     @SuppressWarnings("unused")
-    public long getMaxCacheSize() {
-        return maxCacheSize;
-    }
-
-    public List<Cache> getCaches() {
-        return caches;
+    public void setDefaultBranch(String defaultBranch) {
+        this.defaultBranch = defaultBranch;
     }
 
     @SuppressWarnings("unused")
     public String getDefaultBranch() {
         return defaultBranch;
+    }
+
+    @DataBoundSetter
+    @SuppressWarnings("unused")
+    public void setMaxCacheSize(Long maxCacheSize) {
+        this.maxCacheSize = maxCacheSize;
+    }
+
+    @SuppressWarnings("unused")
+    public Long getMaxCacheSize() {
+        return maxCacheSize;
+    }
+
+    public List<Cache> getCaches() {
+        return caches;
     }
 
     @Override
@@ -84,11 +97,11 @@ public class CacheStep extends Step {
 
         private static final long serialVersionUID = 1L;
 
-        private final long maxCacheSize;
+        private final Long maxCacheSize;
         private final List<Cache> caches;
         private final String defaultBranch;
 
-        protected ExecutionImpl(StepContext context, long maxCacheSize, List<Cache> caches, String defaultBranch) {
+        protected ExecutionImpl(StepContext context, Long maxCacheSize, List<Cache> caches, String defaultBranch) {
             super(context);
 
             this.maxCacheSize = maxCacheSize;
@@ -125,11 +138,11 @@ public class CacheStep extends Step {
 
         private static final long serialVersionUID = 1L;
 
-        private final long maxCacheSize;
+        private final Long maxCacheSize;
         private final List<Cache> caches;
         private final List<Cache.Saver> cacheSavers;
 
-        public ExecutionCallback(long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
+        public ExecutionCallback(Long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
             this.maxCacheSize = maxCacheSize;
             this.caches = caches;
             this.cacheSavers = cacheSavers;
