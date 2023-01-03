@@ -54,7 +54,7 @@ import java.util.function.Function;
  */
 public class CacheWrapper extends SimpleBuildWrapper {
 
-    private long maxCacheSize;
+    private Long maxCacheSize;
     private List<Cache> caches;
     private String defaultBranch;
 
@@ -62,8 +62,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
     }
 
     @DataBoundConstructor
-    public CacheWrapper(long maxCacheSize, List<Cache> caches) {
-        setMaxCacheSize(maxCacheSize);
+    public CacheWrapper(List<Cache> caches) {
         setCaches(caches);
     }
 
@@ -73,12 +72,13 @@ public class CacheWrapper extends SimpleBuildWrapper {
     }
 
     @SuppressWarnings("unused")
-    public long getMaxCacheSize() {
+    public Long getMaxCacheSize() {
         return maxCacheSize;
     }
 
+    @DataBoundSetter
     @SuppressWarnings("unused")
-    public void setMaxCacheSize(long maxCacheSize) {
+    public void setMaxCacheSize(Long maxCacheSize) {
         this.maxCacheSize = maxCacheSize;
     }
 
@@ -141,12 +141,12 @@ public class CacheWrapper extends SimpleBuildWrapper {
         private static final long serialVersionUID = 1L;
 
         private final ItemStorage<?> storage;
-        private final long maxCacheSize;
+        private final Long maxCacheSize;
         private final List<Cache> caches;
         private final List<Cache.Saver> cacheSavers;
 
         @DataBoundConstructor
-        public CacheDisposer(ItemStorage<?> storage, long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
+        public CacheDisposer(ItemStorage<?> storage, Long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
             this.storage = storage;
             this.maxCacheSize = maxCacheSize;
             this.caches = caches;

@@ -23,9 +23,6 @@
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry title="${%Maximum Cache Size}" field="maxCacheSize" help="/plugin/jobcacher/help-maximumCacheSize.html">
-        <f:textbox/>
-    </f:entry>
 
     <f:entry title="${%Caches}">
         <f:hetero-list name="caches" descriptors="${descriptor.cacheDescriptors}" items="${instance.caches}"
@@ -33,7 +30,15 @@
                        targetType="jenkins.plugins.jobcacher.Cache.class"/>
     </f:entry>
 
-    <f:entry title="${%Branch to use for default cache}" field="defaultBranch" help="/plugin/jobcacher/help-defaultBranch.html">
-        <f:textbox/>
-    </f:entry>
+    <f:advanced>
+        <f:entry title="${%Maximum Cache Size}" field="maxCacheSize"
+                 help="/plugin/jobcacher/help-maximumCacheSize.html">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="${%Branch to use for default cache}" field="defaultBranch"
+                 help="/plugin/jobcacher/help-defaultBranch.html">
+            <f:textbox/>
+        </f:entry>
+    </f:advanced>
+
 </j:jelly>

@@ -49,7 +49,7 @@
         </f:entry>
 
         <f:entry title="${%Compression method}" field="compressionMethod">
-            <f:select default="NONE"/>
+            <f:select default="TARGZ"/>
         </f:entry>
     </f:advanced>
 </j:jelly>
