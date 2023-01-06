@@ -1,14 +1,11 @@
 package minio;
 
-import static java.lang.String.format;
-
-import java.io.IOException;
-import java.util.UUID;
-
-import org.json.JSONObject;
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.GenericContainer;
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
+import java.io.IOException;
+
+import static java.lang.String.format;
 
 public class MinioMcContainer extends GenericContainer<MinioMcContainer> {
 
@@ -43,7 +40,7 @@ public class MinioMcContainer extends GenericContainer<MinioMcContainer> {
     }
 
     public ExecResult exec(String command, Object... args) throws IOException, InterruptedException {
-        return execInContainer("/bin/sh", "-c",  format(command, args));
+        return execInContainer("/bin/sh", "-c", format(command, args));
     }
 
     public void deleteBucket(String bucket) throws IOException, InterruptedException {
@@ -56,19 +53,5 @@ public class MinioMcContainer extends GenericContainer<MinioMcContainer> {
 
     public void createObject(String bucket, String key, String content) throws IOException, InterruptedException {
         execSecure("echo -n \"%s\" | mc pipe test-minio/%s/%s", content, bucket, key);
-    }
-
-    public void createObject(String bucket, String key, int megabytes) throws IOException, InterruptedException {
-        execSecure("dd if=/dev/urandom of=tmp.rnd bs=1000000 count=%s", megabytes);
-        execSecure("mc cp tmp.rnd test-minio/%s/%s", bucket, key);
-    }
-
-    public void createObject(String bucket, String key) throws IOException, InterruptedException {
-        createObject(bucket, key, UUID.randomUUID().toString());
-    }
-
-    public long getBucketSize(String bucket) throws IOException, InterruptedException {
-        String result = execSecure(format("mc du --json test-minio/%s", bucket)).getStdout();
-        return Long.parseLong(new JSONObject(result).optString("size"));
     }
 }

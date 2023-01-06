@@ -31,6 +31,7 @@
         <assertj-core.version>3.23.1</assertj-core.version>
         <testcontainers.version>1.17.6</testcontainers.version>
         <zstd-jni.version>1.5.2-5</zstd-jni.version>
+        <jackson2-api.version>2.14.1-313.v504cdd45c18b</jackson2-api.version>
     </properties>
 
     <name>Jenkins Job Cacher plugin</name>
@@ -68,6 +69,12 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>aws-java-sdk</artifactId>
             <version>${aws-java-sdk.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>jackson2-api</artifactId>
+            <version>${jackson2-api.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
