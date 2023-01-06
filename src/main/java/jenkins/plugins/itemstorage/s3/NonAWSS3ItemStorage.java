@@ -24,15 +24,12 @@
 
 package jenkins.plugins.itemstorage.s3;
 
-import static hudson.Util.fixEmptyAndTrim;
-
 import com.amazonaws.auth.SignerFactory;
 import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.listeners.ItemListener;
 import hudson.security.ACL;
@@ -42,12 +39,15 @@ import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.plugins.itemstorage.ItemStorageDescriptor;
 import jenkins.plugins.itemstorage.Messages;
+import org.jenkinsci.plugins.variant.OptionalExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+
+import static hudson.Util.fixEmptyAndTrim;
 
 /**
  * S3 implementation of the Item Storage extension point.
@@ -145,7 +145,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
         return new S3Profile(lookupCredentials(), endpoint, region, signerVersion, pathStyleAccess, parallelDownloads);
     }
 
-    @Extension(optional = true)
+    @OptionalExtension(requirePlugins = {"aws-java-sdk", "aws-credentials"})
     public static final class DescriptorImpl extends ItemStorageDescriptor<S3ObjectPath> {
 
         @NonNull
@@ -175,7 +175,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
         }
     }
 
-    @Extension(optional = true)
+    @OptionalExtension(requirePlugins = {"aws-java-sdk", "aws-credentials"})
     public static final class S3ItemListener extends ItemListener {
 
         @Override
