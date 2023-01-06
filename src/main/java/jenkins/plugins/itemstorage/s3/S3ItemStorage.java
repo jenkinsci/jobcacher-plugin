@@ -39,7 +39,6 @@ import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.plugins.itemstorage.ItemStorageDescriptor;
 import jenkins.plugins.itemstorage.Messages;
-
 import org.jenkinsci.plugins.variant.OptionalExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -108,7 +107,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         return new S3Profile(lookupCredentials(), null, region, null, false, true);
     }
 
-    @OptionalExtension(requirePlugins={"aws-java-sdk", "aws-credentials"})
+    @OptionalExtension(requirePlugins = {"aws-java-sdk", "aws-credentials", "jackson2-api"})
     public static final class DescriptorImpl extends ItemStorageDescriptor<S3ObjectPath> {
 
         @NonNull
@@ -137,7 +136,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         }
     }
 
-    @OptionalExtension(requirePlugins={"aws-java-sdk", "aws-credentials"})
+    @OptionalExtension(requirePlugins = {"aws-java-sdk", "aws-credentials", "jackson2-api"})
     public static final class S3ItemListener extends ItemListener {
 
         @Override
