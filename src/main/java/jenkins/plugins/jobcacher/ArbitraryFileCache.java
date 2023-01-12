@@ -31,6 +31,7 @@ import hudson.*;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.remoting.LocalChannel;
 import hudson.util.ListBoxModel;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ObjectPath;
@@ -342,6 +343,9 @@ public class ArbitraryFileCache extends Cache {
         public void save(ObjectPath cachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
             if (!resolvedPath.exists()) {
                 logMessage("Cannot create cache as the path does not exist", listener);
+                if (isPathOutsideWorkspace(workspace) && isMaybeInsideDockerContainer(workspace)) {
+                    logMessage("Note that paths outside the workspace while using the Docker Pipeline plugin are not supported", listener);
+                }
                 return;
             }
 
@@ -369,6 +373,14 @@ public class ArbitraryFileCache extends Cache {
             }
             long cacheCreationEndTime = System.nanoTime();
             logMessage("Cache created in " + Duration.ofNanos(cacheCreationEndTime - cacheCreationStartTime).toMillis() + "ms", listener);
+        }
+
+        private boolean isPathOutsideWorkspace(FilePath workspace) {
+            return !StringUtils.startsWith(resolvedPath.getRemote(), workspace.getRemote());
+        }
+
+        private boolean isMaybeInsideDockerContainer(FilePath workspace) {
+            return workspace.getChannel() == null || workspace.getChannel() instanceof LocalChannel;
         }
 
         private void updateSkipCacheTriggerFileHash(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
