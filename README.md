@@ -72,6 +72,9 @@ cache(maxCacheSize: 250, defaultBranch: 'develop', caches: [
 }
 ```
 
+#### Note about using within Docker containers
+If you use the plugin within a Docker container through the [Docker Pipeline plugin](https://plugins.jenkins.io/docker-workflow/), the path to cache must be located within the workspace. Everything outside is not visible to the plugin and therefore not cacheable.
+
 ## Contributing
 
 See [contribution guidelines](https://github.com/jenkinsci/.github/blob/master/CONTRIBUTING.md)

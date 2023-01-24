@@ -25,25 +25,21 @@
 package jenkins.plugins.jobcacher.pipeline;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.EnvVars;
 import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.model.Run;
-import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
-import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.jobcacher.Cache;
 import jenkins.plugins.jobcacher.CacheDescriptor;
-import jenkins.plugins.jobcacher.CacheManager;
 import jenkins.plugins.jobcacher.Messages;
-import org.jenkinsci.plugins.workflow.steps.*;
+import org.jenkinsci.plugins.workflow.steps.Step;
+import org.jenkinsci.plugins.workflow.steps.StepContext;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
+import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Wrapping workflow step that automatically seeds the specified path with the previous run and on exit of the
@@ -90,96 +86,15 @@ public class CacheStep extends Step {
 
     @Override
     public StepExecution start(StepContext context) throws Exception {
-        return new ExecutionImpl(context, maxCacheSize, caches, defaultBranch);
-    }
-
-    public static class ExecutionImpl extends GeneralNonBlockingStepExecution {
-
-        private static final long serialVersionUID = 1L;
-
-        private final Long maxCacheSize;
-        private final List<Cache> caches;
-        private final String defaultBranch;
-
-        protected ExecutionImpl(StepContext context, Long maxCacheSize, List<Cache> caches, String defaultBranch) {
-            super(context);
-
-            this.maxCacheSize = maxCacheSize;
-            this.caches = caches;
-            this.defaultBranch = defaultBranch;
-        }
-
-        @Override
-        public boolean start() throws Exception {
-            run(this::execute);
-            return false;
-        }
-
-        private void execute() throws Exception {
-            StepContext context = getContext();
-
-            Run<?, ?> run = context.get(Run.class);
-            FilePath workspace = context.get(FilePath.class);
-            Launcher launcher = context.get(Launcher.class);
-            TaskListener listener = context.get(TaskListener.class);
-            EnvVars initialEnvironment = context.get(EnvVars.class);
-
-            List<Cache.Saver> cacheSavers = CacheManager.cache(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, initialEnvironment, caches, defaultBranch);
-
-            context.newBodyInvoker()
-                    .withContext(context)
-                    .withCallback(new ExecutionCallback(maxCacheSize, caches, cacheSavers))
-                    .start();
-        }
-
-    }
-
-    public static class ExecutionCallback extends BodyExecutionCallback {
-
-        private static final long serialVersionUID = 1L;
-
-        private final Long maxCacheSize;
-        private final List<Cache> caches;
-        private final List<Cache.Saver> cacheSavers;
-
-        public ExecutionCallback(Long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
-            this.maxCacheSize = maxCacheSize;
-            this.caches = caches;
-            this.cacheSavers = cacheSavers;
-        }
-
-        @Override
-        public void onSuccess(StepContext context, Object result) {
-            try {
-                complete(context);
-
-                context.onSuccess(result);
-            } catch (Throwable t) {
-                context.onFailure(t);
-            }
-        }
-
-        @Override
-        public void onFailure(StepContext context, Throwable t) {
-            context.onFailure(t);
-        }
-
-        public void complete(StepContext context) throws IOException, InterruptedException {
-            Run<?, ?> run = context.get(Run.class);
-            FilePath workspace = context.get(FilePath.class);
-            Launcher launcher = context.get(Launcher.class);
-            TaskListener listener = context.get(TaskListener.class);
-
-            CacheManager.save(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, maxCacheSize, caches, cacheSavers);
-        }
+        return new CacheStepExecution(context, maxCacheSize, caches, defaultBranch);
     }
 
     @Extension(optional = true)
-    public static class DescriptorImpl extends AbstractStepDescriptorImpl {
+    public static class DescriptorImpl extends StepDescriptor {
 
-        @SuppressWarnings("unused")
-        public DescriptorImpl() {
-            super(ExecutionImpl.class);
+        @Override
+        public Set<? extends Class<?>> getRequiredContext() {
+            return Collections.emptySet();
         }
 
         @Override
@@ -198,7 +113,6 @@ public class CacheStep extends Step {
             return true;
         }
 
-
         @SuppressWarnings("unused")
         public List<CacheDescriptor> getCacheDescriptors() {
             Jenkins jenkins = Jenkins.getInstanceOrNull();
@@ -208,5 +122,6 @@ public class CacheStep extends Step {
                 return Collections.emptyList();
             }
         }
+
     }
 }
