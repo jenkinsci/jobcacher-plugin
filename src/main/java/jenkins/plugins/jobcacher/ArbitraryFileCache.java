@@ -368,12 +368,17 @@ public class ArbitraryFileCache extends Cache {
 
             logMessage("Creating cache...", listener);
             long cacheCreationStartTime = System.nanoTime();
-            compressionMethod.getCacheStrategy().cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
-            if (isCacheValidityDecidingFileConfigured() && isOneCacheValidityDecidingFilePresent(workspace)) {
-                updateSkipCacheTriggerFileHash(cachesRoot, workspace);
+
+            try {
+                compressionMethod.getCacheStrategy().cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
+                if (isCacheValidityDecidingFileConfigured() && isOneCacheValidityDecidingFilePresent(workspace)) {
+                    updateSkipCacheTriggerFileHash(cachesRoot, workspace);
+                }
+                long cacheCreationEndTime = System.nanoTime();
+                logMessage("Cache created in " + Duration.ofNanos(cacheCreationEndTime - cacheCreationStartTime).toMillis() + "ms", listener);
+            } catch (Exception e) {
+                logMessage("Failed to create cache", e, listener);
             }
-            long cacheCreationEndTime = System.nanoTime();
-            logMessage("Cache created in " + Duration.ofNanos(cacheCreationEndTime - cacheCreationStartTime).toMillis() + "ms", listener);
         }
 
         private boolean isPathOutsideWorkspace(FilePath workspace) {
