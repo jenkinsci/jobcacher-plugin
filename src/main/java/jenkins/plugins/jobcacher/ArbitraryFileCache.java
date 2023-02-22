@@ -179,12 +179,13 @@ public class ArbitraryFileCache extends Cache {
 
         try {
             existingCache.restore(resolvedPath, workspace);
+
+            long cacheRestorationEndTime = System.nanoTime();
+            logMessage("Cache restored in " + Duration.ofNanos(cacheRestorationEndTime - cacheRestorationStartTime).toMillis() + "ms", listener);
         } catch (Exception e) {
-            logMessage("Failed to restore cache, cleaning up " + path + "...", listener);
+            logMessage("Failed to restore cache, cleaning up " + path + "...", e, listener);
             resolvedPath.deleteRecursive();
         }
-        long cacheRestorationEndTime = System.nanoTime();
-        logMessage("Cache restored in " + Duration.ofNanos(cacheRestorationEndTime - cacheRestorationStartTime).toMillis() + "ms", listener);
 
         return new SaverImpl(resolvedPath);
     }
@@ -391,6 +392,11 @@ public class ArbitraryFileCache extends Cache {
                 skipCacheTriggerFileHashFile.copyFrom(tempFile.get());
             }
         }
+    }
+
+    private void logMessage(String message, Exception exception, TaskListener listener) {
+        logMessage(message, listener);
+        exception.printStackTrace(listener.getLogger());
     }
 
     private void logMessage(String message, TaskListener listener) {
