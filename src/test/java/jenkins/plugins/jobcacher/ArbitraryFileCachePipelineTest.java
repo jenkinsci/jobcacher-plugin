@@ -200,6 +200,24 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
+    public void testTarGzBestSpeedCompressedArbitraryFileCacheWithinPipeline() throws Exception {
+        testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'TARGZ_BEST_SPEED')");
+    }
+
+    @Test
+    @WithTimeout(600)
+    public void testTarGzNoCompressionCompressedArbitraryFileCacheWithinPipeline() throws Exception {
+        testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'TARGZ_NO_COMPRESSION')");
+    }
+
+    @Test
+    @WithTimeout(600)
+    public void testTarCompressedArbitraryFileCacheWithinPipeline() throws Exception {
+        testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'TAR')");
+    }
+
+    @Test
+    @WithTimeout(600)
     public void testZstandardCompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path', compressionMethod: 'TAR_ZSTD']");
     }
