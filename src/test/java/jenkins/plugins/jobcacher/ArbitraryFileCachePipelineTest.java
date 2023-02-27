@@ -206,12 +206,6 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testTarGzNoCompressionCompressedArbitraryFileCacheWithinPipeline() throws Exception {
-        testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'TARGZ_NO_COMPRESSION')");
-    }
-
-    @Test
-    @WithTimeout(600)
     public void testTarCompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'TAR')");
     }

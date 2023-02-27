@@ -461,11 +461,6 @@ public class ArbitraryFileCache extends Cache {
             GzipCompressorInputStream::new,
             ".tgz")
         ),
-        TARGZ_NO_COMPRESSION(new TarArbitraryFileCacheStrategy(
-            os -> new GzipCompressorOutputStream(os, gzipParametersNoCompression()),
-            GzipCompressorInputStream::new,
-            ".tgz")
-        ),
         TAR(new TarArbitraryFileCacheStrategy(
             os -> os,
             is -> is,

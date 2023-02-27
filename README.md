@@ -50,7 +50,7 @@ The following cache configuration options apply to all supported job types.
 | `excludes`                  | no        |               | The pattern to match files that should be excluded from caching.                                                                                                                                                                           |
 | `useDefaultExcludes`        | no        | `true`        | Whether to use default excludes (see [DirectoryScanner.java#L170](https://github.com/apache/ant/blob/eeacf501dd15327cd300ecd518284e68bb5af4a4/src/main/org/apache/tools/ant/DirectoryScanner.java#L170) for more details).                 |
 | `cacheValidityDecidingFile` | no        |               | The workspace-relative path to one or multiple (by using a glob pattern) files which should be used to determine whether the cache is up-to-date or not. Only up-to-date caches will be restored and only outdated caches will be created. |
-| `compressionMethod`         | yes       | `TARGZ`       | The compression method (`NONE`, `ZIP`, `TARGZ`, `TARGZ_BEST_SPEED`, `TARGZ_NO_COMPRESSION`, `TAR_ZSTD`, `TAR`) to use. Some are without compression.                                                                                       |
+| `compressionMethod`         | yes       | `TARGZ`       | The compression method (`NONE`, `ZIP`, `TARGZ`, `TARGZ_BEST_SPEED`, `TAR_ZSTD`, `TAR`) to use. Some are without compression.                                                                                       |
 
 ## Usage in Jobs
 
