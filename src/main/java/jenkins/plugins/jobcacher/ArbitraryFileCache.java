@@ -39,6 +39,7 @@ import jenkins.plugins.jobcacher.arbitrary.*;
 import jenkins.plugins.jobcacher.arbitrary.WorkspaceHelper.TempFile;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipParameters;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
@@ -55,6 +56,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.zip.Deflater;
 
 /**
  * This class implements a Cache where the user can configure a path on the executor that will be cached.  Users can
@@ -454,6 +456,16 @@ public class ArbitraryFileCache extends Cache {
                 GzipCompressorInputStream::new,
                 ".tgz")
         ),
+        TARGZ_BEST_SPEED(new TarArbitraryFileCacheStrategy(
+            os -> new GzipCompressorOutputStream(os, gzipParametersBestSpeed()),
+            GzipCompressorInputStream::new,
+            ".tgz")
+        ),
+        TAR(new TarArbitraryFileCacheStrategy(
+            os -> os,
+            is -> is,
+            ".tar")
+        ),
         TAR_ZSTD(new TarArbitraryFileCacheStrategy(
                 out -> {
                     ZstdOutputStream outputStream = new ZstdOutputStream(out);
@@ -463,6 +475,18 @@ public class ArbitraryFileCache extends Cache {
                 ZstdInputStream::new,
                 ".tar.zst")
         );
+
+        private static GzipParameters gzipParametersNoCompression() {
+            GzipParameters gzipParameters = new GzipParameters();
+            gzipParameters.setCompressionLevel(Deflater.NO_COMPRESSION);
+            return gzipParameters;
+        }
+
+        private static GzipParameters gzipParametersBestSpeed() {
+            GzipParameters gzipParameters = new GzipParameters();
+            gzipParameters.setCompressionLevel(Deflater.BEST_SPEED);
+            return gzipParameters;
+        }
 
         private final ArbitraryFileCacheStrategy cacheStrategy;
 
