@@ -52,6 +52,27 @@ The following cache configuration options apply to all supported job types.
 | `cacheValidityDecidingFile` | no        |               | The workspace-relative path to one or multiple (by using a glob pattern) files which should be used to determine whether the cache is up-to-date or not. Only up-to-date caches will be restored and only outdated caches will be created. |
 | `compressionMethod`         | yes       | `TARGZ`       | The compression method (`NONE`, `ZIP`, `TARGZ`, `TARGZ_BEST_SPEED`, `TAR_ZSTD`, `TAR`) to use. Some are without compression.                                                                                       |
 
+### Choosing the compression method
+
+Different situations might require different packaging and compression methods, controlled by the `compressionMethod` option.
+
+`TARGZ` use gzip with a compression level which is a "sweet spot" between compression speed and size (Deflate compression level 6).
+If you cache lots of text files, for instance source code or `node_modules`-directories in Javascript-builds, this is a good choice.
+
+`TARGZ_BEST_SPEED` use gzip with the lowest compression level, for best throughput.
+If high speed at cache creation is important, and you cache directories with a mix of both text and binary files, this option might be a good choice.
+
+`TAR` use no compression.
+If you cache directories with lots of binary files, this option might be best.
+
+`TAR_ZSTD` use a [JNI-binding to machine architecture dependent Zstandard binaries](https://github.com/luben/zstd-jni), with pre-built binaries for many architectures are available.
+It offers better compression speed and ratio than gzip.
+
+`ZIP` packages the cache in a zip archive.
+
+`NONE` use no compression and not packaging.
+Might not work properly when caching directories, but if that's the case, you should use `TAR` instead.
+
 ## Usage in Jobs
 
 ### Freestyle Jobs
