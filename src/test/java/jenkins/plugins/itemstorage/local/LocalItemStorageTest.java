@@ -8,10 +8,11 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 import java.io.File;
 import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocalItemStorageTest {
 
@@ -23,12 +24,12 @@ public class LocalItemStorageTest {
 
     @Test
     public void testConfigRoundTrip() throws Exception {
-        assertThat(storage().getRoot()).isNull();
+        assertThat(storage().getRoot(), nullValue());
         storage().setRoot("custom-root");
 
         jenkins.configRoundtrip();
 
-        assertThat(storage().getRoot()).isEqualTo("custom-root");
+        assertThat(storage().getRoot(), is("custom-root"));
     }
 
     @Test
@@ -37,18 +38,18 @@ public class LocalItemStorageTest {
 
         FreeStyleProject project = jenkins.createFreeStyleProject("project");
         File cacheDir = cacheDir(project);
-        assertThat(cacheDir.getAbsolutePath()).isEqualTo(tempDirPath() + "/project/cache");
+        assertThat(cacheDir.getAbsolutePath(), is(tempDirPath() + "/project/cache"));
 
-        assertThat(cacheDir.mkdirs()).isTrue();
-        assertThat(cacheDir).isDirectory();
+        assertThat(cacheDir.mkdirs(), is(true));
+        assertThat(cacheDir.isDirectory(), is(true));
 
         project.renameTo("renamed-project");
         cacheDir = cacheDir(project);
-        assertThat(cacheDir.getAbsolutePath()).isEqualTo(tempDirPath() + "/renamed-project/cache");
-        assertThat(cacheDir).isDirectory();
+        assertThat(cacheDir.getAbsolutePath(), is(tempDirPath() + "/renamed-project/cache"));
+        assertThat(cacheDir.isDirectory(), is(true));
 
         project.delete();
-        assertThat(cacheDir).doesNotExist();
+        assertThat(cacheDir.exists(), is(false));
     }
 
     private LocalItemStorage storage() {

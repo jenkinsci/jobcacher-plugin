@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.54</version>
+        <version>4.55</version>
         <relativePath/>
     </parent>
 
@@ -18,17 +18,16 @@
     <properties>
         <changelist>999999-SNAPSHOT</changelist>
 
-        <jenkins.version>2.375.1</jenkins.version>
+        <jenkins.version>2.375.4</jenkins.version>
         <jenkins-tools-bom.artifactId>bom-2.375.x</jenkins-tools-bom.artifactId>
-        <jenkins-tools-bom.version>1798.vc671fe94856f</jenkins-tools-bom.version>
+        <jenkins-tools-bom.version>1887.vda_d0ddb_c15c4</jenkins-tools-bom.version>
 
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
-        <aws-java-sdk.version>1.12.287-357.vf82d85a_6eefd</aws-java-sdk.version>
+        <aws-java-sdk.version>1.12.406-370.v8f993c987059</aws-java-sdk.version>
         <aws-credentials.version>191.vcb_f183ce58b_9</aws-credentials.version>
         <variant.version>59.vf075fe829ccb</variant.version>
         <jsr305.version>3.0.2</jsr305.version>
-        <assertj-core.version>3.24.2</assertj-core.version>
         <testcontainers.version>1.17.6</testcontainers.version>
         <zstd-jni.version>1.5.4-1</zstd-jni.version>
         <jackson2-api.version>2.14.2-319.v37853346a_229</jackson2-api.version>
@@ -94,13 +93,6 @@
             <artifactId>zstd-jni</artifactId>
             <version>${zstd-jni.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${assertj-core.version}</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -140,6 +132,12 @@
             <groupId>org.jenkinsci.plugins</groupId>
             <artifactId>pipeline-model-definition</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>joda-time</groupId>
+                    <artifactId>joda-time</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -150,6 +148,10 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

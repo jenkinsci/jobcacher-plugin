@@ -9,7 +9,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import java.io.IOException;
 import java.util.Collections;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 public class ArbitraryFileCacheWrapperTest {
 
@@ -24,7 +25,7 @@ public class ArbitraryFileCacheWrapperTest {
         jenkins.configRoundtrip(project);
         String projectConfigXmlAfterConfigRoundtrip = project.getConfigFile().asString();
 
-        assertThat(projectConfigXmlAfterConfigRoundtrip).isEqualTo(projectConfigXml);
+        assertThat(projectConfigXmlAfterConfigRoundtrip, is(projectConfigXml));
     }
 
     private FreeStyleProject createProjectWithFullyConfiguredArbitraryFileCache(String name) throws IOException {
