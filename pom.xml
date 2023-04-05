@@ -28,7 +28,7 @@
         <aws-credentials.version>191.vcb_f183ce58b_9</aws-credentials.version>
         <variant.version>59.vf075fe829ccb</variant.version>
         <jsr305.version>3.0.2</jsr305.version>
-        <testcontainers.version>1.17.6</testcontainers.version>
+        <testcontainers.version>1.18.0</testcontainers.version>
         <zstd-jni.version>1.5.4-1</zstd-jni.version>
         <jackson2-api.version>2.14.2-319.v37853346a_229</jackson2-api.version>
         <docker-workflow.version>563.vd5d2e5c4007f</docker-workflow.version>
