@@ -52,10 +52,15 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.zip.Deflater;
 
 /**
@@ -78,6 +83,7 @@ public class ArbitraryFileCache extends Cache {
     private String excludes;
     private boolean useDefaultExcludes = true;
     private String cacheValidityDecidingFile;
+    private String cacheValidityExcludePatterns="";
     private CompressionMethod compressionMethod = CompressionMethod.TARGZ;
     private String cacheName;
 
@@ -112,7 +118,16 @@ public class ArbitraryFileCache extends Cache {
     }
 
     public String getCacheValidityDecidingFile() {
-        return cacheValidityDecidingFile;
+        return cacheValidityDecidingFile == null ? "" : cacheValidityDecidingFile;
+    }
+
+    @DataBoundSetter
+    public void setCacheValidityExcludePatterns(String cacheValidityExcludePatterns) {
+        this.cacheValidityExcludePatterns = cacheValidityExcludePatterns;
+    }
+
+    public String getCacheValidityExcludePatterns() {
+        return cacheValidityExcludePatterns == null ? "" : cacheValidityExcludePatterns;
     }
 
     public void setPath(String path) {
@@ -324,7 +339,25 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private FilePath[] resolveCacheValidityDecidingFiles(FilePath workspace) throws IOException, InterruptedException {
-        return workspace.list(cacheValidityDecidingFile);
+        FilePath[] decidingFiles = new FilePath[0];
+        int fileIndex=0;
+
+        for (String decidingFilePattern : cacheValidityDecidingFile.split(",")) {
+            FilePath[] matchingFiles = workspace.list(decidingFilePattern);
+            decidingFiles = Arrays.copyOf(decidingFiles, decidingFiles.length + matchingFiles.length);
+            fileLoop:
+            for (FilePath matchingFile : matchingFiles) {
+                for (String excludePattern: cacheValidityExcludePatterns.split(",")) {
+                    PathMatcher excludeMatcher = FileSystems.getDefault().getPathMatcher("glob:" + excludePattern);
+                    if (excludeMatcher.matches(Paths.get(matchingFile.getName()))) {
+                        continue fileLoop;
+                    }
+                }
+                decidingFiles[fileIndex] = matchingFile;
+                fileIndex += 1;
+            }
+        }
+        return Arrays.copyOfRange(decidingFiles, 0, fileIndex);
     }
 
     private class SaverImpl extends Saver {
