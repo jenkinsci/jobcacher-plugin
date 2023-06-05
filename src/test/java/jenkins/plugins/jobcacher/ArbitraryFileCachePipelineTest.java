@@ -147,7 +147,45 @@ public class ArbitraryFileCachePipelineTest {
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module1/packages.lock.json'\n"
                 + "    writeFile text: '" + module2PackagesLock + "', file: 'module2/packages.lock.json'\n"
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module3/packages.lock.json'\n"
-                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: '**/packages.lock.json', cacheValidityExcludePatterns: 'module3*,module4/packages.lock.json')]) {\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: '**/packages.lock.json,!module3/packages.lock.json')]) {\n"
+                + "        " + fileCreationCode("test-path", "test-file") + "\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run1.getLog(), allOf(
+            containsString("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip restoring cache as no up-to-date cache exists"),
+            not(containsString("expected output from test file")),
+            containsString("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...")
+        ));
+
+
+        deleteCachedDirectoryInWorkspace(project);
+
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog(), allOf(
+            containsString("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Found cache in job specific caches"),
+            containsString("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Restoring cache..."),
+            containsString("expected output from test file"),
+            containsString("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip cache creation as the cache is up-to-date")
+        ));
+    }
+
+    @Test
+    @WithTimeout(600)
+    public void testMultipleCacheValidityDecidingFilesWithMultipleExclusions() throws Exception {
+        String module1PackagesLock = "abcdefghijklmnopqrstuvwxyz";
+        String module2PackagesLock = StringUtils.reverse(module1PackagesLock);
+
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+        String scriptedPipeline = ""
+                + "node('test-agent') {\n"
+                + "    writeFile text: '" + module1PackagesLock + "', file: 'module1/packages.lock.json'\n"
+                + "    writeFile text: '" + module2PackagesLock + "', file: 'module2/packages.lock.json'\n"
+                + "    writeFile text: '" + module1PackagesLock + "', file: 'module3/packages.lock.json'\n"
+                + "    writeFile text: '" + module2PackagesLock + "', file: 'module4/packages.lock.json'\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: '**/packages.lock.json,!module3*,!module4/packages.lock.json')]) {\n"
                 + "        " + fileCreationCode("test-path", "test-file") + "\n"
                 + "    }\n"
                 + "}";
@@ -175,7 +213,7 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testMultipleCacheValidityDecidingFilesWithMultipleExclusions() throws Exception {
+    public void testMultipleCacheValidityDecidingFilesWithMixedIncludeExcludeOrder() throws Exception {
         String module1PackagesLock = "abcdefghijklmnopqrstuvwxyz";
         String module2PackagesLock = StringUtils.reverse(module1PackagesLock);
 
@@ -186,7 +224,7 @@ public class ArbitraryFileCachePipelineTest {
                 + "    writeFile text: '" + module2PackagesLock + "', file: 'module2/packages.lock.json'\n"
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module3/packages.lock.json'\n"
                 + "    writeFile text: '" + module2PackagesLock + "', file: 'module4/packages.lock.json'\n"
-                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: '**/packages.lock.json', cacheValidityExcludePatterns: 'module3*,module4/packages.lock.json')]) {\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: '!module4/packages.lock.json,**/packages.lock.json,!module3*,')]) {\n"
                 + "        " + fileCreationCode("test-path", "test-file") + "\n"
                 + "    }\n"
                 + "}";
