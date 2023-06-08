@@ -36,7 +36,7 @@ The following cache configuration options apply to all supported job types.
 
 | Option          | Mandatory | Description                                                                                                                                                                                                                                                                                                                |
 |-----------------|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `maxCacheSize`  | no        | The maximum size in megabytes of all configured caches that Jenkins will allow until it deletes all completely and starts the next build from an empty cache. This prevents caches from growing indefinitely with the downside of periodic fresh builds without a cache. Set to zero or empty to skip checking cache size. |    
+| `maxCacheSize`  | no        | The maximum size in megabytes of all configured caches that Jenkins will allow until it deletes all completely and starts the next build from an empty cache. This prevents caches from growing indefinitely with the downside of periodic fresh builds without a cache. Set to zero or empty to skip checking cache size. |
 | `defaultBranch` | no        | If the current branch has no cache, it will seed its cache from the specified branch. Leave empty to generate a fresh cache for each branch.                                                                                                                                                                               |
 | `caches`        | yes       | Defines the caches to use in the job (see below).                                                                                                                                                                                                                                                                          |
 
@@ -49,8 +49,30 @@ The following cache configuration options apply to all supported job types.
 | `includes`                  | no        | `**/*`        | The pattern to match files that should be included in caching.                                                                                                                                                                             |
 | `excludes`                  | no        |               | The pattern to match files that should be excluded from caching.                                                                                                                                                                           |
 | `useDefaultExcludes`        | no        | `true`        | Whether to use default excludes (see [DirectoryScanner.java#L170](https://github.com/apache/ant/blob/eeacf501dd15327cd300ecd518284e68bb5af4a4/src/main/org/apache/tools/ant/DirectoryScanner.java#L170) for more details).                 |
-| `cacheValidityDecidingFile` | no        |               | The workspace-relative path to one or multiple (by using a glob pattern) files which should be used to determine whether the cache is up-to-date or not. Only up-to-date caches will be restored and only outdated caches will be created. |
+| `cacheValidityDecidingFile` | no        |               | The workspace-relative path to one or multiple files which should be used to determine whether the cache is up-to-date or not. Only up-to-date caches will be restored and only outdated caches will be created. |
 | `compressionMethod`         | yes       | `TARGZ`       | The compression method (`NONE`, `ZIP`, `TARGZ`, `TARGZ_BEST_SPEED`, `TAR_ZSTD`, `TAR`) to use. Some are without compression.                                                                                       |
+
+### Fine-tuning cache validity
+
+The `cacheValidityDecidingFile` option can be used to fine-tune the cache validity. At its simplest,
+you specify a file and the cache will be considered outdated if the file changes. You can also specify
+a folder, in which case all the files in the folder (recursively found) will be used to determine the
+cache validity. This can be too coarse if you have generated files lumped in with source files. To
+fine-tune this, you can specify an arbitrary list of patterns to include and exclude paths from the
+cache validity check. The patterns are relative to the workspace root. These patterns are paths
+or glob patterns, separated by commas. Exclude patterns start with the `!` character. The order of
+the patterns does not matter. You can mix include and exclude patterns freely.
+
+For example, to cache everything in a folder `src` except files named `*.generated`:
+
+```
+arbitraryFileCache(
+    path: 'my-cache',
+    cacheValidityDecidingFile: 'src,!src/**/*.generated',
+    includes: '**/*',
+    excludes: '**/*.generated'
+)
+```
 
 ### Choosing the compression method
 

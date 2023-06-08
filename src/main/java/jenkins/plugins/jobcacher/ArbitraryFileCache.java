@@ -56,6 +56,8 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.Deflater;
 
 /**
@@ -324,7 +326,17 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private FilePath[] resolveCacheValidityDecidingFiles(FilePath workspace) throws IOException, InterruptedException {
-        return workspace.list(cacheValidityDecidingFile);
+        List<String> includes = new ArrayList<String>();
+        List<String> excludes = new ArrayList<String>();
+
+        for (String decidingFilePattern : cacheValidityDecidingFile.split(",")) {
+            if (decidingFilePattern.startsWith("!")) {
+                excludes.add(decidingFilePattern.substring(1));
+            } else {
+                includes.add(decidingFilePattern);
+            }
+        }
+        return workspace.list(String.join(",",includes), String.join(",",excludes));
     }
 
     private class SaverImpl extends Saver {
