@@ -170,12 +170,13 @@ public class ArbitraryFileCache extends Cache {
 
     @Override
     public Saver cache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
-        FilePath resolvedPath = resolvePath(workspace, initialEnvironment);
+        String expandedPath = initialEnvironment.expand(path);
+        FilePath resolvedPath = workspace.child(expandedPath);
 
         ExistingCache existingCache = resolveExistingValidCache(cachesRoot, fallbackCachesRoot, workspace, listener);
         if (existingCache == null) {
             logMessage("Skip restoring cache as no up-to-date cache exists", listener);
-            return new SaverImpl(resolvedPath);
+            return new SaverImpl(expandedPath);
         }
 
         logMessage("Restoring cache...", listener);
@@ -191,13 +192,7 @@ public class ArbitraryFileCache extends Cache {
             resolvedPath.deleteRecursive();
         }
 
-        return new SaverImpl(resolvedPath);
-    }
-
-    private FilePath resolvePath(FilePath workspace, EnvVars initialEnvironment) {
-        String expandedPath = initialEnvironment.expand(path);
-
-        return workspace.child(expandedPath);
+        return new SaverImpl(expandedPath);
     }
 
     private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
@@ -326,8 +321,8 @@ public class ArbitraryFileCache extends Cache {
     }
 
     private FilePath[] resolveCacheValidityDecidingFiles(FilePath workspace) throws IOException, InterruptedException {
-        List<String> includes = new ArrayList<String>();
-        List<String> excludes = new ArrayList<String>();
+        List<String> includes = new ArrayList<>();
+        List<String> excludes = new ArrayList<>();
 
         for (String decidingFilePattern : cacheValidityDecidingFile.split(",")) {
             if (decidingFilePattern.startsWith("!")) {
@@ -343,22 +338,23 @@ public class ArbitraryFileCache extends Cache {
 
         private static final long serialVersionUID = 1L;
 
-        private final FilePath resolvedPath;
+        private final String expandedPath;
 
-        public SaverImpl(FilePath resolvedPath) {
-            this.resolvedPath = resolvedPath;
+        public SaverImpl(String expandedPath) {
+            this.expandedPath = expandedPath;
         }
 
         @Override
         public long calculateSize(ObjectPath objectPath, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-            return resolvedPath.act(new DirectorySize(includes, excludes));
+            return workspace.child(expandedPath).act(new DirectorySize(includes, excludes));
         }
 
         @Override
         public void save(ObjectPath cachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+            FilePath resolvedPath = workspace.child(expandedPath);
             if (!resolvedPath.exists()) {
                 logMessage("Cannot create cache as the path does not exist", listener);
-                if (isPathOutsideWorkspace(workspace) && isMaybeInsideDockerContainer(workspace)) {
+                if (isPathOutsideWorkspace(resolvedPath, workspace) && isMaybeInsideDockerContainer(workspace)) {
                     logMessage("Note that paths outside the workspace while using the Docker Pipeline plugin are not supported", listener);
                 }
                 return;
@@ -395,7 +391,7 @@ public class ArbitraryFileCache extends Cache {
             }
         }
 
-        private boolean isPathOutsideWorkspace(FilePath workspace) {
+        private boolean isPathOutsideWorkspace(FilePath resolvedPath, FilePath workspace) {
             return !StringUtils.startsWith(resolvedPath.getRemote(), workspace.getRemote());
         }
 
