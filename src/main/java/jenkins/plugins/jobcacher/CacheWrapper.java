@@ -55,10 +55,12 @@ import java.util.function.Function;
 public class CacheWrapper extends SimpleBuildWrapper {
 
     private Long maxCacheSize;
+    private boolean skipSave;
     private List<Cache> caches;
     private String defaultBranch;
 
     public CacheWrapper() {
+        this.skipSave = false;
     }
 
     @DataBoundConstructor
@@ -83,6 +85,17 @@ public class CacheWrapper extends SimpleBuildWrapper {
     }
 
     @SuppressWarnings("unused")
+    public boolean getSkipSave(){
+        return skipSave;
+    }
+
+    @DataBoundSetter
+    @SuppressWarnings("unused")
+    public void setSkipSave(boolean skipSave) {
+        this.skipSave = skipSave;
+    }
+
+    @SuppressWarnings("unused")
     public String getDefaultBranch() {
         return defaultBranch;
     }
@@ -104,7 +117,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         List<Cache.Saver> cacheSavers = CacheManager.cache(getStorage(), build, workspace, launcher, listener, initialEnvironment, getCaches(), getDefaultBranch());
 
-        context.setDisposer(new CacheDisposer(getStorage(), getMaxCacheSize(), getCaches(), cacheSavers));
+        context.setDisposer(new CacheDisposer(getStorage(), getMaxCacheSize(), getSkipSave(), getCaches(), cacheSavers));
     }
 
     private static <T> List<T> wrapList(List<T> list, Function<List<T>, List<T>> listFactory) {
@@ -142,20 +155,22 @@ public class CacheWrapper extends SimpleBuildWrapper {
 
         private final ItemStorage<?> storage;
         private final Long maxCacheSize;
+        private final boolean skipSave;
         private final List<Cache> caches;
         private final List<Cache.Saver> cacheSavers;
 
         @DataBoundConstructor
-        public CacheDisposer(ItemStorage<?> storage, Long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
+        public CacheDisposer(ItemStorage<?> storage, Long maxCacheSize, boolean skipSave, List<Cache> caches, List<Cache.Saver> cacheSavers) {
             this.storage = storage;
             this.maxCacheSize = maxCacheSize;
+            this.skipSave = skipSave;
             this.caches = caches;
             this.cacheSavers = cacheSavers;
         }
 
         @Override
         public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-            if (build.getResult() != Result.FAILURE && build.getResult() != Result.ABORTED) {
+            if (build.getResult() != Result.FAILURE && build.getResult() != Result.ABORTED && !skipSave) {
                 CacheManager.save(storage, build, workspace, launcher, listener, maxCacheSize, caches, cacheSavers);
             }
         }

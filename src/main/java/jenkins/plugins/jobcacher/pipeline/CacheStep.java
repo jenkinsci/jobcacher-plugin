@@ -49,12 +49,14 @@ public class CacheStep extends Step {
 
     private final List<Cache> caches;
     private Long maxCacheSize;
+    private boolean skipSave;
 
     public String defaultBranch;
 
     @DataBoundConstructor
     public CacheStep(Long maxCacheSize, List<Cache> caches) {
         this.maxCacheSize = maxCacheSize;
+        this.skipSave = false;
         this.caches = caches;
     }
 
@@ -80,13 +82,24 @@ public class CacheStep extends Step {
         return maxCacheSize;
     }
 
+    @DataBoundSetter
+    @SuppressWarnings("unused")
+    public void setSkipSave(boolean skipSave) {
+        this.skipSave = skipSave;
+    }
+
+    @SuppressWarnings("unused")
+    public boolean getSkipSave() {
+        return this.skipSave;
+    }
+
     public List<Cache> getCaches() {
         return caches;
     }
 
     @Override
     public StepExecution start(StepContext context) throws Exception {
-        return new CacheStepExecution(context, maxCacheSize, caches, defaultBranch);
+        return new CacheStepExecution(context, maxCacheSize, skipSave, caches, defaultBranch);
     }
 
     @Extension(optional = true)

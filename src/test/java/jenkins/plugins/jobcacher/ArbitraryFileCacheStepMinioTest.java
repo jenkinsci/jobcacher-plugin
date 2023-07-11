@@ -97,6 +97,22 @@ public class ArbitraryFileCacheStepMinioTest {
         // GIVEN
         job.setDefinition(new CpsFlowDefinition("node {\n" +
                 "  sh 'rm -rf *'\n" +
+                "  cache(skipSave: true, maxCacheSize: 250, caches: [arbitraryFileCache(path: 'sub', compressionMethod: 'TARGZ')]){\n" +
+                "    sh 'rm sub/file'\n" +
+                "  }\n" +
+                "}", true));
+        
+        // WHEN
+        result = job.scheduleBuild2(0).waitForStart();
+        j.waitForCompletion(result);
+
+        // THEN
+        j.assertBuildStatusSuccess(result);
+        j.assertLogContains("Skipping save due to skipSave being set to true.", result);
+
+        // GIVEN
+        job.setDefinition(new CpsFlowDefinition("node {\n" +
+                "  sh 'rm -rf *'\n" +
                 "  cache(maxCacheSize: 250, caches: [arbitraryFileCache(path: 'sub', compressionMethod: 'TARGZ')]){\n" +
                 "    sh 'cat sub/file'\n" +
                 "  }\n" +
