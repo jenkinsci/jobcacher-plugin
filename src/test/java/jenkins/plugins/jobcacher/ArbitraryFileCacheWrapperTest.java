@@ -38,6 +38,7 @@ public class ArbitraryFileCacheWrapperTest {
         CacheWrapper cacheWrapper = new CacheWrapper(Collections.singletonList(cache));
         cacheWrapper.setMaxCacheSize(999L);
         cacheWrapper.setDefaultBranch("develop");
+        cacheWrapper.setSkipSave(false);
 
         FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, name);
         project.setDescription("description");

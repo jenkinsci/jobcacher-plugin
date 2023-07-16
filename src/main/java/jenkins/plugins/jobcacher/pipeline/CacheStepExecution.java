@@ -20,15 +20,17 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
     private static final long serialVersionUID = 1L;
 
     private final Long maxCacheSize;
+    private final boolean skipSave;
     private final List<Cache> caches;
     private final String defaultBranch;
 
-    protected CacheStepExecution(StepContext context, Long maxCacheSize, List<Cache> caches, String defaultBranch) {
+    protected CacheStepExecution(StepContext context, Long maxCacheSize, boolean skipSave, List<Cache> caches, String defaultBranch) {
         super(context);
 
         this.maxCacheSize = maxCacheSize;
         this.caches = caches;
         this.defaultBranch = defaultBranch;
+        this.skipSave = skipSave;
     }
 
     @Override
@@ -50,7 +52,7 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
 
         context.newBodyInvoker()
                 .withContext(context)
-                .withCallback(new ExecutionCallback(maxCacheSize, caches, cacheSavers))
+                .withCallback(new ExecutionCallback(maxCacheSize, skipSave, caches, cacheSavers))
                 .start();
     }
 
@@ -59,11 +61,13 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
         private static final long serialVersionUID = 1L;
 
         private final Long maxCacheSize;
+        private final boolean skipSave;
         private final List<Cache> caches;
         private final List<Cache.Saver> cacheSavers;
 
-        public ExecutionCallback(Long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) {
+        public ExecutionCallback(Long maxCacheSize, boolean skipSave, List<Cache> caches, List<Cache.Saver> cacheSavers) {
             this.maxCacheSize = maxCacheSize;
+            this.skipSave = skipSave;
             this.caches = caches;
             this.cacheSavers = cacheSavers;
         }
@@ -85,10 +89,14 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
         }
 
         private void complete(StepContext context) throws IOException, InterruptedException {
+            TaskListener listener = context.get(TaskListener.class);
+            if(skipSave) {
+                listener.getLogger().println("Skipping save due to skipSave being set to true.");
+                return;
+            }
             Run<?, ?> run = context.get(Run.class);
             FilePath workspace = context.get(FilePath.class);
             Launcher launcher = context.get(Launcher.class);
-            TaskListener listener = context.get(TaskListener.class);
 
             CacheManager.save(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, maxCacheSize, caches, cacheSavers);
         }
