@@ -11,7 +11,7 @@ This is especially useful for Jenkins setups with ephemeral executors which alwa
 
 ### Features
 
-- Store caches on the Jenkins controller, AWS S3 and S3 compatible services
+- Store caches on the Jenkins controller, AWS S3 and S3 compatible services - see additional plugins requirements: https://github.com/jenkinsci/jobcacher-plugin/blob/12d4fadd3dbd1bd7d953b17265a5cbd8f1264fcb/src/main/java/jenkins/plugins/itemstorage/s3/S3ItemStorage.java#L110
 - Use caching in pipeline and freestyle jobs
 - Define maximum cache sizes so that the cache won't grow indefinitely
 - View job specific caches on job page
