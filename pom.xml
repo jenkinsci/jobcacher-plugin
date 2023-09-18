@@ -25,7 +25,7 @@
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
         <aws-java-sdk.version>1.12.406-370.v8f993c987059</aws-java-sdk.version>
-        <aws-credentials.version>191.vcb_f183ce58b_9</aws-credentials.version>
+        <aws-credentials.version>218.v1b_e9466ec5da_</aws-credentials.version>
         <variant.version>59.vf075fe829ccb</variant.version>
         <jsr305.version>3.0.2</jsr305.version>
         <testcontainers.version>1.18.3</testcontainers.version>
