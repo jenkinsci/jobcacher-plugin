@@ -29,7 +29,7 @@
         <variant.version>59.vf075fe829ccb</variant.version>
         <jsr305.version>3.0.2</jsr305.version>
         <testcontainers.version>1.18.3</testcontainers.version>
-        <zstd-jni.version>1.5.5-4</zstd-jni.version>
+        <zstd-jni.version>1.5.5-10</zstd-jni.version>
         <jackson2-api.version>2.15.2-350.v0c2f3f8fc595</jackson2-api.version>
         <docker-workflow.version>563.vd5d2e5c4007f</docker-workflow.version>
     </properties>
