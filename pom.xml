@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.73</version>
+        <version>4.75</version>
         <relativePath/>
     </parent>
 
@@ -18,20 +18,15 @@
     <properties>
         <changelist>999999-SNAPSHOT</changelist>
 
-        <jenkins.version>2.375.4</jenkins.version>
-        <jenkins-tools-bom.artifactId>bom-2.375.x</jenkins-tools-bom.artifactId>
-        <jenkins-tools-bom.version>1887.vda_d0ddb_c15c4</jenkins-tools-bom.version>
+        <jenkins.version>2.414.3</jenkins.version>
+        <jenkins-tools-bom.artifactId>bom-2.414.x</jenkins-tools-bom.artifactId>
+        <jenkins-tools-bom.version>2582.v830625dd636c</jenkins-tools-bom.version>
 
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
-        <aws-java-sdk.version>1.12.406-370.v8f993c987059</aws-java-sdk.version>
-        <aws-credentials.version>191.vcb_f183ce58b_9</aws-credentials.version>
-        <variant.version>59.vf075fe829ccb</variant.version>
-        <jsr305.version>3.0.2</jsr305.version>
-        <testcontainers.version>1.18.3</testcontainers.version>
-        <zstd-jni.version>1.5.5-4</zstd-jni.version>
-        <jackson2-api.version>2.15.2-350.v0c2f3f8fc595</jackson2-api.version>
-        <docker-workflow.version>563.vd5d2e5c4007f</docker-workflow.version>
+        <aws-java-sdk.version>1.12.586-413.v6a_6c3a_420126</aws-java-sdk.version>
+        <testcontainers.version>1.19.3</testcontainers.version>
+        <zstd-jni.version>1.5.5-10</zstd-jni.version>
     </properties>
 
     <name>Jenkins Job Cacher plugin</name>
@@ -62,9 +57,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>variant</artifactId>
-            <version>${variant.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>aws-java-sdk</artifactId>
@@ -74,13 +67,11 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>jackson2-api</artifactId>
-            <version>${jackson2-api.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>aws-credentials</artifactId>
-            <version>${aws-credentials.version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -158,7 +149,6 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>docker-workflow</artifactId>
-            <version>${docker-workflow.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
