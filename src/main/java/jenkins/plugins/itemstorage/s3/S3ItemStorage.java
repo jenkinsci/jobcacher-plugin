@@ -107,7 +107,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         return new S3Profile(lookupCredentials(), null, region, null, false, true);
     }
 
-    @OptionalExtension(requirePlugins = {"aws-java-sdk", "aws-credentials", "jackson2-api"})
+    @OptionalExtension(requirePlugins = {"aws-java-sdk-minimal", "aws-credentials", "jackson2-api"})
     public static final class DescriptorImpl extends ItemStorageDescriptor<S3ObjectPath> {
 
         @NonNull
@@ -136,7 +136,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
         }
     }
 
-    @OptionalExtension(requirePlugins = {"aws-java-sdk", "aws-credentials", "jackson2-api"})
+    @OptionalExtension(requirePlugins = {"aws-java-sdk-minimal", "aws-credentials", "jackson2-api"})
     public static final class S3ItemListener extends ItemListener {
 
         @Override
