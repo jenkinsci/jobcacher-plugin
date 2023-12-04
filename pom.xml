@@ -25,7 +25,7 @@
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
         <testcontainers.version>1.19.3</testcontainers.version>
-        <zstd-jni.version>1.5.5-10</zstd-jni.version>
+        <zstd-jni.version>1.5.5-11</zstd-jni.version>
     </properties>
 
     <name>Jenkins Job Cacher plugin</name>
