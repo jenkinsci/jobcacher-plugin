@@ -27,17 +27,12 @@ package jenkins.plugins.itemstorage.local;
 import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Job;
-import hudson.util.DirScanner;
-import hudson.util.FileVisitor;
 import jenkins.plugins.itemstorage.ObjectPath;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.logging.Logger;
 
 /**
  * This implements the on-controller storage for object paths.
@@ -45,8 +40,6 @@ import java.util.logging.Logger;
  * @author Peter Hayes
  */
 public class LocalObjectPath extends ObjectPath {
-
-    private static final Logger LOGGER = Logger.getLogger(LocalObjectPath.class.getName());
 
     private final FilePath file;
 
@@ -65,20 +58,8 @@ public class LocalObjectPath extends ObjectPath {
     }
 
     @Override
-    public int copyRecursiveTo(String fileMask, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
-        LOGGER.info("Copying from " + file + " to " + target);
-        return file.copyRecursiveTo(new IsModifiedGlob(fileMask, excludes, useDefaultExcludes, target), target, fileMask);
-    }
-
-    @Override
     public void copyFrom(FilePath source) throws IOException, InterruptedException {
         file.copyFrom(source);
-    }
-
-    @Override
-    public int copyRecursiveFrom(String fileMask, String excludes, boolean useDefaultExcludes, FilePath source) throws IOException, InterruptedException {
-        LOGGER.info("Copying from " + source + " to " + file);
-        return source.copyRecursiveTo(new IsModifiedGlob(fileMask, excludes, useDefaultExcludes, file), file, fileMask);
     }
 
     @Override
@@ -100,60 +81,4 @@ public class LocalObjectPath extends ObjectPath {
         return file.getRemote();
     }
 
-    /**
-     * Scanner that filters out files that are up-to-date
-     */
-    private static class IsModifiedGlob extends DirScanner.Glob {
-
-        private static final long serialVersionUID = 1L;
-
-        private final FilePath toCompare;
-
-        public IsModifiedGlob(String includes, String excludes, boolean useDefaultExcludes, FilePath toCompare) {
-            super(includes, excludes, useDefaultExcludes);
-            this.toCompare = toCompare;
-        }
-
-        @Override
-        public void scan(File dir, FileVisitor visitor) throws IOException {
-            super.scan(dir, new IsNotThereOrOlderVisitor(toCompare, visitor));
-        }
-    }
-
-    /**
-     * Visitor that checks modification time if source is newer than target.  If so, it calls delegate and updates
-     * target file modification time to be same as source.
-     */
-    public static class IsNotThereOrOlderVisitor extends FileVisitor implements Serializable {
-
-        private static final long serialVersionUID = 1L;
-
-        private final FilePath toCompare;
-        private final FileVisitor delegate;
-
-        public IsNotThereOrOlderVisitor(FilePath toCompare, FileVisitor delegate) {
-            this.toCompare = toCompare;
-            this.delegate = delegate;
-        }
-
-        @Override
-        public void visit(File f, String relativePath) throws IOException {
-            // check if file is more recent than base one
-            try {
-                FilePath targetFile = toCompare.child(relativePath);
-                if (!targetFile.exists() || f.lastModified() > targetFile.lastModified()) {
-                    delegate.visit(f, relativePath);
-
-                    // Only set modification date if the file ended up being copied - pretty chatty!
-                    if (targetFile.exists()) {
-                        targetFile.touch(f.lastModified());
-                    }
-                }
-            } catch (InterruptedException ie) {
-                LOGGER.info("Interrupted while checking file [" + f + "] skipping and reinterrupting");
-
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
 }
