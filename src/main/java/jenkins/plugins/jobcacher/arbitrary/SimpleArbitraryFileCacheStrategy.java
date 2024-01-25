@@ -14,12 +14,11 @@ public class SimpleArbitraryFileCacheStrategy implements ArbitraryFileCacheStrat
 
     @Override
     public void cache(FilePath source, String includes, String excludes, boolean useDefaultExcludes, ObjectPath target, FilePath workspace) throws IOException, InterruptedException {
-        target.copyRecursiveFrom(includes, excludes, useDefaultExcludes, source);
+        throw new UnsupportedOperationException("This compression method is not supported anymore");
     }
 
     @Override
     public void restore(ObjectPath source, FilePath target, FilePath workspace) throws IOException, InterruptedException {
-        target.mkdirs();
-        source.copyRecursiveTo(target);
+        throw new UnsupportedOperationException("This compression method is not supported anymore");
     }
 }

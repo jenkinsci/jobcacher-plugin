@@ -101,6 +101,10 @@ public class ArbitraryFileCache extends Cache {
 
     @DataBoundSetter
     public void setCompressionMethod(CompressionMethod compressionMethod) {
+        if (compressionMethod == CompressionMethod.NONE) {
+            compressionMethod = CompressionMethod.TARGZ;
+        }
+
         this.compressionMethod = compressionMethod;
     }
 
@@ -215,7 +219,7 @@ public class ArbitraryFileCache extends Cache {
 
     private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         ExistingCache existingCache = resolveExistingCache(cachesRoot);
-        if (existingCache == null) {
+        if (existingCache == null || !existingCache.getCompressionMethod().isSupported()) {
             return null;
         }
 
@@ -331,7 +335,7 @@ public class ArbitraryFileCache extends Cache {
                 includes.add(decidingFilePattern);
             }
         }
-        return workspace.list(String.join(",",includes), String.join(",",excludes));
+        return workspace.list(String.join(",", includes), String.join(",", excludes));
     }
 
     private class SaverImpl extends Saver {
@@ -457,22 +461,25 @@ public class ArbitraryFileCache extends Cache {
 
     public enum CompressionMethod {
 
-        NONE(new SimpleArbitraryFileCacheStrategy()),
-        ZIP(new ZipArbitraryFileCacheStrategy()),
+        NONE(new SimpleArbitraryFileCacheStrategy(), false),
+        ZIP(new ZipArbitraryFileCacheStrategy(), true),
         TARGZ(new TarArbitraryFileCacheStrategy(
                 GzipCompressorOutputStream::new,
                 GzipCompressorInputStream::new,
-                ".tgz")
+                ".tgz"),
+                true
         ),
         TARGZ_BEST_SPEED(new TarArbitraryFileCacheStrategy(
-            os -> new GzipCompressorOutputStream(os, gzipParametersBestSpeed()),
-            GzipCompressorInputStream::new,
-            ".tgz")
+                os -> new GzipCompressorOutputStream(os, gzipParametersBestSpeed()),
+                GzipCompressorInputStream::new,
+                ".tgz"),
+                true
         ),
         TAR(new TarArbitraryFileCacheStrategy(
-            os -> os,
-            is -> is,
-            ".tar")
+                os -> os,
+                is -> is,
+                ".tar"),
+                true
         ),
         TAR_ZSTD(new TarArbitraryFileCacheStrategy(
                 out -> {
@@ -481,14 +488,9 @@ public class ArbitraryFileCache extends Cache {
                     return outputStream;
                 },
                 ZstdInputStream::new,
-                ".tar.zst")
+                ".tar.zst"),
+                true
         );
-
-        private static GzipParameters gzipParametersNoCompression() {
-            GzipParameters gzipParameters = new GzipParameters();
-            gzipParameters.setCompressionLevel(Deflater.NO_COMPRESSION);
-            return gzipParameters;
-        }
 
         private static GzipParameters gzipParametersBestSpeed() {
             GzipParameters gzipParameters = new GzipParameters();
@@ -497,9 +499,15 @@ public class ArbitraryFileCache extends Cache {
         }
 
         private final ArbitraryFileCacheStrategy cacheStrategy;
+        private final boolean supported;
 
-        CompressionMethod(ArbitraryFileCacheStrategy cacheStrategy) {
+        CompressionMethod(ArbitraryFileCacheStrategy cacheStrategy, boolean supported) {
             this.cacheStrategy = cacheStrategy;
+            this.supported = supported;
+        }
+
+        public boolean isSupported() {
+            return supported;
         }
 
         public ArbitraryFileCacheStrategy getCacheStrategy() {
