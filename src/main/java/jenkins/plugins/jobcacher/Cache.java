@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * This class provides the Cache extension point that when implemented provides the caching logic for saving files
  * from the executor to the cache storage system and sending them back to the executor.
- *
+ * <p>
  * Note, that Cache is Serializable and all subclasses must conform as well to work with Pipeline plugin
  *
  * @author Peter Hayes
@@ -56,17 +56,18 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
     /**
      * Seeds the cache on the executor from the cache storage system.
      *
-     * @param cache The root of the object cache
-     * @param defaultCache The root of the alternate default object cache
-     * @param build The build in progress
-     * @param workspace The executor workspace
-     * @param launcher The launcher
-     * @param listener The task listener
+     * @param cache              The root of the object cache
+     * @param defaultCache       The root of the alternate default object cache
+     * @param build              The build in progress
+     * @param workspace          The executor workspace
+     * @param launcher           The launcher
+     * @param listener           The task listener
      * @param initialEnvironment The initial environment variables
-     * @throws IOException If an error occurs connecting to the potentially remote executor
+     * @param skipRestore        Whether to skip restoring the cache
+     * @throws IOException          If an error occurs connecting to the potentially remote executor
      * @throws InterruptedException If interrupted
      */
-    public abstract Saver cache(ObjectPath cache, ObjectPath defaultCache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException;
+    public abstract Saver cache(ObjectPath cache, ObjectPath defaultCache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, boolean skipRestore) throws IOException, InterruptedException;
 
     /**
      * Class that is used to save the cache on the remote system back to the cache storage system.
@@ -79,13 +80,13 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
          * Calculates the size of the cache on the executor. It will be used to determine if the total size of the cache
          * if returned to the cache storage system would be greater than the configured maximum cache size.
          *
-         * @param cache The root of the cache
-         * @param build The build in progress
+         * @param cache     The root of the cache
+         * @param build     The build in progress
          * @param workspace The executor workspace
-         * @param launcher The launcher
-         * @param listener The task listener
+         * @param launcher  The launcher
+         * @param listener  The task listener
          * @return The size in bytes of the remote cache
-         * @throws IOException If an error occurs connecting to the potentially remote executor
+         * @throws IOException          If an error occurs connecting to the potentially remote executor
          * @throws InterruptedException If interrupted
          */
         public abstract long calculateSize(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
@@ -93,12 +94,12 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
         /**
          * Saves the files from the executor to the cache storage system.
          *
-         * @param cache The root of the cache where savers should store their cache within
-         * @param build The build in progress
+         * @param cache     The root of the cache where savers should store their cache within
+         * @param build     The build in progress
          * @param workspace The executor workspace
-         * @param launcher The launcher
-         * @param listener The task listener
-         * @throws IOException If an error occurs connecting to the potentially remote executor
+         * @param launcher  The launcher
+         * @param listener  The task listener
+         * @throws IOException          If an error occurs connecting to the potentially remote executor
          * @throws InterruptedException If interrupted
          */
         public abstract void save(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;

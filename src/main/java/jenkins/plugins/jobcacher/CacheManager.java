@@ -46,7 +46,7 @@ public class CacheManager {
     /**
      * Internal method only
      */
-    public static List<Cache.Saver> cache(ItemStorage<?> storage, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, List<Cache> caches, String defaultBranch) throws IOException, InterruptedException {
+    public static List<Cache.Saver> cache(ItemStorage<?> storage, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, List<Cache> caches, String defaultBranch, boolean skipRestore) throws IOException, InterruptedException {
         ObjectPath cachePath = getCachePath(storage, run);
 
         ObjectPath defaultCachePath = null;
@@ -61,7 +61,7 @@ public class CacheManager {
         List<Cache.Saver> cacheSavers = new ArrayList<>();
         synchronized (getLock(run.getParent())) {
             for (Cache cache : caches) {
-                cacheSavers.add(cache.cache(cachePath, defaultCachePath, run, workspace, launcher, listener, initialEnvironment));
+                cacheSavers.add(cache.cache(cachePath, defaultCachePath, run, workspace, launcher, listener, initialEnvironment, skipRestore));
             }
         }
         return cacheSavers;
