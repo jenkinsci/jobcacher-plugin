@@ -44,15 +44,15 @@ The following cache configuration options apply to all supported job types.
 
 ### `ArbitraryFileCache`
 
-| Option                      | Mandatory | Default value | Description                                                                                                                                                                                                                                |
-|-----------------------------|-----------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `path`                      | yes       |               | The path to cache. It can be absolute or relative to the workspace.                                                                                                                                                                        |
-| `cacheName`                 | no        |               | The name of the cache. Useful if caching the same path multiple times in a pipeline.                                                                                                                                                       |
-| `includes`                  | no        | `**/*`        | The pattern to match files that should be included in caching.                                                                                                                                                                             |
-| `excludes`                  | no        |               | The pattern to match files that should be excluded from caching.                                                                                                                                                                           |
-| `useDefaultExcludes`        | no        | `true`        | Whether to use default excludes (see [DirectoryScanner.java#L170](https://github.com/apache/ant/blob/eeacf501dd15327cd300ecd518284e68bb5af4a4/src/main/org/apache/tools/ant/DirectoryScanner.java#L170) for more details).                 |
-| `cacheValidityDecidingFile` | no        |               | The workspace-relative path to one or multiple files which should be used to determine whether the cache is up-to-date or not. Only up-to-date caches will be restored and only outdated caches will be created. |
-| `compressionMethod`         | yes       | `TARGZ`       | The compression method (`NONE`, `ZIP`, `TARGZ`, `TARGZ_BEST_SPEED`, `TAR_ZSTD`, `TAR`) to use. Some are without compression.                                                                                       |
+| Option                      | Mandatory | Default value | Description                                                                                                                                                                                                                |
+|-----------------------------|-----------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `path`                      | yes       |               | The path to cache. It can be absolute or relative to the workspace.                                                                                                                                                        |
+| `cacheName`                 | no        |               | The name of the cache. Useful if caching the same path multiple times in a pipeline.                                                                                                                                       |
+| `includes`                  | no        | `**/*`        | The pattern to match files that should be included in caching.                                                                                                                                                             |
+| `excludes`                  | no        |               | The pattern to match files that should be excluded from caching.                                                                                                                                                           |
+| `useDefaultExcludes`        | no        | `true`        | Whether to use default excludes (see [DirectoryScanner.java#L170](https://github.com/apache/ant/blob/eeacf501dd15327cd300ecd518284e68bb5af4a4/src/main/org/apache/tools/ant/DirectoryScanner.java#L170) for more details). |
+| `cacheValidityDecidingFile` | no        |               | The workspace-relative path to one or multiple files which should be used to determine whether the cache is up-to-date or not. Only up-to-date caches will be restored and only outdated caches will be created.           |
+| `compressionMethod`         | yes       | `TARGZ`       | The compression method (`ZIP`, `TARGZ`, `TARGZ_BEST_SPEED`, `TAR_ZSTD`, `TAR`) to use. Some are without compression. **Note that method `NONE` is not supported anymore and is now treated as `TARGZ`.**                   |
 
 ### Fine-tuning cache validity
 
@@ -93,9 +93,6 @@ If you cache directories with lots of binary files, this option might be best.
 It offers better compression speed and ratio than gzip.
 
 `ZIP` packages the cache in a zip archive.
-
-`NONE` use no compression and not packaging.
-Might not work properly when caching directories, but if that's the case, you should use `TAR` instead.
 
 ## Usage in Jobs
 
