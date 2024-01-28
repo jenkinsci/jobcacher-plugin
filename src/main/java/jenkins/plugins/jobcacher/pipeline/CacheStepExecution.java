@@ -21,16 +21,18 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
 
     private final Long maxCacheSize;
     private final boolean skipSave;
+    private final boolean skipRestore;
     private final List<Cache> caches;
     private final String defaultBranch;
 
-    protected CacheStepExecution(StepContext context, Long maxCacheSize, boolean skipSave, List<Cache> caches, String defaultBranch) {
+    protected CacheStepExecution(StepContext context, Long maxCacheSize, boolean skipSave, boolean skipRestore, List<Cache> caches, String defaultBranch) {
         super(context);
 
         this.maxCacheSize = maxCacheSize;
         this.caches = caches;
         this.defaultBranch = defaultBranch;
         this.skipSave = skipSave;
+        this.skipRestore = skipRestore;
     }
 
     @Override
@@ -48,7 +50,7 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
         TaskListener listener = context.get(TaskListener.class);
         EnvVars initialEnvironment = context.get(EnvVars.class);
 
-        List<Cache.Saver> cacheSavers = CacheManager.cache(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, initialEnvironment, caches, defaultBranch);
+        List<Cache.Saver> cacheSavers = CacheManager.cache(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, initialEnvironment, caches, defaultBranch, skipRestore);
 
         context.newBodyInvoker()
                 .withContext(context)
@@ -90,7 +92,7 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
 
         private void complete(StepContext context) throws IOException, InterruptedException {
             TaskListener listener = context.get(TaskListener.class);
-            if(skipSave) {
+            if (skipSave) {
                 listener.getLogger().println("Skipping save due to skipSave being set to true.");
                 return;
             }

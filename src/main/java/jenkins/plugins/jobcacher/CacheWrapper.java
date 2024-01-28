@@ -56,12 +56,9 @@ public class CacheWrapper extends SimpleBuildWrapper {
 
     private Long maxCacheSize;
     private boolean skipSave;
+    private boolean skipRestore;
     private List<Cache> caches;
     private String defaultBranch;
-
-    public CacheWrapper() {
-        this.skipSave = false;
-    }
 
     @DataBoundConstructor
     public CacheWrapper(List<Cache> caches) {
@@ -85,7 +82,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
     }
 
     @SuppressWarnings("unused")
-    public boolean getSkipSave(){
+    public boolean getSkipSave() {
         return skipSave;
     }
 
@@ -93,6 +90,17 @@ public class CacheWrapper extends SimpleBuildWrapper {
     @SuppressWarnings("unused")
     public void setSkipSave(boolean skipSave) {
         this.skipSave = skipSave;
+    }
+
+    @SuppressWarnings("unused")
+    public void setSkipRestore(boolean skipRestore) {
+        this.skipRestore = skipRestore;
+    }
+
+    @DataBoundSetter
+    @SuppressWarnings("unused")
+    public boolean setSkipRestore() {
+        return skipRestore;
     }
 
     @SuppressWarnings("unused")
@@ -115,7 +123,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
 
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
-        List<Cache.Saver> cacheSavers = CacheManager.cache(getStorage(), build, workspace, launcher, listener, initialEnvironment, getCaches(), getDefaultBranch());
+        List<Cache.Saver> cacheSavers = CacheManager.cache(getStorage(), build, workspace, launcher, listener, initialEnvironment, getCaches(), getDefaultBranch(), skipRestore);
 
         context.setDisposer(new CacheDisposer(getStorage(), getMaxCacheSize(), getSkipSave(), getCaches(), cacheSavers));
     }

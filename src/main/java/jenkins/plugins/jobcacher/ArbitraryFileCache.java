@@ -173,7 +173,7 @@ public class ArbitraryFileCache extends Cache {
     }
 
     @Override
-    public Saver cache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+    public Saver cache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, boolean skipRestore) throws IOException, InterruptedException {
         String expandedPath = initialEnvironment.expand(path);
         FilePath resolvedPath = workspace.child(expandedPath);
 
@@ -183,17 +183,21 @@ public class ArbitraryFileCache extends Cache {
             return new SaverImpl(expandedPath);
         }
 
-        logMessage("Restoring cache...", listener);
-        long cacheRestorationStartTime = System.nanoTime();
+        if (skipRestore) {
+            logMessage("Skip restoring cache due skipRestore parameter", listener);
+        } else {
+            logMessage("Restoring cache...", listener);
+            long cacheRestorationStartTime = System.nanoTime();
 
-        try {
-            existingCache.restore(resolvedPath, workspace);
+            try {
+                existingCache.restore(resolvedPath, workspace);
 
-            long cacheRestorationEndTime = System.nanoTime();
-            logMessage("Cache restored in " + Duration.ofNanos(cacheRestorationEndTime - cacheRestorationStartTime).toMillis() + "ms", listener);
-        } catch (Exception e) {
-            logMessage("Failed to restore cache, cleaning up " + path + "...", e, listener);
-            resolvedPath.deleteRecursive();
+                long cacheRestorationEndTime = System.nanoTime();
+                logMessage("Cache restored in " + Duration.ofNanos(cacheRestorationEndTime - cacheRestorationStartTime).toMillis() + "ms", listener);
+            } catch (Exception e) {
+                logMessage("Failed to restore cache, cleaning up " + path + "...", e, listener);
+                resolvedPath.deleteRecursive();
+            }
         }
 
         return new SaverImpl(expandedPath);
