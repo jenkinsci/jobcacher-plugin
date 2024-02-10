@@ -30,7 +30,9 @@
     <f:entry title="${%S3 Bucket Name}" field="bucketName">
         <f:textbox/>
     </f:entry>
-
+    <f:entry title="${%Base Prefix}" field="prefix">
+        <f:textbox/>
+    </f:entry>
     <f:entry title="${%Region}" field="region">
         <f:select/>
     </f:entry>

@@ -60,6 +60,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
 
     private final String credentialsId;
     private final String bucketName;
+    private final String prefix;
     private final String endpoint;
     private final String region;
     private final String signerVersion;
@@ -69,6 +70,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
     @DataBoundConstructor
     public NonAWSS3ItemStorage(String credentialsId,
                                String bucketName,
+                               String prefix,
                                String endpoint,
                                String region,
                                String signerVersion,
@@ -76,6 +78,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
                                boolean parallelDownloads) {
         this.credentialsId = fixEmptyAndTrim(credentialsId);
         this.bucketName = fixEmptyAndTrim(bucketName);
+        this.prefix = fixEmptyAndTrim(prefix);
         this.endpoint = fixEmptyAndTrim(endpoint);
         this.region = fixEmptyAndTrim(region);
         this.signerVersion = fixEmptyAndTrim(signerVersion);
@@ -86,6 +89,11 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
     @SuppressWarnings("unused")
     public String getBucketName() {
         return bucketName;
+    }
+
+    @SuppressWarnings("unused")
+    public String getPrefix() {
+        return prefix;
     }
 
     @SuppressWarnings("unused")
@@ -142,7 +150,7 @@ public class NonAWSS3ItemStorage extends ItemStorage<S3ObjectPath> {
     }
 
     private S3Profile createS3Profile() {
-        return new S3Profile(lookupCredentials(), endpoint, region, signerVersion, pathStyleAccess, parallelDownloads);
+        return new S3Profile(lookupCredentials(), endpoint, region, prefix, signerVersion, pathStyleAccess, parallelDownloads);
     }
 
     @OptionalExtension(requirePlugins = {"aws-java-sdk-minimal", "aws-credentials", "jackson2-api"})
