@@ -65,6 +65,7 @@ public class ArbitraryFileCacheStepMinioTest {
         NonAWSS3ItemStorage storage = new NonAWSS3ItemStorage(
                 "minio-test-credentials-id",
                 bucket,
+                "instances1/",
                 minio.getExternalAddress(),
                 "us-west-1",
                 null,

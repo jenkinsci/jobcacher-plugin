@@ -29,6 +29,7 @@ import com.cloudbees.jenkins.plugins.awscredentials.AmazonWebServicesCredentials
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
@@ -46,10 +47,12 @@ import java.util.Map;
 public class S3Profile {
 
     private final ClientHelper helper;
+    private final String prefix;
 
     @DataBoundConstructor
-    public S3Profile(AmazonWebServicesCredentials credentials, String endpoint, String region, String signerVersion, boolean pathStyleAccess, boolean parallelDownloads) {
+    public S3Profile(AmazonWebServicesCredentials credentials, String endpoint, String region, String prefix, String signerVersion, boolean pathStyleAccess, boolean parallelDownloads) {
         this.helper = new ClientHelper(credentials != null ? credentials.getCredentials() : null, endpoint, region, getProxy(), signerVersion, pathStyleAccess, parallelDownloads);
+        this.prefix = prefix;
     }
 
     public void upload(String bucketName,
@@ -61,7 +64,7 @@ public class S3Profile {
         FilePath.FileCallable<Void> upload = new S3UploadCallable(
                 helper,
                 bucketName,
-                path,
+                withPrefix(path),
                 userMetadata,
                 storageClass,
                 useServerSideEncryption);
@@ -84,7 +87,7 @@ public class S3Profile {
                 excludes,
                 useDefaultExcludes,
                 bucketName,
-                path,
+                withPrefix(path),
                 userMetadata,
                 storageClass,
                 useServerSideEncryption);
@@ -93,17 +96,17 @@ public class S3Profile {
     }
 
     public boolean exists(String bucketName, String path) {
-        return helper.client().doesObjectExist(bucketName, path);
+        return helper.client().doesObjectExist(bucketName, withPrefix(path));
     }
 
     public void download(String bucketName, String key, FilePath target) throws IOException, InterruptedException {
-        FilePath.FileCallable<Void> download = new S3DownloadCallable(helper, bucketName, key);
+        FilePath.FileCallable<Void> download = new S3DownloadCallable(helper, bucketName, withPrefix(key));
 
         target.act(download);
     }
 
     public int downloadAll(String bucketName, String pathPrefix, String fileMask, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
-        FilePath.FileCallable<Integer> download = new S3DownloadAllCallable(helper, fileMask, excludes, useDefaultExcludes, bucketName, pathPrefix);
+        FilePath.FileCallable<Integer> download = new S3DownloadAllCallable(helper, fileMask, excludes, useDefaultExcludes, bucketName, withPrefix(pathPrefix));
 
         return target.act(download);
     }
@@ -111,7 +114,7 @@ public class S3Profile {
     public void delete(String bucketName, String pathPrefix) {
         ObjectListing listing = null;
         do {
-            listing = listing == null ? helper.client().listObjects(bucketName, pathPrefix) : helper.client().listNextBatchOfObjects(listing);
+            listing = listing == null ? helper.client().listObjects(bucketName, withPrefix(pathPrefix)) : helper.client().listNextBatchOfObjects(listing);
 
             DeleteObjectsRequest req = new DeleteObjectsRequest(bucketName);
 
@@ -128,11 +131,11 @@ public class S3Profile {
     public void rename(String bucketName, String currentPathPrefix, String newPathPrefix) {
         ObjectListing listing = null;
         do {
-            listing = listing == null ? helper.client().listObjects(bucketName, currentPathPrefix) : helper.client().listNextBatchOfObjects(listing);
+            listing = listing == null ? helper.client().listObjects(bucketName, withPrefix(currentPathPrefix)) : helper.client().listNextBatchOfObjects(listing);
             for (S3ObjectSummary summary : listing.getObjectSummaries()) {
                 String key = summary.getKey();
 
-                helper.client().copyObject(bucketName, key, bucketName, newPathPrefix + key.substring(currentPathPrefix.length()));
+                helper.client().copyObject(bucketName, key, bucketName, withPrefix(newPathPrefix) + key.substring(withPrefix(currentPathPrefix).length()));
                 helper.client().deleteObject(bucketName, key);
             }
         } while (listing.isTruncated());
@@ -141,4 +144,14 @@ public class S3Profile {
     private ProxyConfiguration getProxy() {
         return Jenkins.getActiveInstance().proxy;
     }
+
+    private String withPrefix(String path) {
+        if (StringUtils.isBlank(prefix)) {
+            return path;
+        }
+        else {
+            return String.format("%s%s", prefix, path);
+        }
+    }
+
 }

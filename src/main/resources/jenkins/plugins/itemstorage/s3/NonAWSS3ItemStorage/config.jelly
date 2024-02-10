@@ -31,6 +31,10 @@
         <f:textbox/>
     </f:entry>
 
+    <f:entry title="${%Base Prefix}" field="prefix">
+        <f:textbox/>
+    </f:entry>
+
     <f:entry title="${%S3 Endpoint}" field="endpoint">
         <f:textbox/>
     </f:entry>

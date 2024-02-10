@@ -56,18 +56,25 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
 
     private final String credentialsId;
     private final String bucketName;
+    private final String prefix;
     private final String region;
 
     @DataBoundConstructor
-    public S3ItemStorage(String credentialsId, String bucketName, String region) {
+    public S3ItemStorage(String credentialsId, String bucketName, String prefix, String region) {
         this.credentialsId = credentialsId;
         this.bucketName = bucketName;
+        this.prefix = prefix;
         this.region = region;
     }
 
     @SuppressWarnings("unused")
     public String getBucketName() {
         return bucketName;
+    }
+
+    @SuppressWarnings("unused")
+    public String getPrefix() {
+        return prefix;
     }
 
     @SuppressWarnings("unused")
@@ -104,7 +111,7 @@ public class S3ItemStorage extends ItemStorage<S3ObjectPath> {
     }
 
     private S3Profile createS3Profile() {
-        return new S3Profile(lookupCredentials(), null, region, null, false, true);
+        return new S3Profile(lookupCredentials(), null, region, prefix, null, false, true);
     }
 
     @OptionalExtension(requirePlugins = {"aws-java-sdk-minimal", "aws-credentials", "jackson2-api"})
