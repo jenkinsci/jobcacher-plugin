@@ -27,7 +27,9 @@
         <testcontainers.version>1.19.6</testcontainers.version>
         <zstd-jni.version>1.5.5-11</zstd-jni.version>
 
+        <!-- Test dependencies -->
         <configuration-as-code.version>1756.v2b_7eea_874392</configuration-as-code.version>
+        <jobdsl.version>1.87</jobdsl.version>
 
     </properties>
 
@@ -179,6 +181,12 @@
             <groupId>io.jenkins.configuration-as-code</groupId>
             <artifactId>test-harness</artifactId>
             <version>${configuration-as-code.version}</version>
+            <scope>test</scope>
+          </dependency>
+          <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>job-dsl</artifactId>
+            <version>${jobdsl.version}</version>
             <scope>test</scope>
           </dependency>
     </dependencies>

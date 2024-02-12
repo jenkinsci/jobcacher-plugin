@@ -1,0 +1,9 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.plugins.itemstorage.GlobalItemStorage plugin="jobcacher@999999-SNAPSHOT">
+  <storage class="jenkins.plugins.itemstorage.s3.S3ItemStorage">
+    <credentialsId>s3</credentialsId>
+    <bucketName>bucket1</bucketName>
+    <prefix>the-prefix/</prefix>
+    <region>us-gov-west-1</region>
+  </storage>
+</jenkins.plugins.itemstorage.GlobalItemStorage>
