@@ -94,20 +94,15 @@ public class CacheWrapper extends SimpleBuildWrapper {
         this.skipSave = skipSave;
     }
 
-    @DataBoundSetter
     @SuppressWarnings("unused")
     public boolean getSkipRestore() {
         return skipRestore;
     }
 
+    @DataBoundSetter
     @SuppressWarnings("unused")
     public void setSkipRestore(boolean skipRestore) {
         this.skipRestore = skipRestore;
-    }
-
-    @SuppressWarnings("unused")
-    public boolean setSkipRestore() {
-        return skipRestore;
     }
 
     @SuppressWarnings("unused")
