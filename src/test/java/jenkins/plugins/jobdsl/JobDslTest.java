@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -30,7 +29,6 @@ public class JobDslTest {
 
     @Test
     @Issue("https://github.com/jenkinsci/jobcacher-plugin/issues/271")
-    @Ignore
     public void shouldCreateFreestyleJob() throws Exception {
         runJobDsl("/jobdsl/freestyle.groovy", jenkins);
         CacheWrapper step = jenkins.jenkins.getItemByFullName("freestyle", FreeStyleProject.class).getBuildWrappersList().get(CacheWrapper.class);
