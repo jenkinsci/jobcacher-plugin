@@ -38,6 +38,8 @@ import jenkins.model.Jenkins;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.tasks.SimpleBuildWrapper;
+
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -94,6 +96,11 @@ public class CacheWrapper extends SimpleBuildWrapper {
 
     @DataBoundSetter
     @SuppressWarnings("unused")
+    public boolean getSkipRestore() {
+        return skipRestore;
+    }
+
+    @SuppressWarnings("unused")
     public void setSkipRestore(boolean skipRestore) {
         this.skipRestore = skipRestore;
     }
@@ -133,6 +140,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
     }
 
     @Extension
+    @Symbol("jobcacher")
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
 
         @NonNull

@@ -1,0 +1,11 @@
+unclassified:
+  globalItemStorage:
+    storage:
+      nonAWSS3:
+        bucketName: "caches"
+        prefix: "the-prefix/"
+        credentialsId: "s3"
+        endpoint: "http://localhost:9000"
+        parallelDownloads: false
+        pathStyleAccess: true
+        region: "eu-central-2"

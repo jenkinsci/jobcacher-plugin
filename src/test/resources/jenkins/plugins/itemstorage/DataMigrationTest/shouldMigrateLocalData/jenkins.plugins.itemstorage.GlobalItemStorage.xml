@@ -1,0 +1,6 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<jenkins.plugins.itemstorage.GlobalItemStorage plugin="jobcacher@999999-SNAPSHOT">
+  <storage class="jenkins.plugins.itemstorage.local.LocalItemStorage">
+    <root>jobcaches</root>
+  </storage>
+</jenkins.plugins.itemstorage.GlobalItemStorage>
