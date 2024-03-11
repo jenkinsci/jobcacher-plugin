@@ -20,7 +20,7 @@
 
         <jenkins.version>2.414.3</jenkins.version>
         <jenkins-tools-bom.artifactId>bom-2.414.x</jenkins-tools-bom.artifactId>
-        <jenkins-tools-bom.version>2857.v01a_0144eb_20b_</jenkins-tools-bom.version>
+        <jenkins-tools-bom.version>2884.vc36b_64ce114a_</jenkins-tools-bom.version>
 
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
