@@ -25,7 +25,7 @@
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
         <testcontainers.version>1.19.7</testcontainers.version>
-        <zstd-jni.version>1.5.5-11</zstd-jni.version>
+        <zstd-jni.version>1.5.6-1</zstd-jni.version>
 
         <!-- Test dependencies -->
         <configuration-as-code.version>1775.v810dc950b_514</configuration-as-code.version>
