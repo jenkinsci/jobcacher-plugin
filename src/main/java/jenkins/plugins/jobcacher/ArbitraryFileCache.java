@@ -57,7 +57,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.Deflater;
 
 /**
@@ -265,7 +267,7 @@ public class ArbitraryFileCache extends Cache {
             return true;
         }
 
-        if (!matchesCurrentCacheValidityDecidingFileHash(previousClearCacheTriggerFileHash, workspace)) {
+        if (!matchesCurrentCacheValidityDecidingFileHash(previousClearCacheTriggerFileHash, workspace, listener)) {
             logMessage("cacheValidityDecidingFile configured, but previous hash does not match - cache outdated", listener);
             return true;
         }
@@ -287,7 +289,7 @@ public class ArbitraryFileCache extends Cache {
         return baseName + CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION;
     }
 
-    private boolean matchesCurrentCacheValidityDecidingFileHash(ObjectPath previousCacheValidityDecidingFileHashFile, FilePath workspace) throws IOException, InterruptedException {
+    private boolean matchesCurrentCacheValidityDecidingFileHash(ObjectPath previousCacheValidityDecidingFileHashFile, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         if (!isOneCacheValidityDecidingFilePresent(workspace)) {
             return false;
         }
@@ -297,31 +299,42 @@ public class ArbitraryFileCache extends Cache {
 
             try (InputStream inputStream = tempFile.get().read()) {
                 String previousCacheValidityDecidingFileHash = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-                String currentCacheValidityDecidingFileHash = getCurrentCacheValidityDecidingFileHash(workspace);
+                String currentCacheValidityDecidingFileHash = getCurrentCacheValidityDecidingFileHash(workspace, listener);
 
                 return StringUtils.equals(previousCacheValidityDecidingFileHash, currentCacheValidityDecidingFileHash);
             }
         }
     }
 
-    private String getCurrentCacheValidityDecidingFileHash(FilePath workspace) throws IOException, InterruptedException {
+    private String getCurrentCacheValidityDecidingFileHash(FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
         if (!isOneCacheValidityDecidingFilePresent(workspace)) {
             throw new IllegalStateException("path " + cacheValidityDecidingFile + " cannot be resolved within the current workspace");
         }
 
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(CACHE_VALIDITY_DECIDING_FILE_DIGEST_ALGORITHM);
-            for (FilePath cacheValidityDecidingFile : resolveCacheValidityDecidingFiles(workspace)) {
+
+            FilePath[] cacheValidityDecidingFiles = resolveCacheValidityDecidingFiles(workspace);
+            for (FilePath cacheValidityDecidingFile : cacheValidityDecidingFiles) {
                 try (InputStream inputStream = cacheValidityDecidingFile.read()) {
                     DigestInputStream digestInputStream = new DigestInputStream(inputStream, messageDigest);
                     IOUtils.copy(digestInputStream, NullOutputStream.NULL_OUTPUT_STREAM);
                 }
             }
 
-            return Util.toHexString(messageDigest.digest());
+            String hash = Util.toHexString(messageDigest.digest());
+            logMessage("got hash " + hash + " for cacheValidityDecidingFile(s) - actual file(s): " + joinAsRelativePaths(cacheValidityDecidingFiles), listener);
+
+            return hash;
         } catch (NoSuchAlgorithmException e) {
             throw new IOException(e);
         }
+    }
+
+    private String joinAsRelativePaths(FilePath[] cacheValidityDecidingFiles) {
+        return Arrays.stream(cacheValidityDecidingFiles)
+                .map(FilePath::getRemote)
+                .collect(Collectors.joining(", "));
     }
 
     private boolean isOneCacheValidityDecidingFilePresent(FilePath workspace) throws IOException, InterruptedException {
@@ -390,7 +403,7 @@ public class ArbitraryFileCache extends Cache {
             try {
                 compressionMethod.getCacheStrategy().cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
                 if (isCacheValidityDecidingFileConfigured() && isOneCacheValidityDecidingFilePresent(workspace)) {
-                    updateSkipCacheTriggerFileHash(cachesRoot, workspace);
+                    updateSkipCacheTriggerFileHash(cachesRoot, workspace, listener);
                 }
                 long cacheCreationEndTime = System.nanoTime();
                 logMessage("Cache created in " + Duration.ofNanos(cacheCreationEndTime - cacheCreationStartTime).toMillis() + "ms", listener);
@@ -407,9 +420,9 @@ public class ArbitraryFileCache extends Cache {
             return workspace.getChannel() == null || workspace.getChannel() instanceof LocalChannel;
         }
 
-        private void updateSkipCacheTriggerFileHash(ObjectPath cachesRoot, FilePath workspace) throws IOException, InterruptedException {
+        private void updateSkipCacheTriggerFileHash(ObjectPath cachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
             try (TempFile tempFile = WorkspaceHelper.createTempFile(workspace, CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION)) {
-                tempFile.get().write(getCurrentCacheValidityDecidingFileHash(workspace), StandardCharsets.UTF_8.displayName());
+                tempFile.get().write(getCurrentCacheValidityDecidingFileHash(workspace, listener), StandardCharsets.UTF_8.displayName());
 
                 ObjectPath skipCacheTriggerFileHashFile = cachesRoot.child(getSkipCacheTriggerFileHashFileName());
                 skipCacheTriggerFileHashFile.copyFrom(tempFile.get());
