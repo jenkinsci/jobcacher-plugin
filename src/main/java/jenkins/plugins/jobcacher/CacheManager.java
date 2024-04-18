@@ -10,6 +10,8 @@ import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.plugins.itemstorage.ObjectPath;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +54,7 @@ public class CacheManager {
         ObjectPath defaultCachePath = null;
 
         if (defaultBranch != null && !defaultBranch.isEmpty()) {
-            defaultCachePath = getCachePathForBranch(storage, run, defaultBranch);
+            defaultCachePath = getCachePathForBranch(storage, run, URLEncoder.encode(defaultBranch, StandardCharsets.UTF_8));
         }
 
         LOG.fine("Preparing cache for build " + run);
