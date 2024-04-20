@@ -21,6 +21,11 @@ This is especially useful for Jenkins setups with ephemeral executors which alwa
 - `jenkins.plugins.itemstorage.ItemStorage` for adding custom cache storages
 - `jenkins.plugins.jobcacher.Cache` for adding custom caches
 
+Other known consumer plugins that implement the `jenkins.plugins.itemstorage.ItemStorage` extension point to provide other backend storage options:
+
+- [jobcacher-artifactory-storage](https://plugins.jenkins.io/jobcacher-artifactory-storage/)
+- [jobcacher-azure-storage](https://plugins.jenkins.io/jobcacher-azure-storage/)
+
 ## Configuration
 
 ### Global Configuration Options
