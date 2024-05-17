@@ -28,7 +28,7 @@
         <zstd-jni.version>1.5.6-3</zstd-jni.version>
 
         <!-- Test dependencies -->
-        <configuration-as-code.version>1775.v810dc950b_514</configuration-as-code.version>
+        <configuration-as-code.version>1807.v0175eda_00a_20</configuration-as-code.version>
         <jobdsl.version>1.87</jobdsl.version>
 
     </properties>
