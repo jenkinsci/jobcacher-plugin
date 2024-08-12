@@ -1,6 +1,7 @@
 package jenkins.plugins.jobcacher;
 
 import hudson.FilePath;
+import hudson.model.Descriptor;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.slaves.DumbSlave;
@@ -17,6 +18,7 @@ import org.jvnet.hudson.test.recipes.WithTimeout;
 
 import java.io.IOException;
 
+import static org.junit.Assert.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -456,7 +458,12 @@ public class ArbitraryFileCachePipelineTest {
                 + "        " + fileCreationCode("test-path", "test-file") + "\n"
                 + "    }\n"
                 + "}";
-        project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+        try {
+            project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+        } catch (Descriptor.FormException e) {
+            fail(e.getMessage());
+        }
+
     }
 
     private String cacheValidityDecidingFileCode(String cacheValidityDecidingFileContent) {
