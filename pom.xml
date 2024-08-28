@@ -18,17 +18,13 @@
     <properties>
         <changelist>999999-SNAPSHOT</changelist>
 
-        <jenkins.baseline>2.440</jenkins.baseline>
-        <jenkins.version>${jenkins.baseline}.3</jenkins.version>
+        <jenkins.baseline>2.462</jenkins.baseline>
+        <jenkins.version>${jenkins.baseline}.1</jenkins.version>
 
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
         <testcontainers.version>1.20.2</testcontainers.version>
         <zstd-jni.version>1.5.6-6</zstd-jni.version>
-
-        <!-- Test dependencies -->
-        <configuration-as-code.version>1836.vccda_4a_122a_a_e</configuration-as-code.version>
-        <jobdsl.version>1.87</jobdsl.version>
 
     </properties>
 
