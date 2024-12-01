@@ -8,11 +8,13 @@ import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.WithTimeout;
+import org.testcontainers.DockerClientFactory;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -31,6 +33,9 @@ public class ArbitraryFileCacheDockerPipelineTest {
     @Test
     @WithTimeout(600)
     public void testArbitraryFileCacheWithinDockerContainer() throws Exception {
+
+        Assume.assumeTrue("Docker is not available", DockerClientFactory.instance().isDockerAvailable());
+
         String cacheDefinition = "arbitraryFileCache(path: '/tmp/test-path')";
         WorkflowJob project = createTestProject(cacheDefinition);
 
