@@ -5,12 +5,11 @@ import java.util.UUID;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import org.junit.jupiter.api.*;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl;
 import com.cloudbees.plugins.credentials.CredentialsScope;
@@ -21,32 +20,17 @@ import jenkins.plugins.itemstorage.s3.NonAWSS3ItemStorage;
 import minio.MinioContainer;
 import minio.MinioMcContainer;
 
-/**
- * Checks that the cache step works as expected in pipelines. Each test starts with an empty bucket.
- */
+@Testcontainers(disabledWithoutDocker = true)
+@WithJenkins
 public class ArbitraryFileCacheStepMinioTest {
 
-    @ClassRule
+    @Container
     public static MinioContainer minio = new MinioContainer();
 
-    @ClassRule
+    @Container
     public static MinioMcContainer mc = new MinioMcContainer(minio);
 
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
-
-    @ClassRule
-    public static JenkinsRule j = new JenkinsRule();
-
-    @BeforeClass
-    public static void setupJenkins() throws Exception {
-        // execute build jobs on the agent node only
-        j.jenkins.setNumExecutors(0);
-        j.createSlave(true);
-    }
-
-    @Before
-    public void setupCache() throws Exception {
+    public void setupCache(JenkinsRule j) throws Exception {
         // create a test bucket in MinIO
         String bucket = UUID.randomUUID().toString();
         mc.createBucket(bucket);
@@ -76,7 +60,13 @@ public class ArbitraryFileCacheStepMinioTest {
     }
 
     @Test
-    public void testBackupAndRestore() throws Exception {
+    public void testBackupAndRestore(JenkinsRule j) throws Exception {
+
+        setupCache(j);
+
+        j.jenkins.setNumExecutors(0);
+        j.createSlave(true);
+
         // GIVEN
         WorkflowJob job = j.createProject(WorkflowJob.class);
         job.setDefinition(new CpsFlowDefinition("node {\n" +
@@ -102,7 +92,7 @@ public class ArbitraryFileCacheStepMinioTest {
                 "    sh 'rm sub/file'\n" +
                 "  }\n" +
                 "}", true));
-        
+
         // WHEN
         result = job.scheduleBuild2(0).waitForStart();
         j.waitForCompletion(result);
