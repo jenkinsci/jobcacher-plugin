@@ -6,8 +6,8 @@
 
 ## Introduction
 
-This plugin provides caching for dependencies and build artefacts to reduce build execution times.
-This is especially useful for Jenkins setups with ephemeral executors which always start from a clean state, such as container based ones.
+This plugin provides caching for dependencies and build artifacts to reduce build execution times.
+This is especially useful for Jenkins setups with ephemeral executors, which always start from a clean state, such as container based ones.
 
 ### Features
 
