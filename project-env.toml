@@ -2,7 +2,7 @@ tools_directory = ".tools"
 
 [jdk]
 distribution = "Temurin"
-distribution_version = "11.0.17+8"
+distribution_version = "17.0.14+7"
 
 [maven]
-version = "3.8.7"
+version = "3.9.9"
