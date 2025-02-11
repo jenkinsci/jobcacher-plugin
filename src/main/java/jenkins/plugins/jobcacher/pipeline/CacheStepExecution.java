@@ -102,7 +102,7 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
             FilePath workspace = context.get(FilePath.class);
             Launcher launcher = context.get(Launcher.class);
 
-            CacheManager.save(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, maxCacheSize, caches, cacheSavers);
+            CacheManager.save(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, maxCacheSize, caches, cacheSavers, defaultBranch);
         }
     }
 
@@ -152,7 +152,7 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
             FilePath workspace = context.get(FilePath.class);
             Launcher launcher = context.get(Launcher.class);
 
-            CacheManager.save(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, maxCacheSize, caches, cacheSavers);
+            CacheManager.save(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, maxCacheSize, caches, cacheSavers, null);
         }
     }
 

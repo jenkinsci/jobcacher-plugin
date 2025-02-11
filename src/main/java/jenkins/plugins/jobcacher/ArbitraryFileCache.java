@@ -371,7 +371,7 @@ public class ArbitraryFileCache extends Cache {
         }
 
         @Override
-        public void save(ObjectPath cachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        public void save(ObjectPath cachesRoot, ObjectPath defaultCachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
             FilePath resolvedPath = workspace.child(expandedPath);
             if (!resolvedPath.exists()) {
                 logMessage("Cannot create cache as the path does not exist", listener);
@@ -382,7 +382,13 @@ public class ArbitraryFileCache extends Cache {
             }
 
             if (isCacheValidityDecidingFileConfigured()) {
-                ExistingCache existingValidCache = resolveExistingValidCache(cachesRoot, workspace, listener);
+                ExistingCache existingValidCache = resolveExistingValidCache(defaultCachesRoot, workspace, listener);
+                if (existingValidCache != null) {
+                    logMessage("Skip cache creation as the default cache is still valid", listener);
+                    return;
+                }
+
+                existingValidCache = resolveExistingValidCache(cachesRoot, workspace, listener);
                 if (existingValidCache != null) {
                     logMessage("Skip cache creation as the cache is up-to-date", listener);
                     return;

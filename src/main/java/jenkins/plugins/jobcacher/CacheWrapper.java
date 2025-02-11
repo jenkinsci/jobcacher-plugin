@@ -38,7 +38,6 @@ import jenkins.model.Jenkins;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.tasks.SimpleBuildWrapper;
-
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -127,7 +126,7 @@ public class CacheWrapper extends SimpleBuildWrapper {
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         List<Cache.Saver> cacheSavers = CacheManager.cache(getStorage(), build, workspace, launcher, listener, initialEnvironment, getCaches(), getDefaultBranch(), skipRestore);
 
-        context.setDisposer(new CacheDisposer(getStorage(), getMaxCacheSize(), getSkipSave(), getCaches(), cacheSavers));
+        context.setDisposer(new CacheDisposer(getStorage(), getMaxCacheSize(), getSkipSave(), getCaches(), cacheSavers, defaultBranch));
     }
 
     private static <T> List<T> wrapList(List<T> list, Function<List<T>, List<T>> listFactory) {
@@ -169,20 +168,22 @@ public class CacheWrapper extends SimpleBuildWrapper {
         private final boolean skipSave;
         private final List<Cache> caches;
         private final List<Cache.Saver> cacheSavers;
+        private final String defaultBranch;
 
         @DataBoundConstructor
-        public CacheDisposer(ItemStorage<?> storage, Long maxCacheSize, boolean skipSave, List<Cache> caches, List<Cache.Saver> cacheSavers) {
+        public CacheDisposer(ItemStorage<?> storage, Long maxCacheSize, boolean skipSave, List<Cache> caches, List<Cache.Saver> cacheSavers, String defaultBranch) {
             this.storage = storage;
             this.maxCacheSize = maxCacheSize;
             this.skipSave = skipSave;
             this.caches = caches;
             this.cacheSavers = cacheSavers;
+            this.defaultBranch = defaultBranch;
         }
 
         @Override
         public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
             if (build.getResult() != Result.FAILURE && build.getResult() != Result.ABORTED && !skipSave) {
-                CacheManager.save(storage, build, workspace, launcher, listener, maxCacheSize, caches, cacheSavers);
+                CacheManager.save(storage, build, workspace, launcher, listener, maxCacheSize, caches, cacheSavers, defaultBranch);
             }
         }
     }

@@ -94,15 +94,16 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
         /**
          * Saves the files from the executor to the cache storage system.
          *
-         * @param cache     The root of the cache where savers should store their cache within
-         * @param build     The build in progress
-         * @param workspace The executor workspace
-         * @param launcher  The launcher
-         * @param listener  The task listener
+         * @param cache        The root of the cache where savers should store their cache within
+         * @param defaultCache The root of the alternate default object cache
+         * @param build        The build in progress
+         * @param workspace    The executor workspace
+         * @param launcher     The launcher
+         * @param listener     The task listener
          * @throws IOException          If an error occurs connecting to the potentially remote executor
          * @throws InterruptedException If interrupted
          */
-        public abstract void save(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+        public abstract void save(ObjectPath cache, ObjectPath defaultCache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
     }
 
     /**
