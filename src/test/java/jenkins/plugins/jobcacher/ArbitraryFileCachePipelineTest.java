@@ -4,12 +4,16 @@ import hudson.FilePath;
 import hudson.model.Descriptor;
 import hudson.model.Label;
 import hudson.model.Result;
+import hudson.scm.NullSCM;
 import hudson.slaves.DumbSlave;
+import jenkins.branch.Branch;
+import jenkins.scm.impl.mock.MockSCMHead;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -17,10 +21,13 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import static org.junit.Assert.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.fail;
 
 public class ArbitraryFileCachePipelineTest {
 
@@ -34,6 +41,27 @@ public class ArbitraryFileCachePipelineTest {
     @BeforeClass
     public static void startAgent() throws Exception {
         agent = jenkins.createSlave(Label.get("test-agent"));
+    }
+
+    @Test
+    @WithTimeout(600)
+    public void testDefaultBranchCaching() throws Exception {
+        WorkflowMultiBranchProject multiBranchProject = jenkins.createProject(WorkflowMultiBranchProject.class);
+
+        String cacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt')";
+        WorkflowJob mainBranchProject = createTestProject(multiBranchProject, "main", "main", cacheDefinition);
+
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, mainBranchProject.scheduleBuild2(0));
+        assertThat(run1.getLog(), allOf(
+                containsString("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip restoring cache as no up-to-date cache exists"),
+                containsString("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache...")
+        ));
+
+        WorkflowJob featureBranchProject = createTestProject(multiBranchProject, "feature/test", "main", cacheDefinition);
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, featureBranchProject.scheduleBuild2(0));
+        assertThat(run2.getLog(), allOf(
+                containsString("[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Skip cache creation as the default cache is still valid")
+        ));
     }
 
     @Test
@@ -432,14 +460,32 @@ public class ArbitraryFileCachePipelineTest {
     }
 
     private WorkflowJob createTestProject(String cacheDefinition) throws IOException {
-        return createTestProject(cacheDefinition, false);
+        return createTestProject(null, null, null, cacheDefinition, false);
     }
 
     private WorkflowJob createTestProject(String cacheDefinition, boolean skipRestore) throws IOException {
-        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
-        setProjectDefinition(project, cacheDefinition, DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT, skipRestore);
+        return createTestProject(null, null, null, cacheDefinition, skipRestore);
+    }
+
+    private WorkflowJob createTestProject(WorkflowMultiBranchProject multiBranchProject, String branchName, String defaultBranchName, String cacheDefinition) throws IOException {
+        return createTestProject(multiBranchProject, branchName, defaultBranchName, cacheDefinition, false);
+    }
+
+    private WorkflowJob createTestProject(WorkflowMultiBranchProject multiBranchProject, String branchName, String defaultBranchName, String cacheDefinition, boolean skipRestore) throws IOException {
+        WorkflowJob project = createWorkflowJob(multiBranchProject, branchName);
+        setProjectDefinition(project, cacheDefinition, DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT, skipRestore, defaultBranchName);
 
         return project;
+    }
+
+    private WorkflowJob createWorkflowJob(WorkflowMultiBranchProject multiBranchProject, String branchName) throws IOException {
+        if (multiBranchProject != null) {
+            WorkflowJob workflowJob = multiBranchProject.getProjectFactory().newInstance(new Branch(branchName, new MockSCMHead(branchName), new NullSCM(), Collections.emptyList()));
+            workflowJob.onLoad(multiBranchProject, branchName);
+            return workflowJob;
+        } else {
+            return jenkins.createProject(WorkflowJob.class);
+        }
     }
 
     private void setProjectDefinition(WorkflowJob project, String cacheDefinition) {
@@ -447,14 +493,22 @@ public class ArbitraryFileCachePipelineTest {
     }
 
     private void setProjectDefinition(WorkflowJob project, String cacheDefinition, String cacheValidityDecidingFileContent) {
-        setProjectDefinition(project, cacheDefinition, cacheValidityDecidingFileContent, false);
+        setProjectDefinition(project, cacheDefinition, cacheValidityDecidingFileContent, false, null);
     }
 
-    private void setProjectDefinition(WorkflowJob project, String cacheDefinition, String cacheValidityDecidingFileContent, boolean skipRestore) {
+    private void setProjectDefinition(WorkflowJob project, String cacheDefinition, String cacheValidityDecidingFileContent, boolean skipRestore, String defaultBranch) {
+        List<String> parameters = new ArrayList<>();
+        parameters.add("maxCacheSize: 100");
+        parameters.add("caches: [" + cacheDefinition + "]");
+        parameters.add("skipRestore: " + skipRestore);
+        if (defaultBranch != null) {
+            parameters.add("defaultBranch: '" + defaultBranch + "'");
+        }
+
         String scriptedPipeline = ""
                 + "node('test-agent') {\n"
                 + "   " + cacheValidityDecidingFileCode(cacheValidityDecidingFileContent) + "\n"
-                + "    cache(maxCacheSize: 100, caches: [" + cacheDefinition + "], skipRestore: " + skipRestore + ") {\n"
+                + "    cache(" + String.join(",", parameters) + ") {\n"
                 + "        " + fileCreationCode("test-path", "test-file") + "\n"
                 + "    }\n"
                 + "}";

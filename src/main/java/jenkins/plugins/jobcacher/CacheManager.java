@@ -72,8 +72,14 @@ public class CacheManager {
     /**
      * Internal method only
      */
-    public static void save(ItemStorage<?> storage, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, Long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers) throws IOException, InterruptedException {
+    public static void save(ItemStorage<?> storage, Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener, Long maxCacheSize, List<Cache> caches, List<Cache.Saver> cacheSavers, String defaultBranch) throws IOException, InterruptedException {
         ObjectPath cachePath = getCachePath(storage, run);
+
+        ObjectPath defaultCachePath = null;
+
+        if (defaultBranch != null && !defaultBranch.isEmpty()) {
+            defaultCachePath = getCachePathForBranch(storage, run, URLEncoder.encode(defaultBranch, StandardCharsets.UTF_8));
+        }
 
         // First calculate size of cache to check if it should just be deleted
         boolean exceedsMaxCacheSize = exceedsMaxCacheSize(cachePath, run, workspace, launcher, listener, maxCacheSize, cacheSavers);
@@ -95,7 +101,7 @@ public class CacheManager {
                 // Otherwise, request each cache to save itself for the next build
                 LOG.fine("Saving cache for build " + run);
                 for (Cache.Saver saver : cacheSavers) {
-                    saver.save(cachePath, run, workspace, launcher, listener);
+                    saver.save(cachePath, defaultCachePath, run, workspace, launcher, listener);
                 }
             }
         }
