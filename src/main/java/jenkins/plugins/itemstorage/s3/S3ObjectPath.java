@@ -28,8 +28,8 @@ import hudson.FilePath;
 import hudson.model.Job;
 import jenkins.plugins.itemstorage.ObjectPath;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -81,7 +81,7 @@ public class S3ObjectPath extends ObjectPath {
     }
 
     @Override
-    public HttpResponse browse(StaplerRequest request, StaplerResponse response, Job<?, ?> job, String name) throws IOException {
+    public HttpResponse browse(StaplerRequest2 request, StaplerResponse2 response, Job<?, ?> job, String name) throws IOException {
         // For now attempt to forward to s3 for browsing
         response.sendRedirect2("https://console.aws.amazon.com/s3/home?region=" + region + "#&bucket=" + bucketName + "&prefix=" + fullName + "/" + path + "/");
         return null;

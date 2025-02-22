@@ -48,7 +48,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -450,7 +450,7 @@ public class ArbitraryFileCache extends Cache {
         listener.getLogger().println("[Cache for " + cacheIdentifier + " with id " + deriveCachePath(path) + "] " + message);
     }
 
-    public HttpResponse doDynamic(StaplerRequest req, StaplerResponse rsp, @AncestorInPath Job<?, ?> job) throws IOException, ServletException, InterruptedException {
+    public HttpResponse doDynamic(StaplerRequest2 req, StaplerResponse2 rsp, @AncestorInPath Job<?, ?> job) throws IOException, ServletException, InterruptedException {
         ObjectPath cache = CacheManager.getCachePath(GlobalItemStorage.get().getStorage(), job).child(deriveCachePath(path));
 
         if (!cache.exists()) {
