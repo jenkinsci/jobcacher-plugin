@@ -119,7 +119,7 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
      * @return the job
      */
     public Job<?, ?> getJob() {
-        return Stapler.getCurrentRequest().findAncestorObject(Job.class);
+        return Stapler.getCurrentRequest2().findAncestorObject(Job.class);
     }
 
     /**

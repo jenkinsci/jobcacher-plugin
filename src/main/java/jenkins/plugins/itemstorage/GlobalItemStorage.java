@@ -30,7 +30,7 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.plugins.itemstorage.local.LocalItemStorage;
 import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import java.util.Collections;
 import java.util.List;
@@ -57,7 +57,7 @@ public class GlobalItemStorage extends GlobalConfiguration implements Persistent
         save();
     }
 
-    @Override public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    @Override public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         req.bindJSON(this, json);
         return false;
     }

@@ -27,8 +27,8 @@ package jenkins.plugins.itemstorage;
 import hudson.FilePath;
 import hudson.model.Job;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 import java.io.IOException;
 
@@ -76,5 +76,5 @@ public abstract class ObjectPath {
      * @param job
      * @return
      */
-    public abstract HttpResponse browse(StaplerRequest request, StaplerResponse response, Job<?, ?> job, String name) throws IOException;
+    public abstract HttpResponse browse(StaplerRequest2 request, StaplerResponse2 response, Job<?, ?> job, String name) throws IOException;
 }

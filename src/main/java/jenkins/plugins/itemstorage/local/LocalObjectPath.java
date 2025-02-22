@@ -29,8 +29,8 @@ import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Job;
 import jenkins.plugins.itemstorage.ObjectPath;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 import java.io.IOException;
 
@@ -73,7 +73,7 @@ public class LocalObjectPath extends ObjectPath {
     }
 
     @Override
-    public HttpResponse browse(StaplerRequest request, StaplerResponse response, Job<?, ?> job, String name) {
+    public HttpResponse browse(StaplerRequest2 request, StaplerResponse2 response, Job<?, ?> job, String name) {
         return new DirectoryBrowserSupport(job, file, "Cache of " + name, "folder.png", true);
     }
 

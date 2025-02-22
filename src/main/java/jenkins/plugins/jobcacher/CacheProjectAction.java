@@ -57,7 +57,7 @@ public class CacheProjectAction implements Action {
     }
 
     public Job<?, ?> getJob() {
-        return Stapler.getCurrentRequest().findAncestorObject(Job.class);
+        return Stapler.getCurrentRequest2().findAncestorObject(Job.class);
     }
 
     public List<Cache> getCaches() {
