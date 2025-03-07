@@ -2,9 +2,10 @@ package jenkins.plugins.jobcacher;
 
 import hudson.model.FreeStyleProject;
 import jenkins.plugins.jobcacher.ArbitraryFileCache.CompressionMethod;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -12,13 +13,18 @@ import java.util.Collections;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class ArbitraryFileCacheWrapperTest {
+@WithJenkins
+class ArbitraryFileCacheWrapperTest {
 
-    @ClassRule
-    public static JenkinsRule jenkins = new JenkinsRule();
+    private static JenkinsRule jenkins;
+
+    @BeforeAll
+    static void setUp(JenkinsRule rule) {
+        jenkins = rule;
+    }
 
     @Test
-    public void testArbitraryFileCacheForm() throws Exception {
+    void testArbitraryFileCacheForm() throws Exception {
         FreeStyleProject project = createProjectWithFullyConfiguredArbitraryFileCache("test");
         String projectConfigXml = project.getConfigFile().asString();
 

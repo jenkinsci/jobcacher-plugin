@@ -3,10 +3,10 @@ package jenkins.plugins.itemstorage.local;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -14,16 +14,14 @@ import static org.hamcrest.Matchers.*;
 import java.io.File;
 import java.io.IOException;
 
-public class LocalItemStorageTest {
+@WithJenkins
+class LocalItemStorageTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
-
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    private File tempDir;
 
     @Test
-    public void testConfigRoundTrip() throws Exception {
+    void testConfigRoundTrip(JenkinsRule jenkins) throws Exception {
         assertThat(storage().getRoot(), nullValue());
         storage().setRoot("custom-root");
 
@@ -33,8 +31,8 @@ public class LocalItemStorageTest {
     }
 
     @Test
-    public void testCustomRootHandling() throws IOException, InterruptedException {
-        storage().setRoot(tempDir.getRoot().getAbsolutePath());
+    void testCustomRootHandling(JenkinsRule jenkins) throws IOException, InterruptedException {
+        storage().setRoot(tempDir.getAbsolutePath());
 
         FreeStyleProject project = jenkins.createFreeStyleProject("project");
         File cacheDir = cacheDir(project);
@@ -57,7 +55,7 @@ public class LocalItemStorageTest {
     }
 
     private String tempDirPath() {
-        return tempDir.getRoot().getAbsolutePath();
+        return tempDir.getAbsolutePath();
     }
 
     private File cacheDir(Item item) {

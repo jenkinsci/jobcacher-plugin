@@ -3,16 +3,16 @@ package jenkins.plugins.jobcacher;
 import hudson.model.Result;
 import hudson.plugins.git.GitSCM;
 import jenkins.plugins.git.GitSampleRepoRule;
+import jenkins.plugins.git.junit.jupiter.WithGitSampleRepo;
 import org.apache.commons.io.FileUtils;
-import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Assume;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 import org.testcontainers.DockerClientFactory;
 
@@ -21,20 +21,31 @@ import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-public class ArbitraryFileCacheDockerPipelineTest {
+@WithJenkins
+@WithGitSampleRepo
+class ArbitraryFileCacheDockerPipelineTest {
 
-    @ClassRule
-    public static JenkinsRule jenkins = new JenkinsRule();
+    private static JenkinsRule jenkins;
 
-    @Rule
-    public GitSampleRepoRule gitRepoRule = new GitSampleRepoRule();
+    private GitSampleRepoRule gitRepoRule;
+
+    @BeforeAll
+    static void setUp(JenkinsRule rule) {
+        jenkins = rule;
+    }
+
+    @BeforeEach
+    void setUp(GitSampleRepoRule gitRepoRule) {
+        this.gitRepoRule = gitRepoRule;
+    }
 
     @Test
     @WithTimeout(600)
-    public void testArbitraryFileCacheWithinDockerContainer() throws Exception {
+    void testArbitraryFileCacheWithinDockerContainer() throws Exception {
 
-        Assume.assumeTrue("Docker is not available", DockerClientFactory.instance().isDockerAvailable());
+        assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker is not available");
 
         String cacheDefinition = "arbitraryFileCache(path: '/tmp/test-path')";
         WorkflowJob project = createTestProject(cacheDefinition);
@@ -54,8 +65,7 @@ public class ArbitraryFileCacheDockerPipelineTest {
     private WorkflowJob createTestProject(String cacheDefinition) throws Exception {
         WorkflowJob project = jenkins.createProject(WorkflowJob.class);
 
-        String pipelineScript = ""
-                + "pipeline {\n"
+        String pipelineScript = "pipeline {\n"
                 + "   agent {\n"
                 + "      docker { image 'alpine' }\n"
                 + "   }\n"
@@ -87,8 +97,7 @@ public class ArbitraryFileCacheDockerPipelineTest {
 
     private String fileCreationCodeForLinux(String folder, String file) {
         String filePath = folder + "/" + file;
-        return ""
-                + "set +x\n"
+        return "set +x\n"
                 + "[ -f '" + filePath + "' ] && '" + filePath + "'\n"
                 + "mkdir -p '" + folder + "'\n"
                 + "echo echo expected output from test file > '" + filePath + "'\n"

@@ -4,23 +4,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 import jenkins.plugins.itemstorage.local.LocalItemStorage;
 import jenkins.plugins.itemstorage.s3.NonAWSS3ItemStorage;
 import jenkins.plugins.itemstorage.s3.S3ItemStorage;
 
-public class DataMigrationTest {
-
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+@WithJenkins
+class DataMigrationTest {
 
     @Test
     @LocalData
-    public void shouldMigrateLocalData() {
+    void shouldMigrateLocalData(JenkinsRule jenkins) {
         ItemStorage<?> storage = GlobalItemStorage.get().getStorage();
         assertThat(storage, is(notNullValue()));
         LocalItemStorage localItemStorage = (LocalItemStorage) storage;
@@ -29,7 +27,7 @@ public class DataMigrationTest {
 
     @Test
     @LocalData
-    public void shouldMigrateAwsData() {
+    void shouldMigrateAwsData(JenkinsRule jenkins) {
         ItemStorage<?> storage = GlobalItemStorage.get().getStorage();
         assertThat(storage, is(notNullValue()));
         S3ItemStorage s3ItemStorage = (S3ItemStorage) storage;
@@ -41,7 +39,7 @@ public class DataMigrationTest {
 
     @Test
     @LocalData
-    public void shouldMigrateNonAwsData() {
+    void shouldMigrateNonAwsData(JenkinsRule jenkins) {
         ItemStorage<?> storage = GlobalItemStorage.get().getStorage();
         assertThat(storage, is(notNullValue()));
         NonAWSS3ItemStorage s3ItemStorage = (NonAWSS3ItemStorage) storage;

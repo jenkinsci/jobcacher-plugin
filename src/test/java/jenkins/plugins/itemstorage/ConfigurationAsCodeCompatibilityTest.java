@@ -4,23 +4,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-import org.junit.Rule;
-import org.junit.Test;
-
+import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
+import org.junit.jupiter.api.Test;
 import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
 import jenkins.plugins.itemstorage.local.LocalItemStorage;
 import jenkins.plugins.itemstorage.s3.NonAWSS3ItemStorage;
 import jenkins.plugins.itemstorage.s3.S3ItemStorage;
 
-public class ConfigurationAsCodeCompatibilityTest {
-
-    @Rule
-    public JenkinsConfiguredWithCodeRule jenkins = new JenkinsConfiguredWithCodeRule();
+@WithJenkinsConfiguredWithCode
+class ConfigurationAsCodeCompatibilityTest {
 
     @Test
     @ConfiguredWithCode("local.yml")
-    public void shouldSupportConfigurationAsCodeForLocalStorage() {
+    void shouldSupportConfigurationAsCodeForLocalStorage(JenkinsConfiguredWithCodeRule jenkins) {
         ItemStorage<?> storage = GlobalItemStorage.get().getStorage();
         assertThat(storage, is(notNullValue()));
         LocalItemStorage localItemStorage = (LocalItemStorage) storage;
@@ -29,7 +26,7 @@ public class ConfigurationAsCodeCompatibilityTest {
 
     @Test
     @ConfiguredWithCode("nonaws.yml")
-    public void shouldSupportConfigurationAsCodeForNonAws() {
+    void shouldSupportConfigurationAsCodeForNonAws(JenkinsConfiguredWithCodeRule jenkins) {
         ItemStorage<?> storage = GlobalItemStorage.get().getStorage();
         assertThat(storage, is(notNullValue()));
         NonAWSS3ItemStorage s3ItemStorage = (NonAWSS3ItemStorage) storage;
@@ -44,7 +41,7 @@ public class ConfigurationAsCodeCompatibilityTest {
 
     @Test
     @ConfiguredWithCode("aws.yml")
-    public void shouldSupportConfigurationAsCodeForAws() {
+    void shouldSupportConfigurationAsCodeForAws(JenkinsConfiguredWithCodeRule jenkins) {
         ItemStorage<?> storage = GlobalItemStorage.get().getStorage();
         assertThat(storage, is(notNullValue()));
         S3ItemStorage s3ItemStorage = (S3ItemStorage) storage;
