@@ -1,7 +1,6 @@
 package jenkins.plugins.jobcacher;
 
 import hudson.FilePath;
-import hudson.model.Descriptor;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.scm.NullSCM;
@@ -14,10 +13,10 @@ import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
 import java.io.IOException;
@@ -27,25 +26,26 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class ArbitraryFileCachePipelineTest {
+@WithJenkins
+class ArbitraryFileCachePipelineTest {
 
     private static final String DEFAULT_CACHE_VALIDITY_DECIDING_FILE_CONTENT = "abcdefghijklmnopqrstuvwxyz";
 
-    @ClassRule
-    public static JenkinsRule jenkins = new JenkinsRule();
+    private static JenkinsRule jenkins;
 
     private static DumbSlave agent;
 
-    @BeforeClass
-    public static void startAgent() throws Exception {
+    @BeforeAll
+    static void setUp(JenkinsRule rule) throws Exception {
+        jenkins = rule;
         agent = jenkins.createSlave(Label.get("test-agent"));
     }
 
     @Test
     @WithTimeout(600)
-    public void testDefaultBranchCaching() throws Exception {
+    void testDefaultBranchCaching() throws Exception {
         WorkflowMultiBranchProject multiBranchProject = jenkins.createProject(WorkflowMultiBranchProject.class);
 
         String cacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt')";
@@ -66,7 +66,7 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testMissingCacheValidityDecidingFile() throws Exception {
+    void testMissingCacheValidityDecidingFile() throws Exception {
         String cacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt')";
         WorkflowJob project = createTestProject(cacheDefinition);
 
@@ -92,13 +92,12 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testMultipleCacheValidityDecidingFiles() throws Exception {
+    void testMultipleCacheValidityDecidingFiles() throws Exception {
         String module1PackagesLock = "abcdefghijklmnopqrstuvwxyz";
         String module2PackagesLock = StringUtils.reverse(module1PackagesLock);
 
         WorkflowJob project = jenkins.createProject(WorkflowJob.class);
-        String scriptedPipeline = ""
-                + "node('test-agent') {\n"
+        String scriptedPipeline = "node('test-agent') {\n"
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module1/packages.lock.json'\n"
                 + "    writeFile text: '" + module2PackagesLock + "', file: 'module2/packages.lock.json'\n"
                 + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: '**/packages.lock.json')]) {\n"
@@ -130,13 +129,12 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testMultipleCacheValidityDecidingFilesCommaSeparated() throws Exception {
+    void testMultipleCacheValidityDecidingFilesCommaSeparated() throws Exception {
         String module1PackagesLock = "abcdefghijklmnopqrstuvwxyz";
         String module2PackagesLock = StringUtils.reverse(module1PackagesLock);
 
         WorkflowJob project = jenkins.createProject(WorkflowJob.class);
-        String scriptedPipeline = ""
-                + "node('test-agent') {\n"
+        String scriptedPipeline = "node('test-agent') {\n"
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module1/packages.lock.json'\n"
                 + "    writeFile text: '" + module2PackagesLock + "', file: 'module2/packages.lock.json'\n"
                 + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'module1/*,module2/*')]) {\n"
@@ -167,13 +165,12 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testMultipleCacheValidityDecidingFilesWithSingleExclusion() throws Exception {
+    void testMultipleCacheValidityDecidingFilesWithSingleExclusion() throws Exception {
         String module1PackagesLock = "abcdefghijklmnopqrstuvwxyz";
         String module2PackagesLock = StringUtils.reverse(module1PackagesLock);
 
         WorkflowJob project = jenkins.createProject(WorkflowJob.class);
-        String scriptedPipeline = ""
-                + "node('test-agent') {\n"
+        String scriptedPipeline = "node('test-agent') {\n"
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module1/packages.lock.json'\n"
                 + "    writeFile text: '" + module2PackagesLock + "', file: 'module2/packages.lock.json'\n"
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module3/packages.lock.json'\n"
@@ -204,13 +201,12 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testMultipleCacheValidityDecidingFilesWithMultipleExclusions() throws Exception {
+    void testMultipleCacheValidityDecidingFilesWithMultipleExclusions() throws Exception {
         String module1PackagesLock = "abcdefghijklmnopqrstuvwxyz";
         String module2PackagesLock = StringUtils.reverse(module1PackagesLock);
 
         WorkflowJob project = jenkins.createProject(WorkflowJob.class);
-        String scriptedPipeline = ""
-                + "node('test-agent') {\n"
+        String scriptedPipeline = "node('test-agent') {\n"
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module1/packages.lock.json'\n"
                 + "    writeFile text: '" + module2PackagesLock + "', file: 'module2/packages.lock.json'\n"
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module3/packages.lock.json'\n"
@@ -243,13 +239,12 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testMultipleCacheValidityDecidingFilesWithMixedIncludeExcludeOrder() throws Exception {
+    void testMultipleCacheValidityDecidingFilesWithMixedIncludeExcludeOrder() throws Exception {
         String module1PackagesLock = "abcdefghijklmnopqrstuvwxyz";
         String module2PackagesLock = StringUtils.reverse(module1PackagesLock);
 
         WorkflowJob project = jenkins.createProject(WorkflowJob.class);
-        String scriptedPipeline = ""
-                + "node('test-agent') {\n"
+        String scriptedPipeline = "node('test-agent') {\n"
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module1/packages.lock.json'\n"
                 + "    writeFile text: '" + module2PackagesLock + "', file: 'module2/packages.lock.json'\n"
                 + "    writeFile text: '" + module1PackagesLock + "', file: 'module3/packages.lock.json'\n"
@@ -282,7 +277,7 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testArbitraryFileCacheWithinPipelineWithCacheValidityDecidingFile() throws Exception {
+    void testArbitraryFileCacheWithinPipelineWithCacheValidityDecidingFile() throws Exception {
         String cacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt')";
         WorkflowJob project = createTestProject(cacheDefinition);
 
@@ -320,7 +315,7 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testChangeCompressionMethod() throws Exception {
+    void testChangeCompressionMethod() throws Exception {
         String tarGzCacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile.txt', compressionMethod: 'TARGZ')";
         WorkflowJob project = createTestProject(tarGzCacheDefinition);
 
@@ -357,7 +352,7 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testNonExistingCacheValidityDecidingFile() throws Exception {
+    void testNonExistingCacheValidityDecidingFile() throws Exception {
         String cacheDefinition = "arbitraryFileCache(path: 'test-path', cacheValidityDecidingFile: 'cacheValidityDecidingFile-unknown.txt')";
         WorkflowJob project = createTestProject(cacheDefinition);
 
@@ -382,7 +377,7 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testSkipRestoringCache() throws Exception {
+    void testSkipRestoringCache() throws Exception {
         String cacheDefinition = "arbitraryFileCache(path: 'test-path')";
         WorkflowJob project = createTestProject(cacheDefinition, true);
 
@@ -404,37 +399,37 @@ public class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    public void testUncompressedArbitraryFileCacheWithinPipeline() throws Exception {
+    void testUncompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path')");
     }
 
     @Test
     @WithTimeout(600)
-    public void testZipCompressedArbitraryFileCacheWithinPipeline() throws Exception {
+    void testZipCompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'ZIP')");
     }
 
     @Test
     @WithTimeout(600)
-    public void testTarGzCompressedArbitraryFileCacheWithinPipeline() throws Exception {
+    void testTarGzCompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'TARGZ')");
     }
 
     @Test
     @WithTimeout(600)
-    public void testTarGzBestSpeedCompressedArbitraryFileCacheWithinPipeline() throws Exception {
+    void testTarGzBestSpeedCompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'TARGZ_BEST_SPEED')");
     }
 
     @Test
     @WithTimeout(600)
-    public void testTarCompressedArbitraryFileCacheWithinPipeline() throws Exception {
+    void testTarCompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path', compressionMethod: 'TAR')");
     }
 
     @Test
     @WithTimeout(600)
-    public void testZstandardCompressedArbitraryFileCacheWithinPipeline() throws Exception {
+    void testZstandardCompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("[$class: 'ArbitraryFileCache', path: 'test-path', compressionMethod: 'TAR_ZSTD']");
     }
 
@@ -505,18 +500,13 @@ public class ArbitraryFileCachePipelineTest {
             parameters.add("defaultBranch: '" + defaultBranch + "'");
         }
 
-        String scriptedPipeline = ""
-                + "node('test-agent') {\n"
+        String scriptedPipeline = "node('test-agent') {\n"
                 + "   " + cacheValidityDecidingFileCode(cacheValidityDecidingFileContent) + "\n"
                 + "    cache(" + String.join(",", parameters) + ") {\n"
                 + "        " + fileCreationCode("test-path", "test-file") + "\n"
                 + "    }\n"
                 + "}";
-        try {
-            project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
-        } catch (Descriptor.FormException e) {
-            fail(e.getMessage());
-        }
+        assertDoesNotThrow(() -> project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true)));
 
     }
 
@@ -546,8 +536,7 @@ public class ArbitraryFileCachePipelineTest {
 
     private String fileCreationCodeForWindows(String folder, String file) {
         String filePath = folder + "/" + file;
-        return ""
-                + "echo off\n"
+        return "echo off\n"
                 + "if exist \"" + filePath + "\" \"" + filePath + "\"\n"
                 + "if not exist \"" + folder + "\" mkdir \"" + folder + "\"\n"
                 + "echo echo expected output from test file > \"" + filePath + "\"\n";
@@ -555,8 +544,7 @@ public class ArbitraryFileCachePipelineTest {
 
     private String fileCreationCodeForLinux(String folder, String file) {
         String filePath = folder + "/" + file;
-        return ""
-                + "set +x\n"
+        return "set +x\n"
                 + "[ -f '" + filePath + "' ] && './" + filePath + "'\n"
                 + "mkdir -p '" + folder + "'\n"
                 + "echo echo expected output from test file > '" + filePath + "'\n"

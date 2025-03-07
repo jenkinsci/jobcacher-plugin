@@ -8,8 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -19,17 +18,14 @@ import javaposse.jobdsl.plugin.LookupStrategy;
 import javaposse.jobdsl.plugin.RemovedJobAction;
 import javaposse.jobdsl.plugin.RemovedViewAction;
 import jenkins.plugins.jobcacher.CacheWrapper;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class JobDslTest {
-
-    public static final String ANSIBLE_DSL_GROOVY_PLAYBOOK = "jobdsl/playbook.groovy";
-
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+@WithJenkins
+class JobDslTest {
 
     @Test
     @Issue("https://github.com/jenkinsci/jobcacher-plugin/issues/271")
-    public void shouldCreateFreestyleJob() throws Exception {
+    void shouldCreateFreestyleJob(JenkinsRule jenkins) throws Exception {
         runJobDsl("/jobdsl/freestyle.groovy", jenkins);
         CacheWrapper step = jenkins.jenkins.getItemByFullName("freestyle", FreeStyleProject.class).getBuildWrappersList().get(CacheWrapper.class);
         assertNotNull(step);

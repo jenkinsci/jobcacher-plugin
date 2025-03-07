@@ -22,15 +22,15 @@ import minio.MinioMcContainer;
 
 @Testcontainers(disabledWithoutDocker = true)
 @WithJenkins
-public class ArbitraryFileCacheStepMinioTest {
+class ArbitraryFileCacheStepMinioTest {
 
     @Container
-    public static MinioContainer minio = new MinioContainer();
+    private static final MinioContainer minio = new MinioContainer();
 
     @Container
-    public static MinioMcContainer mc = new MinioMcContainer(minio);
+    private static final MinioMcContainer mc = new MinioMcContainer(minio);
 
-    public void setupCache(JenkinsRule j) throws Exception {
+    private static void setupCache(JenkinsRule j) throws Exception {
         // create a test bucket in MinIO
         String bucket = UUID.randomUUID().toString();
         mc.createBucket(bucket);
@@ -60,7 +60,7 @@ public class ArbitraryFileCacheStepMinioTest {
     }
 
     @Test
-    public void testBackupAndRestore(JenkinsRule j) throws Exception {
+    void testBackupAndRestore(JenkinsRule j) throws Exception {
 
         setupCache(j);
 
@@ -69,12 +69,13 @@ public class ArbitraryFileCacheStepMinioTest {
 
         // GIVEN
         WorkflowJob job = j.createProject(WorkflowJob.class);
-        job.setDefinition(new CpsFlowDefinition("node {\n" +
-                "  cache(maxCacheSize: 250, caches: [arbitraryFileCache(path: 'sub', compressionMethod: 'TARGZ')]){\n" +
-                "    sh 'mkdir sub'\n" +
-                "    sh 'echo sub-content > sub/file'\n" +
-                "  }\n" +
-                "}", true));
+        job.setDefinition(new CpsFlowDefinition("""
+                node {
+                  cache(maxCacheSize: 250, caches: [arbitraryFileCache(path: 'sub', compressionMethod: 'TARGZ')]){
+                    sh 'mkdir sub'
+                    sh 'echo sub-content > sub/file'
+                  }
+                }""", true));
 
         // WHEN
         WorkflowRun result = job.scheduleBuild2(0).waitForStart();
@@ -86,12 +87,13 @@ public class ArbitraryFileCacheStepMinioTest {
         j.assertLogContains("Creating cache...", result);
 
         // GIVEN
-        job.setDefinition(new CpsFlowDefinition("node {\n" +
-                "  sh 'rm -rf *'\n" +
-                "  cache(skipSave: true, maxCacheSize: 250, caches: [arbitraryFileCache(path: 'sub', compressionMethod: 'TARGZ')]){\n" +
-                "    sh 'rm sub/file'\n" +
-                "  }\n" +
-                "}", true));
+        job.setDefinition(new CpsFlowDefinition("""
+                node {
+                  sh 'rm -rf *'
+                  cache(skipSave: true, maxCacheSize: 250, caches: [arbitraryFileCache(path: 'sub', compressionMethod: 'TARGZ')]){
+                    sh 'rm sub/file'
+                  }
+                }""", true));
 
         // WHEN
         result = job.scheduleBuild2(0).waitForStart();
@@ -102,12 +104,13 @@ public class ArbitraryFileCacheStepMinioTest {
         j.assertLogContains("Skipping save due to skipSave being set to true.", result);
 
         // GIVEN
-        job.setDefinition(new CpsFlowDefinition("node {\n" +
-                "  sh 'rm -rf *'\n" +
-                "  cache(maxCacheSize: 250, caches: [arbitraryFileCache(path: 'sub', compressionMethod: 'TARGZ')]){\n" +
-                "    sh 'cat sub/file'\n" +
-                "  }\n" +
-                "}", true));
+        job.setDefinition(new CpsFlowDefinition("""
+                node {
+                  sh 'rm -rf *'
+                  cache(maxCacheSize: 250, caches: [arbitraryFileCache(path: 'sub', compressionMethod: 'TARGZ')]){
+                    sh 'cat sub/file'
+                  }
+                }""", true));
 
         // WHEN
         result = job.scheduleBuild2(0).waitForStart();
