@@ -1,9 +1,8 @@
 package jenkins.plugins.jobcacher.arbitrary;
 
 import hudson.FilePath;
-import jenkins.plugins.itemstorage.ObjectPath;
-
 import java.io.IOException;
+import jenkins.plugins.itemstorage.ObjectPath;
 
 public class SimpleArbitraryFileCacheStrategy implements ArbitraryFileCacheStrategy {
 
@@ -13,12 +12,20 @@ public class SimpleArbitraryFileCacheStrategy implements ArbitraryFileCacheStrat
     }
 
     @Override
-    public void cache(FilePath source, String includes, String excludes, boolean useDefaultExcludes, ObjectPath target, FilePath workspace) throws IOException, InterruptedException {
+    public void cache(
+            FilePath source,
+            String includes,
+            String excludes,
+            boolean useDefaultExcludes,
+            ObjectPath target,
+            FilePath workspace)
+            throws IOException, InterruptedException {
         throw new UnsupportedOperationException("This compression method is not supported anymore");
     }
 
     @Override
-    public void restore(ObjectPath source, FilePath target, FilePath workspace) throws IOException, InterruptedException {
+    public void restore(ObjectPath source, FilePath target, FilePath workspace)
+            throws IOException, InterruptedException {
         throw new UnsupportedOperationException("This compression method is not supported anymore");
     }
 }

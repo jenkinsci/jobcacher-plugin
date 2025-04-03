@@ -29,6 +29,9 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Item;
 import hudson.model.listeners.ItemListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Logger;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.plugins.itemstorage.ItemStorageDescriptor;
@@ -36,10 +39,6 @@ import jenkins.plugins.itemstorage.Messages;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Logger;
 
 /**
  * Implementation of Item Storage that stores data on the Jenkins controller within the existing job folder or in custom path.
@@ -55,8 +54,7 @@ public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
     private String root;
 
     @DataBoundConstructor
-    public LocalItemStorage() {
-    }
+    public LocalItemStorage() {}
 
     @DataBoundSetter
     public void setRoot(String root) {
@@ -152,7 +150,5 @@ public class LocalItemStorage extends ItemStorage<LocalObjectPath> {
                 return null;
             }
         }
-
     }
-
 }

@@ -5,15 +5,14 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import java.io.IOException;
+import java.util.List;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.jobcacher.Cache;
 import jenkins.plugins.jobcacher.CacheManager;
 import org.jenkinsci.plugins.workflow.steps.BodyExecutionCallback;
 import org.jenkinsci.plugins.workflow.steps.GeneralNonBlockingStepExecution;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
-
-import java.io.IOException;
-import java.util.List;
 
 public class CacheStepExecution extends GeneralNonBlockingStepExecution {
 
@@ -25,7 +24,13 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
     private final List<Cache> caches;
     private final String defaultBranch;
 
-    protected CacheStepExecution(StepContext context, Long maxCacheSize, boolean skipSave, boolean skipRestore, List<Cache> caches, String defaultBranch) {
+    protected CacheStepExecution(
+            StepContext context,
+            Long maxCacheSize,
+            boolean skipSave,
+            boolean skipRestore,
+            List<Cache> caches,
+            String defaultBranch) {
         super(context);
 
         this.maxCacheSize = maxCacheSize;
@@ -50,7 +55,16 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
         TaskListener listener = context.get(TaskListener.class);
         EnvVars initialEnvironment = context.get(EnvVars.class);
 
-        List<Cache.Saver> cacheSavers = CacheManager.cache(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, initialEnvironment, caches, defaultBranch, skipRestore);
+        List<Cache.Saver> cacheSavers = CacheManager.cache(
+                GlobalItemStorage.get().getStorage(),
+                run,
+                workspace,
+                launcher,
+                listener,
+                initialEnvironment,
+                caches,
+                defaultBranch,
+                skipRestore);
 
         context.newBodyInvoker()
                 .withContext(context)
@@ -67,7 +81,8 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
         private final List<Cache> caches;
         private final List<Cache.Saver> cacheSavers;
 
-        public NonBlockingExecutionCallback(Long maxCacheSize, boolean skipSave, List<Cache> caches, List<Cache.Saver> cacheSavers) {
+        public NonBlockingExecutionCallback(
+                Long maxCacheSize, boolean skipSave, List<Cache> caches, List<Cache.Saver> cacheSavers) {
             this.maxCacheSize = maxCacheSize;
             this.skipSave = skipSave;
             this.caches = caches;
@@ -102,7 +117,16 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
             FilePath workspace = context.get(FilePath.class);
             Launcher launcher = context.get(Launcher.class);
 
-            CacheManager.save(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, maxCacheSize, caches, cacheSavers, defaultBranch);
+            CacheManager.save(
+                    GlobalItemStorage.get().getStorage(),
+                    run,
+                    workspace,
+                    launcher,
+                    listener,
+                    maxCacheSize,
+                    caches,
+                    cacheSavers,
+                    defaultBranch);
         }
     }
 
@@ -119,7 +143,8 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
         private final List<Cache> caches;
         private final List<Cache.Saver> cacheSavers;
 
-        public ExecutionCallback(Long maxCacheSize, boolean skipSave, List<Cache> caches, List<Cache.Saver> cacheSavers) {
+        public ExecutionCallback(
+                Long maxCacheSize, boolean skipSave, List<Cache> caches, List<Cache.Saver> cacheSavers) {
             this.maxCacheSize = maxCacheSize;
             this.skipSave = skipSave;
             this.caches = caches;
@@ -152,8 +177,16 @@ public class CacheStepExecution extends GeneralNonBlockingStepExecution {
             FilePath workspace = context.get(FilePath.class);
             Launcher launcher = context.get(Launcher.class);
 
-            CacheManager.save(GlobalItemStorage.get().getStorage(), run, workspace, launcher, listener, maxCacheSize, caches, cacheSavers, null);
+            CacheManager.save(
+                    GlobalItemStorage.get().getStorage(),
+                    run,
+                    workspace,
+                    launcher,
+                    listener,
+                    maxCacheSize,
+                    caches,
+                    cacheSavers,
+                    null);
         }
     }
-
 }

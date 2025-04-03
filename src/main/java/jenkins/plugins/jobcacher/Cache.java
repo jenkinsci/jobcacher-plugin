@@ -32,14 +32,13 @@ import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
-import jenkins.MasterToSlaveFileCallable;
-import jenkins.plugins.itemstorage.ObjectPath;
-import org.kohsuke.stapler.Stapler;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
+import jenkins.MasterToSlaveFileCallable;
+import jenkins.plugins.itemstorage.ObjectPath;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * This class provides the Cache extension point that when implemented provides the caching logic for saving files
@@ -67,12 +66,21 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
      * @throws IOException          If an error occurs connecting to the potentially remote executor
      * @throws InterruptedException If interrupted
      */
-    public abstract Saver cache(ObjectPath cache, ObjectPath defaultCache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, boolean skipRestore) throws IOException, InterruptedException;
+    public abstract Saver cache(
+            ObjectPath cache,
+            ObjectPath defaultCache,
+            Run<?, ?> build,
+            FilePath workspace,
+            Launcher launcher,
+            TaskListener listener,
+            EnvVars initialEnvironment,
+            boolean skipRestore)
+            throws IOException, InterruptedException;
 
     /**
      * Class that is used to save the cache on the remote system back to the cache storage system.
      */
-    public static abstract class Saver implements Serializable {
+    public abstract static class Saver implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
@@ -89,7 +97,9 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
          * @throws IOException          If an error occurs connecting to the potentially remote executor
          * @throws InterruptedException If interrupted
          */
-        public abstract long calculateSize(ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+        public abstract long calculateSize(
+                ObjectPath cache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
+                throws IOException, InterruptedException;
 
         /**
          * Saves the files from the executor to the cache storage system.
@@ -103,7 +113,14 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
          * @throws IOException          If an error occurs connecting to the potentially remote executor
          * @throws InterruptedException If interrupted
          */
-        public abstract void save(ObjectPath cache, ObjectPath defaultCache, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException;
+        public abstract void save(
+                ObjectPath cache,
+                ObjectPath defaultCache,
+                Run<?, ?> build,
+                FilePath workspace,
+                Launcher launcher,
+                TaskListener listener)
+                throws IOException, InterruptedException;
     }
 
     /**

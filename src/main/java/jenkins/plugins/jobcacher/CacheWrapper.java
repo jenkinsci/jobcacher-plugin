@@ -34,6 +34,11 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapperDescriptor;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 import jenkins.model.Jenkins;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ItemStorage;
@@ -41,12 +46,6 @@ import jenkins.tasks.SimpleBuildWrapper;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
 
 /**
  * This is the entry point for the caching capability when used as a build wrapper.
@@ -123,10 +122,27 @@ public class CacheWrapper extends SimpleBuildWrapper {
     }
 
     @Override
-    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
-        List<Cache.Saver> cacheSavers = CacheManager.cache(getStorage(), build, workspace, launcher, listener, initialEnvironment, getCaches(), getDefaultBranch(), skipRestore);
+    public void setUp(
+            Context context,
+            Run<?, ?> build,
+            FilePath workspace,
+            Launcher launcher,
+            TaskListener listener,
+            EnvVars initialEnvironment)
+            throws IOException, InterruptedException {
+        List<Cache.Saver> cacheSavers = CacheManager.cache(
+                getStorage(),
+                build,
+                workspace,
+                launcher,
+                listener,
+                initialEnvironment,
+                getCaches(),
+                getDefaultBranch(),
+                skipRestore);
 
-        context.setDisposer(new CacheDisposer(getStorage(), getMaxCacheSize(), getSkipSave(), getCaches(), cacheSavers, defaultBranch));
+        context.setDisposer(new CacheDisposer(
+                getStorage(), getMaxCacheSize(), getSkipSave(), getCaches(), cacheSavers, defaultBranch));
     }
 
     private static <T> List<T> wrapList(List<T> list, Function<List<T>, List<T>> listFactory) {
@@ -171,7 +187,13 @@ public class CacheWrapper extends SimpleBuildWrapper {
         private final String defaultBranch;
 
         @DataBoundConstructor
-        public CacheDisposer(ItemStorage<?> storage, Long maxCacheSize, boolean skipSave, List<Cache> caches, List<Cache.Saver> cacheSavers, String defaultBranch) {
+        public CacheDisposer(
+                ItemStorage<?> storage,
+                Long maxCacheSize,
+                boolean skipSave,
+                List<Cache> caches,
+                List<Cache.Saver> cacheSavers,
+                String defaultBranch) {
             this.storage = storage;
             this.maxCacheSize = maxCacheSize;
             this.skipSave = skipSave;
@@ -181,9 +203,19 @@ public class CacheWrapper extends SimpleBuildWrapper {
         }
 
         @Override
-        public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
+                throws IOException, InterruptedException {
             if (build.getResult() != Result.FAILURE && build.getResult() != Result.ABORTED && !skipSave) {
-                CacheManager.save(storage, build, workspace, launcher, listener, maxCacheSize, caches, cacheSavers, defaultBranch);
+                CacheManager.save(
+                        storage,
+                        build,
+                        workspace,
+                        launcher,
+                        listener,
+                        maxCacheSize,
+                        caches,
+                        cacheSavers,
+                        defaultBranch);
             }
         }
     }

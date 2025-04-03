@@ -4,13 +4,12 @@ import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
 import hudson.util.io.ArchiverFactory;
-import jenkins.MasterToSlaveFileCallable;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import jenkins.MasterToSlaveFileCallable;
 
 public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryFileCacheStrategy {
 
@@ -25,7 +24,9 @@ public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
     }
 
     @Override
-    protected void compress(FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
+    protected void compress(
+            FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target)
+            throws IOException, InterruptedException {
         target.act(new CreateZipCallable(source, includes, excludes, useDefaultExcludes));
     }
 
@@ -46,11 +47,11 @@ public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
         @Override
         public Void invoke(File targetFile, VirtualChannel channel) throws IOException, InterruptedException {
             try (OutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(targetFile.toPath()))) {
-                source.archive(ArchiverFactory.ZIP, outputStream, new DirScanner.Glob(includes, excludes, useDefaultExcludes));
+                source.archive(
+                        ArchiverFactory.ZIP, outputStream, new DirScanner.Glob(includes, excludes, useDefaultExcludes));
             }
 
             return null;
         }
-
     }
 }

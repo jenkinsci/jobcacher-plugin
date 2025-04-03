@@ -29,6 +29,4 @@ import hudson.model.Descriptor;
 /**
  * @author Peter Hayes
  */
-public abstract class CacheDescriptor extends Descriptor<Cache> {
-
-}
+public abstract class CacheDescriptor extends Descriptor<Cache> {}

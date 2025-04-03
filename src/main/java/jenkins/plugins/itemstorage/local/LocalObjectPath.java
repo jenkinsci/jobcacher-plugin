@@ -27,12 +27,11 @@ package jenkins.plugins.itemstorage.local;
 import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Job;
+import java.io.IOException;
 import jenkins.plugins.itemstorage.ObjectPath;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
-
-import java.io.IOException;
 
 /**
  * This implements the on-controller storage for object paths.
@@ -80,5 +79,4 @@ public class LocalObjectPath extends ObjectPath {
     protected String getPath() {
         return file.getRemote();
     }
-
 }
