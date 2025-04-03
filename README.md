@@ -11,7 +11,7 @@ This is especially useful for Jenkins setups with ephemeral executors, which alw
 
 ### Features
 
-- Store caches on the Jenkins controller, AWS S3 and S3 compatible services - see additional plugins requirements: https://github.com/jenkinsci/jobcacher-plugin/blob/main/src/main/java/jenkins/plugins/itemstorage/s3/S3ItemStorage.java#L110
+- Store caches on the Jenkins controller
 - Use caching in pipeline and freestyle jobs
 - Define maximum cache sizes so that the cache won't grow indefinitely
 - View job specific caches on job page
@@ -25,6 +25,7 @@ Other known consumer plugins that implement the `jenkins.plugins.itemstorage.Ite
 
 - [jobcacher-artifactory-storage](https://plugins.jenkins.io/jobcacher-artifactory-storage/)
 - [jobcacher-azure-storage](https://plugins.jenkins.io/jobcacher-azure-storage/)
+- [jobcacher-s3-storage](https://plugins.jenkins.io/jobcacher-s3-storage/)
 
 ## Configuration
 

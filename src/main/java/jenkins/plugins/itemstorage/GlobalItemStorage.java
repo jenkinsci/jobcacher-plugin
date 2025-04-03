@@ -26,14 +26,13 @@ package jenkins.plugins.itemstorage;
 
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
+import java.util.Collections;
+import java.util.List;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.plugins.itemstorage.local.LocalItemStorage;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest2;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * This class lets users specify globally which implementation of Item Storage should be used on this instance.
@@ -57,7 +56,8 @@ public class GlobalItemStorage extends GlobalConfiguration implements Persistent
         save();
     }
 
-    @Override public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
+    @Override
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         req.bindJSON(this, json);
         return false;
     }

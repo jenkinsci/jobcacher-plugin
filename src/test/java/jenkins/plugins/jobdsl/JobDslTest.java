@@ -5,19 +5,17 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.nio.charset.StandardCharsets;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import hudson.model.FreeStyleProject;
+import java.nio.charset.StandardCharsets;
 import javaposse.jobdsl.plugin.ExecuteDslScripts;
 import javaposse.jobdsl.plugin.LookupStrategy;
 import javaposse.jobdsl.plugin.RemovedJobAction;
 import javaposse.jobdsl.plugin.RemovedViewAction;
 import jenkins.plugins.jobcacher.CacheWrapper;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
@@ -27,7 +25,10 @@ class JobDslTest {
     @Issue("https://github.com/jenkinsci/jobcacher-plugin/issues/271")
     void shouldCreateFreestyleJob(JenkinsRule jenkins) throws Exception {
         runJobDsl("/jobdsl/freestyle.groovy", jenkins);
-        CacheWrapper step = jenkins.jenkins.getItemByFullName("freestyle", FreeStyleProject.class).getBuildWrappersList().get(CacheWrapper.class);
+        CacheWrapper step = jenkins.jenkins
+                .getItemByFullName("freestyle", FreeStyleProject.class)
+                .getBuildWrappersList()
+                .get(CacheWrapper.class);
         assertNotNull(step);
         assertThat(step.getCaches(), hasSize(2));
         assertThat(step.getSkipSave(), is(true));
@@ -47,5 +48,4 @@ class JobDslTest {
         job.getBuildersList().add(builder);
         rule.buildAndAssertSuccess(job);
     }
-
 }

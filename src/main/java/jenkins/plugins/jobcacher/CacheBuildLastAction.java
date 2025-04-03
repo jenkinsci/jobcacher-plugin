@@ -26,11 +26,10 @@ package jenkins.plugins.jobcacher;
 
 import hudson.model.Action;
 import hudson.model.InvisibleAction;
-import jenkins.tasks.SimpleBuildStep;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import jenkins.tasks.SimpleBuildStep;
 
 /**
  * @author Peter Hayes

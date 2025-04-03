@@ -1,18 +1,17 @@
 package jenkins.plugins.itemstorage.local;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import java.io.File;
+import java.io.IOException;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
-import java.io.File;
-import java.io.IOException;
 
 @WithJenkins
 class LocalItemStorageTest {
@@ -61,5 +60,4 @@ class LocalItemStorageTest {
     private File cacheDir(Item item) {
         return new File(storage().getObjectPath(item, "cache").getPath());
     }
-
 }

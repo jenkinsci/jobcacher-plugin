@@ -1,17 +1,16 @@
 package jenkins.plugins.jobcacher;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 import hudson.model.FreeStyleProject;
+import java.io.IOException;
+import java.util.Collections;
 import jenkins.plugins.jobcacher.ArbitraryFileCache.CompressionMethod;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-
-import java.io.IOException;
-import java.util.Collections;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 
 @WithJenkins
 class ArbitraryFileCacheWrapperTest {

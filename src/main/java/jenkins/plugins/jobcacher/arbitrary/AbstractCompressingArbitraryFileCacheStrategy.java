@@ -1,10 +1,9 @@
 package jenkins.plugins.jobcacher.arbitrary;
 
 import hudson.FilePath;
+import java.io.IOException;
 import jenkins.plugins.itemstorage.ObjectPath;
 import jenkins.plugins.jobcacher.arbitrary.WorkspaceHelper.TempFile;
-
-import java.io.IOException;
 
 public abstract class AbstractCompressingArbitraryFileCacheStrategy implements ArbitraryFileCacheStrategy {
 
@@ -14,7 +13,14 @@ public abstract class AbstractCompressingArbitraryFileCacheStrategy implements A
     }
 
     @Override
-    public void cache(FilePath localSource, String includes, String excludes, boolean useDefaultExcludes, ObjectPath remoteTarget, FilePath workspace) throws IOException, InterruptedException {
+    public void cache(
+            FilePath localSource,
+            String includes,
+            String excludes,
+            boolean useDefaultExcludes,
+            ObjectPath remoteTarget,
+            FilePath workspace)
+            throws IOException, InterruptedException {
         try (TempFile localTarget = WorkspaceHelper.createTempFile(workspace, getArchiveExtension())) {
             compress(localSource, includes, excludes, useDefaultExcludes, localTarget.get());
             remoteTarget.copyFrom(localTarget.get());
@@ -22,7 +28,8 @@ public abstract class AbstractCompressingArbitraryFileCacheStrategy implements A
     }
 
     @Override
-    public void restore(ObjectPath remoteSource, FilePath localTarget, FilePath workspace) throws IOException, InterruptedException {
+    public void restore(ObjectPath remoteSource, FilePath localTarget, FilePath workspace)
+            throws IOException, InterruptedException {
         localTarget.mkdirs();
 
         try (TempFile localSource = WorkspaceHelper.createTempFile(workspace, getArchiveExtension())) {
@@ -35,5 +42,7 @@ public abstract class AbstractCompressingArbitraryFileCacheStrategy implements A
 
     protected abstract void uncompress(FilePath source, FilePath target) throws IOException, InterruptedException;
 
-    protected abstract void compress(FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException;
+    protected abstract void compress(
+            FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target)
+            throws IOException, InterruptedException;
 }

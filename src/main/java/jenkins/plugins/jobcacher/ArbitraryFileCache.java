@@ -33,6 +33,19 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.LocalChannel;
 import hudson.util.ListBoxModel;
+import jakarta.servlet.ServletException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.zip.Deflater;
 import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ObjectPath;
 import jenkins.plugins.jobcacher.arbitrary.*;
@@ -47,20 +60,6 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.*;
-
-import jakarta.servlet.ServletException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.zip.Deflater;
 
 /**
  * This class implements a Cache where the user can configure a path on the executor that will be cached.  Users can
@@ -175,7 +174,16 @@ public class ArbitraryFileCache extends Cache {
     }
 
     @Override
-    public Saver cache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment, boolean skipRestore) throws IOException, InterruptedException {
+    public Saver cache(
+            ObjectPath cachesRoot,
+            ObjectPath fallbackCachesRoot,
+            Run<?, ?> build,
+            FilePath workspace,
+            Launcher launcher,
+            TaskListener listener,
+            EnvVars initialEnvironment,
+            boolean skipRestore)
+            throws IOException, InterruptedException {
         String expandedPath = initialEnvironment.expand(path);
         FilePath resolvedPath = workspace.child(expandedPath);
 
@@ -195,7 +203,11 @@ public class ArbitraryFileCache extends Cache {
                 existingCache.restore(resolvedPath, workspace);
 
                 long cacheRestorationEndTime = System.nanoTime();
-                logMessage("Cache restored in " + Duration.ofNanos(cacheRestorationEndTime - cacheRestorationStartTime).toMillis() + "ms", listener);
+                logMessage(
+                        "Cache restored in "
+                                + Duration.ofNanos(cacheRestorationEndTime - cacheRestorationStartTime)
+                                        .toMillis() + "ms",
+                        listener);
             } catch (Exception e) {
                 logMessage("Failed to restore cache, cleaning up " + path + "...", e, listener);
                 resolvedPath.deleteRecursive();
@@ -205,7 +217,9 @@ public class ArbitraryFileCache extends Cache {
         return new SaverImpl(expandedPath);
     }
 
-    private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    private ExistingCache resolveExistingValidCache(
+            ObjectPath cachesRoot, ObjectPath fallbackCachesRoot, FilePath workspace, TaskListener listener)
+            throws IOException, InterruptedException {
         logMessage("Searching cache in job specific caches...", listener);
         ExistingCache cache = resolveExistingValidCache(cachesRoot, workspace, listener);
         if (cache != null) {
@@ -223,7 +237,8 @@ public class ArbitraryFileCache extends Cache {
         return null;
     }
 
-    private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    private ExistingCache resolveExistingValidCache(ObjectPath cachesRoot, FilePath workspace, TaskListener listener)
+            throws IOException, InterruptedException {
         ExistingCache existingCache = resolveExistingCache(cachesRoot);
         if (existingCache == null || !existingCache.getCompressionMethod().isSupported()) {
             return null;
@@ -234,7 +249,9 @@ public class ArbitraryFileCache extends Cache {
         }
 
         if (!isOneCacheValidityDecidingFilePresent(workspace)) {
-            logMessage("cacheValidityDecidingFile configured, but file(s) not present in workspace - considering cache anyway", listener);
+            logMessage(
+                    "cacheValidityDecidingFile configured, but file(s) not present in workspace - considering cache anyway",
+                    listener);
             return existingCache;
         }
 
@@ -256,19 +273,24 @@ public class ArbitraryFileCache extends Cache {
         return null;
     }
 
-    private ObjectPath resolveCachePathForCompressionMethod(ObjectPath cachesRoot, CompressionMethod compressionMethod) throws IOException, InterruptedException {
+    private ObjectPath resolveCachePathForCompressionMethod(ObjectPath cachesRoot, CompressionMethod compressionMethod)
+            throws IOException, InterruptedException {
         return cachesRoot.child(compressionMethod.getCacheStrategy().createCacheName(createCacheBaseName()));
     }
 
-    private boolean isCacheOutdated(ObjectPath cachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    private boolean isCacheOutdated(ObjectPath cachesRoot, FilePath workspace, TaskListener listener)
+            throws IOException, InterruptedException {
         ObjectPath previousClearCacheTriggerFileHash = resolvePreviousCacheValidityDecidingFileHashFile(cachesRoot);
         if (!previousClearCacheTriggerFileHash.exists()) {
-            logMessage("cacheValidityDecidingFile configured, but previous hash not available - cache outdated", listener);
+            logMessage(
+                    "cacheValidityDecidingFile configured, but previous hash not available - cache outdated", listener);
             return true;
         }
 
         if (!matchesCurrentCacheValidityDecidingFileHash(previousClearCacheTriggerFileHash, workspace, listener)) {
-            logMessage("cacheValidityDecidingFile configured, but previous hash does not match - cache outdated", listener);
+            logMessage(
+                    "cacheValidityDecidingFile configured, but previous hash does not match - cache outdated",
+                    listener);
             return true;
         }
 
@@ -279,7 +301,8 @@ public class ArbitraryFileCache extends Cache {
         return StringUtils.isNotEmpty(cacheValidityDecidingFile);
     }
 
-    private ObjectPath resolvePreviousCacheValidityDecidingFileHashFile(ObjectPath cachesRoot) throws IOException, InterruptedException {
+    private ObjectPath resolvePreviousCacheValidityDecidingFileHashFile(ObjectPath cachesRoot)
+            throws IOException, InterruptedException {
         String skipCacheTriggerFileHashFileName = createCacheValidityDecidingFileHashFileName(createCacheBaseName());
 
         return cachesRoot.child(skipCacheTriggerFileHashFileName);
@@ -289,26 +312,32 @@ public class ArbitraryFileCache extends Cache {
         return baseName + CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION;
     }
 
-    private boolean matchesCurrentCacheValidityDecidingFileHash(ObjectPath previousCacheValidityDecidingFileHashFile, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    private boolean matchesCurrentCacheValidityDecidingFileHash(
+            ObjectPath previousCacheValidityDecidingFileHashFile, FilePath workspace, TaskListener listener)
+            throws IOException, InterruptedException {
         if (!isOneCacheValidityDecidingFilePresent(workspace)) {
             return false;
         }
 
-        try (TempFile tempFile = WorkspaceHelper.createTempFile(workspace, CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION)) {
+        try (TempFile tempFile =
+                WorkspaceHelper.createTempFile(workspace, CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION)) {
             previousCacheValidityDecidingFileHashFile.copyTo(tempFile.get());
 
             try (InputStream inputStream = tempFile.get().read()) {
                 String previousCacheValidityDecidingFileHash = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-                String currentCacheValidityDecidingFileHash = getCurrentCacheValidityDecidingFileHash(workspace, listener);
+                String currentCacheValidityDecidingFileHash =
+                        getCurrentCacheValidityDecidingFileHash(workspace, listener);
 
                 return StringUtils.equals(previousCacheValidityDecidingFileHash, currentCacheValidityDecidingFileHash);
             }
         }
     }
 
-    private String getCurrentCacheValidityDecidingFileHash(FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+    private String getCurrentCacheValidityDecidingFileHash(FilePath workspace, TaskListener listener)
+            throws IOException, InterruptedException {
         if (!isOneCacheValidityDecidingFilePresent(workspace)) {
-            throw new IllegalStateException("path " + cacheValidityDecidingFile + " cannot be resolved within the current workspace");
+            throw new IllegalStateException(
+                    "path " + cacheValidityDecidingFile + " cannot be resolved within the current workspace");
         }
 
         try {
@@ -323,7 +352,10 @@ public class ArbitraryFileCache extends Cache {
             }
 
             String hash = Util.toHexString(messageDigest.digest());
-            logMessage("got hash " + hash + " for cacheValidityDecidingFile(s) - actual file(s): " + joinAsRelativePaths(cacheValidityDecidingFiles), listener);
+            logMessage(
+                    "got hash " + hash + " for cacheValidityDecidingFile(s) - actual file(s): "
+                            + joinAsRelativePaths(cacheValidityDecidingFiles),
+                    listener);
 
             return hash;
         } catch (NoSuchAlgorithmException e) {
@@ -366,17 +398,28 @@ public class ArbitraryFileCache extends Cache {
         }
 
         @Override
-        public long calculateSize(ObjectPath objectPath, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        public long calculateSize(
+                ObjectPath objectPath, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
+                throws IOException, InterruptedException {
             return workspace.child(expandedPath).act(new DirectorySize(includes, excludes));
         }
 
         @Override
-        public void save(ObjectPath cachesRoot, ObjectPath defaultCachesRoot, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        public void save(
+                ObjectPath cachesRoot,
+                ObjectPath defaultCachesRoot,
+                Run<?, ?> build,
+                FilePath workspace,
+                Launcher launcher,
+                TaskListener listener)
+                throws IOException, InterruptedException {
             FilePath resolvedPath = workspace.child(expandedPath);
             if (!resolvedPath.exists()) {
                 logMessage("Cannot create cache as the path does not exist", listener);
                 if (isPathOutsideWorkspace(resolvedPath, workspace) && isMaybeInsideDockerContainer(workspace)) {
-                    logMessage("Note that paths outside the workspace while using the Docker Pipeline plugin are not supported", listener);
+                    logMessage(
+                            "Note that paths outside the workspace while using the Docker Pipeline plugin are not supported",
+                            listener);
                 }
                 return;
             }
@@ -407,12 +450,18 @@ public class ArbitraryFileCache extends Cache {
             long cacheCreationStartTime = System.nanoTime();
 
             try {
-                compressionMethod.getCacheStrategy().cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
+                compressionMethod
+                        .getCacheStrategy()
+                        .cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
                 if (isCacheValidityDecidingFileConfigured() && isOneCacheValidityDecidingFilePresent(workspace)) {
                     updateSkipCacheTriggerFileHash(cachesRoot, workspace, listener);
                 }
                 long cacheCreationEndTime = System.nanoTime();
-                logMessage("Cache created in " + Duration.ofNanos(cacheCreationEndTime - cacheCreationStartTime).toMillis() + "ms", listener);
+                logMessage(
+                        "Cache created in "
+                                + Duration.ofNanos(cacheCreationEndTime - cacheCreationStartTime)
+                                        .toMillis() + "ms",
+                        listener);
             } catch (Exception e) {
                 logMessage("Failed to create cache", e, listener);
             }
@@ -426,9 +475,14 @@ public class ArbitraryFileCache extends Cache {
             return workspace.getChannel() == null || workspace.getChannel() instanceof LocalChannel;
         }
 
-        private void updateSkipCacheTriggerFileHash(ObjectPath cachesRoot, FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
-            try (TempFile tempFile = WorkspaceHelper.createTempFile(workspace, CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION)) {
-                tempFile.get().write(getCurrentCacheValidityDecidingFileHash(workspace, listener), StandardCharsets.UTF_8.displayName());
+        private void updateSkipCacheTriggerFileHash(ObjectPath cachesRoot, FilePath workspace, TaskListener listener)
+                throws IOException, InterruptedException {
+            try (TempFile tempFile =
+                    WorkspaceHelper.createTempFile(workspace, CACHE_VALIDITY_DECIDING_FILE_HASH_FILE_EXTENSION)) {
+                tempFile.get()
+                        .write(
+                                getCurrentCacheValidityDecidingFileHash(workspace, listener),
+                                StandardCharsets.UTF_8.displayName());
 
                 ObjectPath skipCacheTriggerFileHashFile = cachesRoot.child(getSkipCacheTriggerFileHashFileName());
                 skipCacheTriggerFileHashFile.copyFrom(tempFile.get());
@@ -447,11 +501,14 @@ public class ArbitraryFileCache extends Cache {
             cacheIdentifier += " (" + getCacheName() + ")";
         }
 
-        listener.getLogger().println("[Cache for " + cacheIdentifier + " with id " + deriveCachePath(path) + "] " + message);
+        listener.getLogger()
+                .println("[Cache for " + cacheIdentifier + " with id " + deriveCachePath(path) + "] " + message);
     }
 
-    public HttpResponse doDynamic(StaplerRequest2 req, StaplerResponse2 rsp, @AncestorInPath Job<?, ?> job) throws IOException, ServletException, InterruptedException {
-        ObjectPath cache = CacheManager.getCachePath(GlobalItemStorage.get().getStorage(), job).child(deriveCachePath(path));
+    public HttpResponse doDynamic(StaplerRequest2 req, StaplerResponse2 rsp, @AncestorInPath Job<?, ?> job)
+            throws IOException, ServletException, InterruptedException {
+        ObjectPath cache = CacheManager.getCachePath(GlobalItemStorage.get().getStorage(), job)
+                .child(deriveCachePath(path));
 
         if (!cache.exists()) {
             req.getView(this, "noCache.jelly").forward(req, rsp);
@@ -483,37 +540,29 @@ public class ArbitraryFileCache extends Cache {
     }
 
     public enum CompressionMethod {
-
         NONE(new SimpleArbitraryFileCacheStrategy(), false),
         ZIP(new ZipArbitraryFileCacheStrategy(), true),
-        TARGZ(new TarArbitraryFileCacheStrategy(
-                GzipCompressorOutputStream::new,
-                GzipCompressorInputStream::new,
-                ".tgz"),
-                true
-        ),
-        TARGZ_BEST_SPEED(new TarArbitraryFileCacheStrategy(
-                os -> new GzipCompressorOutputStream(os, gzipParametersBestSpeed()),
-                GzipCompressorInputStream::new,
-                ".tgz"),
-                true
-        ),
-        TAR(new TarArbitraryFileCacheStrategy(
-                os -> os,
-                is -> is,
-                ".tar"),
-                true
-        ),
-        TAR_ZSTD(new TarArbitraryFileCacheStrategy(
-                out -> {
-                    ZstdOutputStream outputStream = new ZstdOutputStream(out);
-                    outputStream.setWorkers(0); // use all available cores
-                    return outputStream;
-                },
-                ZstdInputStream::new,
-                ".tar.zst"),
-                true
-        );
+        TARGZ(
+                new TarArbitraryFileCacheStrategy(
+                        GzipCompressorOutputStream::new, GzipCompressorInputStream::new, ".tgz"),
+                true),
+        TARGZ_BEST_SPEED(
+                new TarArbitraryFileCacheStrategy(
+                        os -> new GzipCompressorOutputStream(os, gzipParametersBestSpeed()),
+                        GzipCompressorInputStream::new,
+                        ".tgz"),
+                true),
+        TAR(new TarArbitraryFileCacheStrategy(os -> os, is -> is, ".tar"), true),
+        TAR_ZSTD(
+                new TarArbitraryFileCacheStrategy(
+                        out -> {
+                            ZstdOutputStream outputStream = new ZstdOutputStream(out);
+                            outputStream.setWorkers(0); // use all available cores
+                            return outputStream;
+                        },
+                        ZstdInputStream::new,
+                        ".tar.zst"),
+                true);
 
         private static GzipParameters gzipParametersBestSpeed() {
             GzipParameters gzipParameters = new GzipParameters();
@@ -559,7 +608,5 @@ public class ArbitraryFileCache extends Cache {
         public void restore(FilePath target, FilePath workspace) throws IOException, InterruptedException {
             compressionMethod.getCacheStrategy().restore(cache, target, workspace);
         }
-
     }
-
 }

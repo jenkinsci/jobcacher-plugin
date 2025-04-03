@@ -26,6 +26,9 @@ package jenkins.plugins.jobcacher.pipeline;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.plugins.jobcacher.Cache;
 import jenkins.plugins.jobcacher.CacheDescriptor;
@@ -36,10 +39,6 @@ import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Wrapping workflow step that automatically seeds the specified path with the previous run and on exit of the
@@ -146,6 +145,5 @@ public class CacheStep extends Step {
                 return Collections.emptyList();
             }
         }
-
     }
 }

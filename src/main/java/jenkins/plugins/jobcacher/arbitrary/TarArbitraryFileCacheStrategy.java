@@ -4,11 +4,10 @@ import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 import hudson.util.DirScanner;
 import hudson.util.io.ArchiverFactory;
-import jenkins.MasterToSlaveFileCallable;
-import org.apache.commons.compress.compressors.CompressorException;
-
 import java.io.*;
 import java.nio.file.Files;
+import jenkins.MasterToSlaveFileCallable;
+import org.apache.commons.compress.compressors.CompressorException;
 
 public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryFileCacheStrategy {
 
@@ -16,9 +15,10 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
     private final CompressingInputStreamFactory compressingInputStreamFactory;
     private final String archiveExtension;
 
-    public TarArbitraryFileCacheStrategy(CompressingOutputStreamFactory compressingOutputStreamFactory,
-                                         CompressingInputStreamFactory compressingInputStreamFactory,
-                                         String archiveExtension) {
+    public TarArbitraryFileCacheStrategy(
+            CompressingOutputStreamFactory compressingOutputStreamFactory,
+            CompressingInputStreamFactory compressingInputStreamFactory,
+            String archiveExtension) {
 
         this.compressingOutputStreamFactory = compressingOutputStreamFactory;
         this.compressingInputStreamFactory = compressingInputStreamFactory;
@@ -36,8 +36,11 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
     }
 
     @Override
-    protected void compress(FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target) throws IOException, InterruptedException {
-        target.act(new CreateTarCallable(source, includes, excludes, useDefaultExcludes, compressingOutputStreamFactory));
+    protected void compress(
+            FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target)
+            throws IOException, InterruptedException {
+        target.act(
+                new CreateTarCallable(source, includes, excludes, useDefaultExcludes, compressingOutputStreamFactory));
     }
 
     private static class ExtractTarCallable extends MasterToSlaveFileCallable<Void> {
@@ -78,7 +81,12 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
         private final boolean useDefaultExcludes;
         private final CompressingOutputStreamFactory compressingOutputStreamFactory;
 
-        public CreateTarCallable(FilePath source, String includes, String excludes, boolean useDefaultExcludes, CompressingOutputStreamFactory compressingOutputStreamFactory) {
+        public CreateTarCallable(
+                FilePath source,
+                String includes,
+                String excludes,
+                boolean useDefaultExcludes,
+                CompressingOutputStreamFactory compressingOutputStreamFactory) {
             this.source = source;
             this.includes = includes;
             this.excludes = excludes;
@@ -89,7 +97,8 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
         @Override
         public Void invoke(File targetFile, VirtualChannel channel) throws IOException, InterruptedException {
             try (OutputStream outputStream = createOutputStream(targetFile)) {
-                source.archive(ArchiverFactory.TAR, outputStream, new DirScanner.Glob(includes, excludes, useDefaultExcludes));
+                source.archive(
+                        ArchiverFactory.TAR, outputStream, new DirScanner.Glob(includes, excludes, useDefaultExcludes));
             } catch (CompressorException e) {
                 throw new IOException(e);
             }
@@ -109,13 +118,10 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
     public interface CompressingOutputStreamFactory extends Serializable {
 
         OutputStream createCompressingOutputStream(OutputStream outputStream) throws IOException;
-
     }
 
     public interface CompressingInputStreamFactory extends Serializable {
 
         InputStream createCompressingInputStream(InputStream inputStream) throws IOException;
-
     }
-
 }

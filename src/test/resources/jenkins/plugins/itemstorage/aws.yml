@@ -1,8 +1,0 @@
-unclassified:
-  globalItemStorage:
-    storage:
-      s3:
-        bucketName: "caches"
-        prefix: "the-prefix/"
-        credentialsId: "s3"
-        region: "eu-central-2"

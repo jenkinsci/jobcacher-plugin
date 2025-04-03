@@ -26,9 +26,8 @@ package jenkins.plugins.jobcacher;
 
 import hudson.model.Action;
 import hudson.model.Job;
-import org.kohsuke.stapler.Stapler;
-
 import java.util.List;
+import org.kohsuke.stapler.Stapler;
 
 /**
  * @author Peter Hayes

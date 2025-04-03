@@ -3,16 +3,15 @@ package jenkins.plugins.jobcacher.arbitrary;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.slaves.WorkspaceList;
-
 import java.io.IOException;
 import java.util.UUID;
 
 public final class WorkspaceHelper {
 
-    private WorkspaceHelper() {
-    }
+    private WorkspaceHelper() {}
 
-    public static TempFile createTempFile(FilePath workspace, String fileExtension) throws IOException, InterruptedException {
+    public static TempFile createTempFile(FilePath workspace, String fileExtension)
+            throws IOException, InterruptedException {
         FilePath tempDir = getTempDir(workspace);
         FilePath tempFile = tempDir.createTempFile(generateTempFileName(), fileExtension);
 

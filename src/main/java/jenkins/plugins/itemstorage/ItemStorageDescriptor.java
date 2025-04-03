@@ -31,6 +31,4 @@ import hudson.model.Descriptor;
  *
  * @author Peter Hayes
  */
-public abstract class ItemStorageDescriptor<T extends ObjectPath> extends Descriptor<ItemStorage<T>> {
-
-}
+public abstract class ItemStorageDescriptor<T extends ObjectPath> extends Descriptor<ItemStorage<T>> {}
