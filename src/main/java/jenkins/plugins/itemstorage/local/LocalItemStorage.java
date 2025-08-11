@@ -36,7 +36,7 @@ import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ItemStorage;
 import jenkins.plugins.itemstorage.ItemStorageDescriptor;
 import jenkins.plugins.itemstorage.Messages;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
