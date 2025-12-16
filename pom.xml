@@ -44,7 +44,7 @@
 
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
-    <testcontainers.version>1.21.3</testcontainers.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
 
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
   </properties>
