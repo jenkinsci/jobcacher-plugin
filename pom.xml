@@ -44,7 +44,7 @@
 
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
-    <testcontainers.version>1.21.4</testcontainers.version>
+    <testcontainers.version>2.0.3</testcontainers.version>
 
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
   </properties>
@@ -163,12 +163,6 @@
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${testcontainers.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
@@ -182,6 +176,12 @@
           <artifactId>slf4j-api</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
