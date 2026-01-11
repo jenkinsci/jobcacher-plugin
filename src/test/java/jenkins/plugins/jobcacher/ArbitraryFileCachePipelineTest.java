@@ -480,6 +480,37 @@ class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
+    void testMultipleCacheBlocksInSamePipeline() throws Exception {
+        // This test verifies the fix for UnsupportedOperationException when multiple
+        // cache blocks are used in the same pipeline. The bug occurred because
+        // CacheProjectAction stored the input list directly, and when addCaches()
+        // was called for subsequent cache blocks, it failed on unmodifiable lists.
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+
+        String scriptedPipeline = "node('test-agent') {\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'cache1')]) {\n"
+                + "        writeFile text: 'data1', file: 'cache1/file1.txt'\n"
+                + "    }\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'cache2')]) {\n"
+                + "        writeFile text: 'data2', file: 'cache2/file2.txt'\n"
+                + "    }\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'cache3')]) {\n"
+                + "        writeFile text: 'data3', file: 'cache3/file3.txt'\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+
+        WorkflowRun run = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(
+                run.getLog(),
+                allOf(
+                        containsString("[Cache for cache1"),
+                        containsString("[Cache for cache2"),
+                        containsString("[Cache for cache3")));
+    }
+
+    @Test
+    @WithTimeout(600)
     void testUncompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path')");
     }

@@ -26,6 +26,7 @@ package jenkins.plugins.jobcacher;
 
 import hudson.model.Action;
 import hudson.model.Job;
+import java.util.ArrayList;
 import java.util.List;
 import org.kohsuke.stapler.Stapler;
 
@@ -37,7 +38,7 @@ public class CacheProjectAction implements Action {
     private final List<Cache> caches;
 
     public CacheProjectAction(List<Cache> caches) {
-        this.caches = caches;
+        this.caches = new ArrayList<>(caches);
     }
 
     @Override
