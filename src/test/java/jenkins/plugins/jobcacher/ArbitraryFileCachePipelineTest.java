@@ -14,7 +14,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import jenkins.branch.Branch;
+import jenkins.branch.BranchSource;
 import jenkins.scm.impl.mock.MockSCMHead;
+import jenkins.scm.impl.mock.MockSCMSource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -613,6 +616,8 @@ class ArbitraryFileCachePipelineTest {
                     .getProjectFactory()
                     .newInstance(new Branch(
                             branchName, new MockSCMHead(branchName), new NullSCM(), Collections.emptyList()));
+            BranchSource source1 = new BranchSource(new MockSCMSource("c", "r1"));
+            multiBranchProject.getSourcesList().add(source1);
             workflowJob.onLoad(multiBranchProject, branchName);
             return workflowJob;
         } else {
