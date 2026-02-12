@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import jenkins.MasterToSlaveFileCallable;
 
 public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryFileCacheStrategy {
@@ -48,7 +49,11 @@ public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
         public Void invoke(File targetFile, VirtualChannel channel) throws IOException, InterruptedException {
             try (OutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(targetFile.toPath()))) {
                 source.archive(
-                        ArchiverFactory.ZIP, outputStream, new DirScanner.Glob(includes, excludes, useDefaultExcludes));
+                        ArchiverFactory.ZIP,
+                        outputStream,
+                        new DirScanner.Glob(includes, excludes, useDefaultExcludes),
+                        source.getRemote(),
+                        LinkOption.NOFOLLOW_LINKS);
             }
 
             return null;
