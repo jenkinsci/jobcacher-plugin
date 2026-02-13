@@ -175,6 +175,16 @@ public abstract class Cache extends AbstractDescribableImpl<Cache> implements Ex
                         total.addAndGet(f.length());
                     }
                 }
+
+                @Override
+                public boolean understandsSymlink() {
+                    return true;
+                }
+
+                @Override
+                public void visitSymlink(File link, String target, String relativePath) throws IOException {
+                    // Skip symlinks - they should not contribute to the cache size
+                }
             });
 
             return total.get();

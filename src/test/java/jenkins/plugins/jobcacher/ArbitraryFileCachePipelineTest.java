@@ -514,6 +514,94 @@ class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
+    void testSymlinksOutsideCacheDirAreNotCachedWithTarGz() throws Exception {
+        testSymlinksOutsideCacheDirAreNotCached("TARGZ");
+    }
+
+    @Test
+    @WithTimeout(600)
+    void testSymlinksOutsideCacheDirAreNotCachedWithZip() throws Exception {
+        testSymlinksOutsideCacheDirAreNotCached("ZIP");
+    }
+
+    private void testSymlinksOutsideCacheDirAreNotCached(String compressionMethod) throws Exception {
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+
+        // Build 1: Create a directory outside the cache path with sensitive data,
+        // create a symlink inside the cache path pointing to it, then cache.
+        String scriptedPipeline = "node('test-agent') {\n"
+                + "    sh '''\n"
+                + "        mkdir -p secret\n"
+                + "        echo sensitive-data > secret/data.txt\n"
+                + "        mkdir -p test-path\n"
+                + "        echo cached-content > test-path/real-file.txt\n"
+                + "        ln -s \"$(pwd)/secret\" test-path/link-to-secret\n"
+                + "    '''\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', compressionMethod: '"
+                + compressionMethod + "')]) {\n"
+                + "        echo 'cache block executed'\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(
+                run1.getLog(),
+                containsString(
+                        "[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache..."));
+
+        // Delete the entire workspace to simulate a fresh executor
+        FilePath workspace = agent.getWorkspaceFor(project);
+        if (workspace != null) {
+            workspace.deleteContents();
+        }
+
+        // Build 2: Restore cache and verify the symlinked content was NOT cached
+        String verifyPipeline = "node('test-agent') {\n"
+                + "    sh 'mkdir -p test-path'\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', compressionMethod: '"
+                + compressionMethod + "')]) {\n"
+                + "        sh '''\n"
+                + "            echo \"real-file exists: $(test -f test-path/real-file.txt && echo yes || echo no)\"\n"
+                + "            echo \"symlink exists: $(test -e test-path/link-to-secret && echo yes || echo no)\"\n"
+                + "        '''\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(verifyPipeline, true));
+
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog(), containsString("real-file exists: yes"));
+        assertThat(run2.getLog(), containsString("symlink exists: no"));
+    }
+
+    @Test
+    @WithTimeout(600)
+    void testCircularSymlinkDoesNotCauseInfiniteLoop() throws Exception {
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+
+        // Create a cache directory with a circular symlink pointing back to itself
+        String scriptedPipeline = "node('test-agent') {\n"
+                + "    sh '''\n"
+                + "        mkdir -p test-path\n"
+                + "        echo real-content > test-path/file.txt\n"
+                + "        ln -s . test-path/loop\n"
+                + "    '''\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', compressionMethod: 'TARGZ')]) {\n"
+                + "        echo 'cache block executed'\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+
+        // The build should succeed without hanging or OOM-ing
+        WorkflowRun run = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(
+                run.getLog(),
+                containsString(
+                        "[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache..."));
+    }
+
+    @Test
+    @WithTimeout(600)
     void testUncompressedArbitraryFileCacheWithinPipeline() throws Exception {
         testArbitraryFileCacheWithinPipeline("arbitraryFileCache(path: 'test-path')");
     }

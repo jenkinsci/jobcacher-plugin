@@ -6,6 +6,7 @@ import hudson.util.DirScanner;
 import hudson.util.io.ArchiverFactory;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import jenkins.MasterToSlaveFileCallable;
 import org.apache.commons.compress.compressors.CompressorException;
 
@@ -98,7 +99,11 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
         public Void invoke(File targetFile, VirtualChannel channel) throws IOException, InterruptedException {
             try (OutputStream outputStream = createOutputStream(targetFile)) {
                 source.archive(
-                        ArchiverFactory.TAR, outputStream, new DirScanner.Glob(includes, excludes, useDefaultExcludes));
+                        ArchiverFactory.TAR,
+                        outputStream,
+                        new DirScanner.Glob(includes, excludes, useDefaultExcludes),
+                        source.getRemote(),
+                        LinkOption.NOFOLLOW_LINKS);
             } catch (CompressorException e) {
                 throw new IOException(e);
             }
