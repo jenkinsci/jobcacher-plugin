@@ -514,17 +514,22 @@ class ArbitraryFileCachePipelineTest {
 
     @Test
     @WithTimeout(600)
-    void testSymlinksOutsideCacheDirAreNotCachedWithTarGz() throws Exception {
-        testSymlinksOutsideCacheDirAreNotCached("TARGZ");
+    void testExternalSymlinksAreDanglingAfterRestoreWithTarGz() throws Exception {
+        testExternalSymlinksAreDanglingAfterRestore("TARGZ");
     }
 
     @Test
     @WithTimeout(600)
-    void testSymlinksOutsideCacheDirAreNotCachedWithZip() throws Exception {
-        testSymlinksOutsideCacheDirAreNotCached("ZIP");
+    void testExternalSymlinksAreSkippedWithZip() throws Exception {
+        testExternalSymlinksAreDanglingAfterRestore("ZIP");
     }
 
-    private void testSymlinksOutsideCacheDirAreNotCached(String compressionMethod) throws Exception {
+    /**
+     * Tests that external symlinks don't make their target content available after restore.
+     * TAR archives symlinks as native entries (no target content is read); after workspace wipe
+     * the restored symlink is dangling. ZIP skips symlinks entirely since it can't represent them.
+     */
+    private void testExternalSymlinksAreDanglingAfterRestore(String compressionMethod) throws Exception {
         WorkflowJob project = jenkins.createProject(WorkflowJob.class);
 
         // Build 1: Create a directory outside the cache path with sensitive data,
@@ -556,14 +561,14 @@ class ArbitraryFileCachePipelineTest {
             workspace.deleteContents();
         }
 
-        // Build 2: Restore cache and verify the symlinked content was NOT cached
+        // Build 2: Restore cache and verify the external symlink target is not accessible
         String verifyPipeline = "node('test-agent') {\n"
                 + "    sh 'mkdir -p test-path'\n"
                 + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', compressionMethod: '"
                 + compressionMethod + "')]) {\n"
                 + "        sh '''\n"
                 + "            echo \"real-file exists: $(test -f test-path/real-file.txt && echo yes || echo no)\"\n"
-                + "            echo \"symlink exists: $(test -e test-path/link-to-secret && echo yes || echo no)\"\n"
+                + "            echo \"symlink-target-accessible: $(test -e test-path/link-to-secret && echo yes || echo no)\"\n"
                 + "        '''\n"
                 + "    }\n"
                 + "}";
@@ -571,7 +576,7 @@ class ArbitraryFileCachePipelineTest {
 
         WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
         assertThat(run2.getLog(), containsString("real-file exists: yes"));
-        assertThat(run2.getLog(), containsString("symlink exists: no"));
+        assertThat(run2.getLog(), containsString("symlink-target-accessible: no"));
     }
 
     @Test
@@ -598,6 +603,200 @@ class ArbitraryFileCachePipelineTest {
                 run.getLog(),
                 containsString(
                         "[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache..."));
+    }
+
+    @Test
+    @WithTimeout(600)
+    void testInternalSymlinksArePreservedWithTarGz() throws Exception {
+        testInternalSymlinksArePreserved("TARGZ");
+    }
+
+    @Test
+    @WithTimeout(600)
+    void testInternalSymlinksArePreservedWithTarZstd() throws Exception {
+        testInternalSymlinksArePreserved("TAR_ZSTD");
+    }
+
+    /**
+     * Tests that symlinks are preserved as native symlink entries in TAR archives.
+     * This simulates the node_modules/.bin scenario where binaries are symlinks to
+     * package executables within node_modules.
+     */
+    private void testInternalSymlinksArePreserved(String compressionMethod) throws Exception {
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+
+        // Build 1: Create a cache directory mimicking node_modules structure:
+        //   test-path/pkg/bin/tool.sh  (real executable file)
+        //   test-path/.bin/tool -> ../pkg/bin/tool.sh  (internal relative symlink)
+        String scriptedPipeline = "node('test-agent') {\n"
+                + "    sh '''\n"
+                + "        mkdir -p test-path/pkg/bin\n"
+                + "        echo \"#!/bin/sh\" > test-path/pkg/bin/tool.sh\n"
+                + "        echo \"echo tool-output\" >> test-path/pkg/bin/tool.sh\n"
+                + "        chmod a+x test-path/pkg/bin/tool.sh\n"
+                + "        mkdir -p test-path/.bin\n"
+                + "        ln -s ../pkg/bin/tool.sh test-path/.bin/tool\n"
+                + "    '''\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', compressionMethod: '"
+                + compressionMethod + "')]) {\n"
+                + "        echo 'cache block executed'\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(
+                run1.getLog(),
+                containsString(
+                        "[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache..."));
+
+        // Delete the entire workspace to simulate a fresh executor
+        FilePath workspace = agent.getWorkspaceFor(project);
+        if (workspace != null) {
+            workspace.deleteContents();
+        }
+
+        // Build 2: Restore cache and verify the internal symlink was preserved
+        String verifyPipeline = "node('test-agent') {\n"
+                + "    sh 'mkdir -p test-path'\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', compressionMethod: '"
+                + compressionMethod + "')]) {\n"
+                + "        sh '''\n"
+                + "            echo \"real-file exists: $(test -f test-path/pkg/bin/tool.sh && echo yes || echo no)\"\n"
+                + "            echo \"symlink exists: $(test -e test-path/.bin/tool && echo yes || echo no)\"\n"
+                + "            echo \"symlink executable: $(test -x test-path/.bin/tool && echo yes || echo no)\"\n"
+                + "            echo \"tool output: $(test-path/.bin/tool)\"\n"
+                + "        '''\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(verifyPipeline, true));
+
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog(), containsString("real-file exists: yes"));
+        assertThat(run2.getLog(), containsString("symlink exists: yes"));
+        assertThat(run2.getLog(), containsString("symlink executable: yes"));
+        assertThat(run2.getLog(), containsString("tool output: tool-output"));
+    }
+
+    /**
+     * Tests that internal symlinks work after restore while external symlinks are dangling
+     * (their target no longer exists after workspace wipe). Both are archived as native
+     * TAR symlink entries without reading any target content.
+     */
+    @Test
+    @WithTimeout(600)
+    void testInternalSymlinksWorkAndExternalAreDanglingAfterRestore() throws Exception {
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+
+        // Build 1: Create a cache dir with both internal and external symlinks
+        String scriptedPipeline = "node('test-agent') {\n"
+                + "    sh '''\n"
+                + "        mkdir -p secret\n"
+                + "        echo sensitive-data > secret/data.txt\n"
+                + "        mkdir -p test-path/pkg/bin\n"
+                + "        echo \"#!/bin/sh\" > test-path/pkg/bin/tool.sh\n"
+                + "        echo \"echo tool-output\" >> test-path/pkg/bin/tool.sh\n"
+                + "        chmod a+x test-path/pkg/bin/tool.sh\n"
+                + "        mkdir -p test-path/.bin\n"
+                + "        ln -s ../pkg/bin/tool.sh test-path/.bin/tool\n"
+                + "        ln -s \"$(pwd)/secret\" test-path/link-to-secret\n"
+                + "    '''\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', compressionMethod: 'TARGZ')]) {\n"
+                + "        echo 'cache block executed'\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(
+                run1.getLog(),
+                containsString(
+                        "[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache..."));
+
+        // Delete the entire workspace to simulate a fresh executor
+        FilePath workspace = agent.getWorkspaceFor(project);
+        if (workspace != null) {
+            workspace.deleteContents();
+        }
+
+        // Build 2: Restore cache and verify internal symlink works, external is dangling
+        String verifyPipeline = "node('test-agent') {\n"
+                + "    sh 'mkdir -p test-path'\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', compressionMethod: 'TARGZ')]) {\n"
+                + "        sh '''\n"
+                + "            echo \"internal-symlink works: $(test -e test-path/.bin/tool && echo yes || echo no)\"\n"
+                + "            echo \"external-symlink-target-accessible: $(test -e test-path/link-to-secret && echo yes || echo no)\"\n"
+                + "            echo \"tool output: $(test-path/.bin/tool)\"\n"
+                + "        '''\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(verifyPipeline, true));
+
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog(), containsString("internal-symlink works: yes"));
+        assertThat(run2.getLog(), containsString("external-symlink-target-accessible: no"));
+        assertThat(run2.getLog(), containsString("tool output: tool-output"));
+    }
+
+    /**
+     * Tests that symlinks matching an exclude pattern are not archived, and symlinks matching
+     * the include pattern are preserved. This verifies that the includes/excludes filtering
+     * applies to symlinks, not just regular files.
+     */
+    @Test
+    @WithTimeout(600)
+    void testExcludedSymlinksAreNotArchived() throws Exception {
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+
+        // Build 1: Create a cache directory with two internal symlinks:
+        //   test-path/pkg/bin/tool.sh  (real executable file)
+        //   test-path/.bin/tool -> ../pkg/bin/tool.sh  (should be included)
+        //   test-path/.bin/excluded-tool -> ../pkg/bin/tool.sh  (should be excluded)
+        String scriptedPipeline = "node('test-agent') {\n"
+                + "    sh '''\n"
+                + "        mkdir -p test-path/pkg/bin\n"
+                + "        echo \"#!/bin/sh\" > test-path/pkg/bin/tool.sh\n"
+                + "        echo \"echo tool-output\" >> test-path/pkg/bin/tool.sh\n"
+                + "        chmod a+x test-path/pkg/bin/tool.sh\n"
+                + "        mkdir -p test-path/.bin\n"
+                + "        ln -s ../pkg/bin/tool.sh test-path/.bin/tool\n"
+                + "        ln -s ../pkg/bin/tool.sh test-path/.bin/excluded-tool\n"
+                + "    '''\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', "
+                + "excludes: '**/*excluded*', compressionMethod: 'TARGZ')]) {\n"
+                + "        echo 'cache block executed'\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(scriptedPipeline, true));
+
+        WorkflowRun run1 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(
+                run1.getLog(),
+                containsString(
+                        "[Cache for test-path with id 95147d7f3368d66bd7f952b5245a0968] Creating cache..."));
+
+        // Delete the entire workspace to simulate a fresh executor
+        FilePath workspace = agent.getWorkspaceFor(project);
+        if (workspace != null) {
+            workspace.deleteContents();
+        }
+
+        // Build 2: Restore cache and verify the included symlink is present but excluded is not
+        String verifyPipeline = "node('test-agent') {\n"
+                + "    sh 'mkdir -p test-path'\n"
+                + "    cache(maxCacheSize: 100, caches: [arbitraryFileCache(path: 'test-path', "
+                + "excludes: '**/*excluded*', compressionMethod: 'TARGZ')]) {\n"
+                + "        sh '''\n"
+                + "            echo \"included-symlink exists: $(test -e test-path/.bin/tool && echo yes || echo no)\"\n"
+                + "            echo \"excluded-symlink exists: $(test -e test-path/.bin/excluded-tool && echo yes || echo no)\"\n"
+                + "        '''\n"
+                + "    }\n"
+                + "}";
+        project.setDefinition(new CpsFlowDefinition(verifyPipeline, true));
+
+        WorkflowRun run2 = jenkins.assertBuildStatus(Result.SUCCESS, project.scheduleBuild2(0));
+        assertThat(run2.getLog(), containsString("included-symlink exists: yes"));
+        assertThat(run2.getLog(), containsString("excluded-symlink exists: no"));
     }
 
     @Test
