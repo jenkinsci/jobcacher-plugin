@@ -2,14 +2,12 @@ package jenkins.plugins.jobcacher.arbitrary;
 
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
-import hudson.util.DirScanner;
 import hudson.util.io.ArchiverFactory;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import jenkins.MasterToSlaveFileCallable;
 
 public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryFileCacheStrategy {
@@ -51,9 +49,7 @@ public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
                 source.archive(
                         ArchiverFactory.ZIP,
                         outputStream,
-                        new DirScanner.Glob(includes, excludes, useDefaultExcludes),
-                        source.getRemote(),
-                        LinkOption.NOFOLLOW_LINKS);
+                        new SymlinkSafeDirScanner(includes, excludes, useDefaultExcludes));
             }
 
             return null;

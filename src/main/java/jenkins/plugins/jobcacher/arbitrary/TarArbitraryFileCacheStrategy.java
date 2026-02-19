@@ -2,11 +2,9 @@ package jenkins.plugins.jobcacher.arbitrary;
 
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
-import hudson.util.DirScanner;
 import hudson.util.io.ArchiverFactory;
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import jenkins.MasterToSlaveFileCallable;
 import org.apache.commons.compress.compressors.CompressorException;
 
@@ -101,9 +99,7 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
                 source.archive(
                         ArchiverFactory.TAR,
                         outputStream,
-                        new DirScanner.Glob(includes, excludes, useDefaultExcludes),
-                        source.getRemote(),
-                        LinkOption.NOFOLLOW_LINKS);
+                        new SymlinkSafeDirScanner(includes, excludes, useDefaultExcludes));
             } catch (CompressorException e) {
                 throw new IOException(e);
             }
