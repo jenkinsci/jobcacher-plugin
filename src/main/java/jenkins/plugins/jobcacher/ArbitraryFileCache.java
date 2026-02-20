@@ -453,6 +453,11 @@ public class ArbitraryFileCache extends Cache {
                 compressionMethod
                         .getCacheStrategy()
                         .cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
+                if (compressionMethod.isDeprecated()) {
+                    listener.getLogger()
+                            .println("WARNING: Compression method " + compressionMethod.name() + " is deprecated. Please switch to a supported compression method.");
+                }
+
                 if (isCacheValidityDecidingFileConfigured() && isOneCacheValidityDecidingFilePresent(workspace)) {
                     updateSkipCacheTriggerFileHash(cachesRoot, workspace, listener);
                 }
@@ -540,19 +545,19 @@ public class ArbitraryFileCache extends Cache {
     }
 
     public enum CompressionMethod {
-        NONE(new SimpleArbitraryFileCacheStrategy(), false),
-        ZIP(new ZipArbitraryFileCacheStrategy(), true),
+        NONE(new SimpleArbitraryFileCacheStrategy(), false, true),
+        ZIP(new ZipArbitraryFileCacheStrategy(), true, true),
         TARGZ(
                 new TarArbitraryFileCacheStrategy(
                         GzipCompressorOutputStream::new, GzipCompressorInputStream::new, ".tgz"),
-                true),
+                true, false),
         TARGZ_BEST_SPEED(
                 new TarArbitraryFileCacheStrategy(
                         os -> new GzipCompressorOutputStream(os, gzipParametersBestSpeed()),
                         GzipCompressorInputStream::new,
                         ".tgz"),
-                true),
-        TAR(new TarArbitraryFileCacheStrategy(os -> os, is -> is, ".tar"), true),
+                true, false),
+        TAR(new TarArbitraryFileCacheStrategy(os -> os, is -> is, ".tar"), true, false),
         TAR_ZSTD(
                 new TarArbitraryFileCacheStrategy(
                         out -> {
@@ -562,7 +567,7 @@ public class ArbitraryFileCache extends Cache {
                         },
                         ZstdInputStream::new,
                         ".tar.zst"),
-                true);
+                true, false);
 
         private static GzipParameters gzipParametersBestSpeed() {
             GzipParameters gzipParameters = new GzipParameters();
@@ -572,14 +577,20 @@ public class ArbitraryFileCache extends Cache {
 
         private final ArbitraryFileCacheStrategy cacheStrategy;
         private final boolean supported;
+        private final boolean deprecated;
 
-        CompressionMethod(ArbitraryFileCacheStrategy cacheStrategy, boolean supported) {
+        CompressionMethod(ArbitraryFileCacheStrategy cacheStrategy, boolean supported, boolean deprecated) {
             this.cacheStrategy = cacheStrategy;
             this.supported = supported;
+            this.deprecated = deprecated;
         }
 
         public boolean isSupported() {
             return supported;
+        }
+
+        public boolean isDeprecated() {
+            return deprecated;
         }
 
         public ArbitraryFileCacheStrategy getCacheStrategy() {
