@@ -47,15 +47,21 @@ public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
 
         @Override
         public Void invoke(File targetFile, VirtualChannel channel) throws IOException, InterruptedException {
-            try (OutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(targetFile.toPath()))) {
+
+            // FIX: sanitize user-provided patterns to avoid InvalidPathException
+            String safeIncludes = includes == null ? null : includes.trim();
+            String safeExcludes = excludes == null ? null : excludes.trim();
+
+            try (OutputStream outputStream =
+                         new BufferedOutputStream(Files.newOutputStream(targetFile.toPath()))) {
+
                 source.archive(
                         ArchiverFactory.ZIP,
                         outputStream,
-                        new DirScanner.Glob(includes, excludes, useDefaultExcludes),
+                        new DirScanner.Glob(safeIncludes, safeExcludes, useDefaultExcludes),
                         source.getRemote(),
                         LinkOption.NOFOLLOW_LINKS);
             }
-
             return null;
         }
     }
