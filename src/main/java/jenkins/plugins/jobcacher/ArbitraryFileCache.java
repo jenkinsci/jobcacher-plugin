@@ -516,7 +516,7 @@ public class ArbitraryFileCache extends Cache {
     public HttpResponse doDynamic(StaplerRequest2 req, StaplerResponse2 rsp, @AncestorInPath Job<?, ?> job)
             throws IOException, ServletException, InterruptedException {
         ObjectPath cache = CacheManager.getCachePath(GlobalItemStorage.get().getStorage(), job)
-                .child(deriveCachePath(path));
+                .child(compressionMethod.getCacheStrategy().createCacheName(createCacheBaseName()));
 
         if (!cache.exists()) {
             req.getView(this, "noCache.jelly").forward(req, rsp);
