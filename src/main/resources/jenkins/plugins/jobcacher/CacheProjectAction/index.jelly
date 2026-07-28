@@ -50,6 +50,18 @@
                     </div>
                 </j:otherwise>
             </j:choose>
+            <j:if test="${it.deletable}">
+                <div class="jenkins-buttons-row jenkins-buttons-row--invert">
+                    <l:confirmationLink href="deleteAll"
+                                        post="true"
+                                        destructive="true"
+                                        class="jenkins-button jenkins-button--tertiary"
+                                        title="${%Delete all caches of this job?}"
+                                        message="${%This also deletes caches of configurations that have been removed in the meantime. The next build will recreate the caches it still needs.}">
+                        ${%Delete all caches}
+                    </l:confirmationLink>
+                </div>
+            </j:if>
         </l:main-panel>
     </l:layout>
 </j:jelly>

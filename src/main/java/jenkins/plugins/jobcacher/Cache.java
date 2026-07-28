@@ -26,10 +26,12 @@ package jenkins.plugins.jobcacher;
 
 import hudson.*;
 import hudson.model.Describable;
+import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
+import hudson.security.Permission;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import java.io.File;
@@ -38,8 +40,14 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 import jenkins.agents.ControllerToAgentFileCallable;
+import jenkins.plugins.itemstorage.GlobalItemStorage;
 import jenkins.plugins.itemstorage.ObjectPath;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * This class provides the Cache extension point that when implemented provides the caching logic for saving files
@@ -53,6 +61,13 @@ public abstract class Cache implements Describable<Cache>, ExtensionPoint, Seria
 
     @Serial
     private static final long serialVersionUID = 1L;
+
+    /**
+     * The permission required to delete a cache through the user interface. Deleting a cache does not destroy any
+     * information that cannot be recreated by another build, so it is granted to everyone who is allowed to start a
+     * build - those users are able to overwrite the cache with a new build anyway.
+     */
+    public static final Permission DELETE_PERMISSION = Item.BUILD;
 
     /**
      * Seeds the cache on the executor from the cache storage system.
@@ -139,7 +154,52 @@ public abstract class Cache implements Describable<Cache>, ExtensionPoint, Seria
      * @return the job
      */
     public Job<?, ?> getJob() {
-        return Stapler.getCurrentRequest2().findAncestorObject(Job.class);
+        StaplerRequest2 request = Stapler.getCurrentRequest2();
+
+        return request == null ? null : request.findAncestorObject(Job.class);
+    }
+
+    /**
+     * Deletes the cache of this configuration from the cache storage system. Implementations are expected to delete
+     * everything they have created within the given caches root, but nothing else.
+     * <p>
+     * The default implementation does nothing, so caches that do not support manual deletion keep working.
+     *
+     * @param cachesRoot The root of the object cache
+     * @return true if something has been deleted, false if there was nothing to delete
+     * @throws IOException          If an error occurs while deleting the cache
+     * @throws InterruptedException If interrupted
+     */
+    public boolean delete(ObjectPath cachesRoot) throws IOException, InterruptedException {
+        return false;
+    }
+
+    /**
+     * Checks whether the current user is allowed to delete the cache of the ancestor job. Used by the user interface
+     * to decide whether the deletion controls are rendered.
+     *
+     * @return true if so, false otherwise
+     */
+    public boolean isDeletable() {
+        Job<?, ?> job = getJob();
+
+        return job != null && job.hasPermission(DELETE_PERMISSION);
+    }
+
+    /**
+     * Deletes the cache of this configuration for the ancestor job and redirects back to the cache overview.
+     */
+    @RequirePOST
+    public HttpResponse doDelete(@AncestorInPath Job<?, ?> job) throws IOException, InterruptedException {
+        if (job == null) {
+            return HttpResponses.notFound();
+        }
+
+        job.checkPermission(DELETE_PERMISSION);
+
+        CacheManager.delete(GlobalItemStorage.get().getStorage(), job, this);
+
+        return HttpResponses.redirectViaContextPath(job.getUrl() + "cache/");
     }
 
     /**
