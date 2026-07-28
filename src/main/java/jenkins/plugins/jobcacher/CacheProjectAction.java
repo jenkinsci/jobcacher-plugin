@@ -26,9 +26,16 @@ package jenkins.plugins.jobcacher;
 
 import hudson.model.Action;
 import hudson.model.Job;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.plugins.itemstorage.GlobalItemStorage;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * @author Peter Hayes
@@ -57,10 +64,41 @@ public class CacheProjectAction implements Action {
     }
 
     public Job<?, ?> getJob() {
-        return Stapler.getCurrentRequest2().findAncestorObject(Job.class);
+        StaplerRequest2 request = Stapler.getCurrentRequest2();
+
+        return request == null ? null : request.findAncestorObject(Job.class);
     }
 
     public List<Cache> getCaches() {
         return caches;
+    }
+
+    /**
+     * Checks whether the current user is allowed to delete the caches of the ancestor job. Used by the user interface
+     * to decide whether the deletion controls are rendered.
+     *
+     * @return true if so, false otherwise
+     */
+    public boolean isDeletable() {
+        Job<?, ?> job = getJob();
+
+        return job != null && job.hasPermission(Cache.DELETE_PERMISSION);
+    }
+
+    /**
+     * Deletes all caches of the ancestor job, including caches whose configuration has been removed in the meantime,
+     * and redirects back to the cache overview.
+     */
+    @RequirePOST
+    public HttpResponse doDeleteAll(@AncestorInPath Job<?, ?> job) throws IOException, InterruptedException {
+        if (job == null) {
+            return HttpResponses.notFound();
+        }
+
+        job.checkPermission(Cache.DELETE_PERMISSION);
+
+        CacheManager.deleteAll(GlobalItemStorage.get().getStorage(), job);
+
+        return HttpResponses.redirectViaContextPath(job.getUrl() + "cache/");
     }
 }

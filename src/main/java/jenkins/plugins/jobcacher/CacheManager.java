@@ -45,6 +45,47 @@ public class CacheManager {
     }
 
     /**
+     * Deletes the cache of the given cache configuration for the given job.
+     *
+     * @param storage The storage to delete the cache from
+     * @param job     The job whose cache should be deleted
+     * @param cache   The cache configuration whose cache should be deleted
+     * @return true if something has been deleted, false if there was nothing to delete
+     */
+    public static boolean delete(ItemStorage<?> storage, Job<?, ?> job, Cache cache)
+            throws IOException, InterruptedException {
+        ObjectPath cachePath = getCachePath(storage, job);
+
+        LOG.fine(() -> "Deleting cache " + cache.getTitle() + " of job " + job.getFullName());
+
+        synchronized (getLock(job)) {
+            return cache.delete(cachePath);
+        }
+    }
+
+    /**
+     * Deletes all caches of the given job, including caches whose configuration has been removed in the meantime.
+     *
+     * @param storage The storage to delete the caches from
+     * @param job     The job whose caches should be deleted
+     * @return true if something has been deleted, false if there was nothing to delete
+     */
+    public static boolean deleteAll(ItemStorage<?> storage, Job<?, ?> job) throws IOException, InterruptedException {
+        ObjectPath cachePath = getCachePath(storage, job);
+
+        LOG.fine(() -> "Deleting all caches of job " + job.getFullName());
+
+        synchronized (getLock(job)) {
+            if (!cachePath.exists()) {
+                return false;
+            }
+
+            cachePath.deleteRecursive();
+            return true;
+        }
+    }
+
+    /**
      * Internal method only
      */
     public static List<Cache.Saver> cache(

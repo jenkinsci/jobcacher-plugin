@@ -280,6 +280,35 @@ public class ArbitraryFileCache extends Cache {
         return cachesRoot.child(compressionMethod.getCacheStrategy().createCacheName(createCacheBaseName()));
     }
 
+    /**
+     * Deletes the cache of this configuration, including the hash of the cacheValidityDecidingFile. Caches of all
+     * compression methods are deleted, not just the one of the currently configured method, as the configured method
+     * may have been changed since the cache has been created.
+     */
+    @Override
+    public boolean delete(ObjectPath cachesRoot) throws IOException, InterruptedException {
+        if (cachesRoot == null) {
+            return false;
+        }
+
+        boolean deleted = false;
+        for (CompressionMethod compressionMethod : CompressionMethod.values()) {
+            ObjectPath cache = resolveCachePathForCompressionMethod(cachesRoot, compressionMethod);
+            if (cache.exists()) {
+                cache.deleteRecursive();
+                deleted = true;
+            }
+        }
+
+        ObjectPath cacheValidityDecidingFileHashFile = resolvePreviousCacheValidityDecidingFileHashFile(cachesRoot);
+        if (cacheValidityDecidingFileHashFile.exists()) {
+            cacheValidityDecidingFileHashFile.deleteRecursive();
+            deleted = true;
+        }
+
+        return deleted;
+    }
+
     private boolean isCacheOutdated(ObjectPath cachesRoot, FilePath workspace, TaskListener listener)
             throws IOException, InterruptedException {
         ObjectPath previousClearCacheTriggerFileHash = resolvePreviousCacheValidityDecidingFileHashFile(cachesRoot);
@@ -458,7 +487,8 @@ public class ArbitraryFileCache extends Cache {
                         .cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
                 if (compressionMethod.isDeprecated()) {
                     listener.getLogger()
-                            .println("WARNING: Compression method " + compressionMethod.name() + " is deprecated. Please switch to a supported compression method.");
+                            .println("WARNING: Compression method " + compressionMethod.name()
+                                    + " is deprecated. Please switch to a supported compression method.");
                 }
 
                 if (isCacheValidityDecidingFileConfigured() && isOneCacheValidityDecidingFilePresent(workspace)) {
@@ -515,7 +545,8 @@ public class ArbitraryFileCache extends Cache {
 
     public HttpResponse doDynamic(StaplerRequest2 req, StaplerResponse2 rsp, @AncestorInPath Job<?, ?> job)
             throws IOException, ServletException, InterruptedException {
-        ObjectPath cachesRoot = CacheManager.getCachePath(GlobalItemStorage.get().getStorage(), job);
+        ObjectPath cachesRoot =
+                CacheManager.getCachePath(GlobalItemStorage.get().getStorage(), job);
         ExistingCache existingCache = resolveExistingCache(cachesRoot);
 
         if (existingCache == null) {
@@ -553,13 +584,15 @@ public class ArbitraryFileCache extends Cache {
         TARGZ(
                 new TarArbitraryFileCacheStrategy(
                         GzipCompressorOutputStream::new, GzipCompressorInputStream::new, ".tgz"),
-                true, false),
+                true,
+                false),
         TARGZ_BEST_SPEED(
                 new TarArbitraryFileCacheStrategy(
                         os -> new GzipCompressorOutputStream(os, gzipParametersBestSpeed()),
                         GzipCompressorInputStream::new,
                         ".tgz"),
-                true, false),
+                true,
+                false),
         TAR(new TarArbitraryFileCacheStrategy(os -> os, is -> is, ".tar"), true, false),
         TAR_ZSTD(
                 new TarArbitraryFileCacheStrategy(
@@ -570,7 +603,8 @@ public class ArbitraryFileCache extends Cache {
                         },
                         ZstdInputStream::new,
                         ".tar.zst"),
-                true, false);
+                true,
+                false);
 
         private static GzipParameters gzipParametersBestSpeed() {
             GzipParameters gzipParameters = new GzipParameters();

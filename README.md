@@ -20,7 +20,7 @@ This is especially useful for Jenkins setups with ephemeral executors, which alw
 - Store caches on the Jenkins controller
 - Use caching in pipeline and freestyle jobs
 - Define maximum cache sizes so that the cache won't grow indefinitely
-- View job specific caches on job page
+- View and delete job specific caches on job page
 
 ### Extension Points
 
@@ -129,6 +129,17 @@ cache(maxCacheSize: 250, defaultBranch: 'develop', caches: [
 
 #### Note about using within Docker containers
 If you use the plugin within a Docker container through the [Docker Pipeline plugin](https://plugins.jenkins.io/docker-workflow/), the path to cache must be located within the workspace. Everything outside is not visible to the plugin and therefore not cacheable.
+
+## Viewing and deleting caches
+
+Once a build has created caches, the job page provides a "View Caches" link that lists the caches of the job.
+Each entry links to the cache content and provides a "Delete" action which removes that cache from the configured
+storage. Additionally, "Delete all caches" removes all caches of the job, including caches of configurations that
+have been removed in the meantime and are therefore not listed anymore - use this to get rid of caches left behind
+by a misconfigured job.
+
+Deleting a cache only removes data that a build can recreate, so the actions are available to everyone with the
+`Job/Build` permission on the job. The next build will simply start without a cache and create a fresh one.
 
 ## Contributing
 
