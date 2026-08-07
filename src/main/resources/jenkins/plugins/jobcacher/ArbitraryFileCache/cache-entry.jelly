@@ -31,5 +31,16 @@ THE SOFTWARE.
                 ${it.path}
             </a>
         </td>
+        <td style="text-align: right;">
+            <j:if test="${it.deletable}">
+                <l:confirmationLink href="caches/${cacheIndex}/delete"
+                                    post="true"
+                                    destructive="true"
+                                    title="${%Delete this cache?}"
+                                    message="${%The next build will recreate it.}">
+                    ${%Delete}
+                </l:confirmationLink>
+            </j:if>
+        </td>
     </tr>
 </j:jelly>
