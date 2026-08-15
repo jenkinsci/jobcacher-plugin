@@ -8,13 +8,6 @@
 This plugin provides caching for dependencies and build artifacts to reduce build execution times.
 This is especially useful for Jenkins setups with ephemeral executors, which always start from a clean state, such as container based ones.
 
-> [!WARNING]
-> Users upgrading from version `640.v424a_7cc1087a_` and above AND using S3 storage MUST install extension plugin `https://github.com/jenkinsci/s3-jobcacher-storage-plugin`
->
-> Configuration is kept in the same place, but the plugin will not work with S3 storage without this extension.
->
-> Users using controller storage or other storage types are not affected and does not need to install this extension.
-
 ### Features
 
 - Store caches on the Jenkins controller
