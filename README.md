@@ -24,6 +24,7 @@ Other known consumer plugins that implement the `jenkins.plugins.itemstorage.Ite
 
 - [jobcacher-artifactory-storage](https://plugins.jenkins.io/jobcacher-artifactory-storage/)
 - [jobcacher-azure-storage](https://plugins.jenkins.io/jobcacher-azure-storage/)
+- [gcs-jobcacher-storage](https://plugins.jenkins.io/gcs-jobcacher-storage/)
 - [jobcacher-s3-storage](https://plugins.jenkins.io/s3-jobcacher-storage//)
 - [jobcacher-oras-storage](https://plugins.jenkins.io/jobcacher-oras-storage/)
 
