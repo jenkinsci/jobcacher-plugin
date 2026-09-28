@@ -1,17 +1,20 @@
 package jenkins.plugins.jobcacher.arbitrary;
 
-import hudson.Util;
 import hudson.util.DirScanner;
 import hudson.util.FileVisitor;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 
 /**
@@ -22,19 +25,27 @@ import org.apache.tools.ant.types.selectors.SelectorUtils;
  * passed to {@code FilePath.archive()}, which strips all symlinks including ones needed by
  * tools like npm/yarn (e.g., {@code node_modules/.bin} symlinks).
  *
- * <p>The scanning strategy:
- * <ol>
- *   <li>Use Ant's {@link DirectoryScanner} with {@code followSymlinks=false} to discover
- *       all real (non-symlink) files matching the includes/excludes pattern.</li>
- *   <li>If the archiver supports symlinks, walk the directory tree to find symlinks that
- *       match the same includes/excludes patterns, and forward them via {@code scanSingle()}
- *       so the archiver stores them as native entries (no target content is read).</li>
- * </ol>
+ * <p>The scanning strategy: walk the directory tree with {@link Files#walkFileTree}, without
+ * following symlinks, and forward each entry matching the includes/excludes pattern to the
+ * archiver via {@code scanSingle()} &mdash; as a native symlink entry if it is one and the
+ * archiver supports them, as a regular file otherwise.
+ *
+ * <p>The walk is done with NIO2 {@link Path}s throughout, and only converted to a {@link File}
+ * right before handing it to the archiver. This matters because {@code java.io.File}/{@code String}
+ * can only represent a file name that round-trips losslessly through the JVM's platform
+ * encoding ({@code sun.jnu.encoding}); Ant's own {@code DirectoryScanner} (previously used here)
+ * performs that lossy round-trip internally while checking for symlinks, and throws an
+ * unrecoverable {@link java.nio.file.InvalidPathException} for a file name containing bytes that
+ * aren't valid in that encoding (e.g. non-ASCII bytes on an agent without a UTF-8 locale
+ * configured), aborting the whole cache save. Here such a file is instead skipped with a
+ * warning, since it cannot be represented as a {@link File} correctly at all.
  */
 class SymlinkSafeDirScanner extends DirScanner {
 
     @Serial
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOGGER = Logger.getLogger(SymlinkSafeDirScanner.class.getName());
 
     private final String includes;
     private final String excludes;
@@ -52,61 +63,46 @@ class SymlinkSafeDirScanner extends DirScanner {
             return;
         }
 
-        scanRealFiles(dir, visitor);
+        String[] includePatterns = parsePatterns(includes, "**");
+        String[] excludePatterns = parsePatterns(excludes, null);
+        String[] defaultExcludePatterns =
+                useDefaultExcludes ? DirectoryScanner.getDefaultExcludes() : new String[0];
+        boolean includeSymlinks = visitor.understandsSymlink();
+        Path base = dir.toPath();
 
-        if (visitor.understandsSymlink()) {
-            String[] includePatterns = parsePatterns(includes, "**");
-            String[] excludePatterns = parsePatterns(excludes, null);
-            String[] defaultExcludePatterns =
-                    useDefaultExcludes ? DirectoryScanner.getDefaultExcludes() : new String[0];
-            scanSymlinks(dir, dir, visitor, includePatterns, excludePatterns, defaultExcludePatterns);
-        }
+        Files.walkFileTree(base, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                if (attrs.isSymbolicLink() && !includeSymlinks) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                String relativePath = base.relativize(file).toString();
+                if (matchesPatterns(relativePath, includePatterns, excludePatterns, defaultExcludePatterns)) {
+                    visitIfRepresentable(file, relativePath, visitor);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     /**
-     * Scans real (non-symlink) files using Ant's {@link DirectoryScanner} with
-     * {@code followSymlinks=false}, so symlinks are not discovered or followed.
+     * Hands a walked path off to the visitor as a {@link File}, unless the file name cannot be
+     * represented losslessly as one under the platform encoding, in which case it is skipped
+     * with a warning instead of failing the whole scan.
      */
-    private void scanRealFiles(File dir, FileVisitor visitor) throws IOException {
-        FileSet fs = Util.createFileSet(dir, includes, excludes);
-        fs.setFollowSymlinks(false);
-        fs.setDefaultexcludes(useDefaultExcludes);
-
-        DirectoryScanner ds = fs.getDirectoryScanner(new Project());
-        for (String relativePath : ds.getIncludedFiles()) {
-            scanSingle(new File(dir, relativePath), relativePath, visitor);
-        }
-    }
-
-    /**
-     * Recursively walks real directories to find symlinks matching the includes/excludes
-     * patterns, and forwards them to the visitor via {@code scanSingle()}.
-     * Does not recurse into symlinked directories to avoid circular references.
-     */
-    private void scanSymlinks(
-            File current,
-            File baseDir,
-            FileVisitor visitor,
-            String[] includePatterns,
-            String[] excludePatterns,
-            String[] defaultExcludePatterns)
-            throws IOException {
-        File[] children = current.listFiles();
-        if (children == null) {
+    private void visitIfRepresentable(Path file, String relativePath, FileVisitor visitor) throws IOException {
+        File f = file.toFile();
+        if (!f.exists()) {
+            LOGGER.log(
+                    Level.WARNING,
+                    "Skipping ''{0}'' from the cache: its name cannot be represented using this JVM''s file name"
+                            + " encoding ({1}). Configure a UTF-8 locale (e.g. LANG/LC_ALL) on this agent to"
+                            + " include it.",
+                    new Object[] {relativePath, System.getProperty("sun.jnu.encoding")});
             return;
         }
-
-        for (File child : children) {
-            if (Files.isSymbolicLink(child.toPath())) {
-                String relativePath =
-                        baseDir.toPath().relativize(child.toPath()).toString();
-                if (matchesPatterns(relativePath, includePatterns, excludePatterns, defaultExcludePatterns)) {
-                    scanSingle(child, relativePath, visitor);
-                }
-            } else if (child.isDirectory()) {
-                scanSymlinks(child, baseDir, visitor, includePatterns, excludePatterns, defaultExcludePatterns);
-            }
-        }
+        scanSingle(f, relativePath, visitor);
     }
 
     /**
