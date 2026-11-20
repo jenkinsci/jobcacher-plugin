@@ -1,6 +1,7 @@
 package jenkins.plugins.jobcacher.arbitrary;
 
 import hudson.FilePath;
+import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.io.ArchiverFactory;
 import java.io.BufferedOutputStream;
@@ -24,12 +25,18 @@ public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
 
     @Override
     protected void compress(
-            FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target)
+            FilePath source,
+            String includes,
+            String excludes,
+            boolean useDefaultExcludes,
+            FilePath target,
+            TaskListener listener)
             throws IOException, InterruptedException {
-        target.act(new CreateZipCallable(source, includes, excludes, useDefaultExcludes));
+        target.act(new CreateZipCallable(source, includes, excludes, useDefaultExcludes, listener));
     }
 
-    private record CreateZipCallable(FilePath source, String includes, String excludes, boolean useDefaultExcludes)
+    private record CreateZipCallable(
+            FilePath source, String includes, String excludes, boolean useDefaultExcludes, TaskListener listener)
             implements ControllerToAgentFileCallable<Void> {
 
         @Override
@@ -38,7 +45,7 @@ public class ZipArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
                 source.archive(
                         ArchiverFactory.ZIP,
                         outputStream,
-                        new SymlinkSafeDirScanner(includes, excludes, useDefaultExcludes));
+                        new SymlinkSafeDirScanner(includes, excludes, useDefaultExcludes, listener));
             }
 
             return null;

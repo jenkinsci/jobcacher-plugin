@@ -1,6 +1,7 @@
 package jenkins.plugins.jobcacher.arbitrary;
 
 import hudson.FilePath;
+import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.io.ArchiverFactory;
 import java.io.*;
@@ -36,10 +37,15 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
 
     @Override
     protected void compress(
-            FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target)
+            FilePath source,
+            String includes,
+            String excludes,
+            boolean useDefaultExcludes,
+            FilePath target,
+            TaskListener listener)
             throws IOException, InterruptedException {
-        target.act(
-                new CreateTarCallable(source, includes, excludes, useDefaultExcludes, compressingOutputStreamFactory));
+        target.act(new CreateTarCallable(
+                source, includes, excludes, useDefaultExcludes, compressingOutputStreamFactory, listener));
     }
 
     private record ExtractTarCallable(FilePath target, CompressingInputStreamFactory compressingInputStreamFactory)
@@ -70,7 +76,8 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
             String includes,
             String excludes,
             boolean useDefaultExcludes,
-            CompressingOutputStreamFactory compressingOutputStreamFactory)
+            CompressingOutputStreamFactory compressingOutputStreamFactory,
+            TaskListener listener)
             implements ControllerToAgentFileCallable<Void> {
 
         @Override
@@ -79,7 +86,7 @@ public class TarArbitraryFileCacheStrategy extends AbstractCompressingArbitraryF
                 source.archive(
                         ArchiverFactory.TAR,
                         outputStream,
-                        new SymlinkSafeDirScanner(includes, excludes, useDefaultExcludes));
+                        new SymlinkSafeDirScanner(includes, excludes, useDefaultExcludes, listener));
             } catch (CompressorException e) {
                 throw new IOException(e);
             }

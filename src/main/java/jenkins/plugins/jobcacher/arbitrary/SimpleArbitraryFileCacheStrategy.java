@@ -1,6 +1,7 @@
 package jenkins.plugins.jobcacher.arbitrary;
 
 import hudson.FilePath;
+import hudson.model.TaskListener;
 import java.io.IOException;
 import jenkins.plugins.itemstorage.ObjectPath;
 
@@ -18,7 +19,8 @@ public class SimpleArbitraryFileCacheStrategy implements ArbitraryFileCacheStrat
             String excludes,
             boolean useDefaultExcludes,
             ObjectPath target,
-            FilePath workspace)
+            FilePath workspace,
+            TaskListener listener)
             throws IOException, InterruptedException {
         throw new UnsupportedOperationException("This compression method is not supported anymore");
     }

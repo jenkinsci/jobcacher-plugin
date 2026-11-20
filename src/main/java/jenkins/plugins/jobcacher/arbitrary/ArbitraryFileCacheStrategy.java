@@ -1,6 +1,7 @@
 package jenkins.plugins.jobcacher.arbitrary;
 
 import hudson.FilePath;
+import hudson.model.TaskListener;
 import java.io.IOException;
 import java.io.Serializable;
 import jenkins.plugins.itemstorage.ObjectPath;
@@ -15,7 +16,8 @@ public interface ArbitraryFileCacheStrategy extends Serializable {
             String excludes,
             boolean useDefaultExcludes,
             ObjectPath target,
-            FilePath workspace)
+            FilePath workspace,
+            TaskListener listener)
             throws IOException, InterruptedException;
 
     void restore(ObjectPath source, FilePath target, FilePath workspace) throws IOException, InterruptedException;
