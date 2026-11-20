@@ -1,6 +1,7 @@
 package jenkins.plugins.jobcacher.arbitrary;
 
 import hudson.FilePath;
+import hudson.model.TaskListener;
 import java.io.IOException;
 import jenkins.plugins.itemstorage.ObjectPath;
 import jenkins.plugins.jobcacher.arbitrary.WorkspaceHelper.TempFile;
@@ -19,10 +20,11 @@ public abstract class AbstractCompressingArbitraryFileCacheStrategy implements A
             String excludes,
             boolean useDefaultExcludes,
             ObjectPath remoteTarget,
-            FilePath workspace)
+            FilePath workspace,
+            TaskListener listener)
             throws IOException, InterruptedException {
         try (TempFile localTarget = WorkspaceHelper.createTempFile(workspace, getArchiveExtension())) {
-            compress(localSource, includes, excludes, useDefaultExcludes, localTarget.get());
+            compress(localSource, includes, excludes, useDefaultExcludes, localTarget.get(), listener);
             remoteTarget.copyFrom(localTarget.get());
         }
     }
@@ -43,6 +45,11 @@ public abstract class AbstractCompressingArbitraryFileCacheStrategy implements A
     protected abstract void uncompress(FilePath source, FilePath target) throws IOException, InterruptedException;
 
     protected abstract void compress(
-            FilePath source, String includes, String excludes, boolean useDefaultExcludes, FilePath target)
+            FilePath source,
+            String includes,
+            String excludes,
+            boolean useDefaultExcludes,
+            FilePath target,
+            TaskListener listener)
             throws IOException, InterruptedException;
 }

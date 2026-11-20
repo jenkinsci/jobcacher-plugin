@@ -484,7 +484,7 @@ public class ArbitraryFileCache extends Cache {
             try {
                 compressionMethod
                         .getCacheStrategy()
-                        .cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace);
+                        .cache(resolvedPath, includes, excludes, useDefaultExcludes, cache, workspace, listener);
                 if (compressionMethod.isDeprecated()) {
                     listener.getLogger()
                             .println("WARNING: Compression method " + compressionMethod.name()
